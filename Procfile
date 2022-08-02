@@ -1,1 +1,1 @@
-web: gunicorn --bind :$PORT --worker-class uvicorn.workers.UvicornWorker dtb.asgi:application
+web: gunicorn dtb.asgi:application
