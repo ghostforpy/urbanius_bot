@@ -9,6 +9,7 @@ COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 # Скопируем остальные файлы в контейнер
 COPY . .
+COPY .env_dep .env
 EXPOSE 8001
 # запускаем скрипт
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8001"]
