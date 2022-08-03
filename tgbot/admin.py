@@ -120,7 +120,6 @@ class BranchAdmin(admin.ModelAdmin) :
     list_display_links = ("name", ) 
     search_fields = ("name",)
 
-
 @admin.register(Status)
 class StatusAdmin(admin.ModelAdmin) :
     list_display = ("stat_id", "name",) 
