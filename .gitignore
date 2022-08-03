@@ -148,3 +148,4 @@ dmypy.json
 
 #My
 .keys/
+settings_dep.py
