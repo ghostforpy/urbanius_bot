@@ -5,6 +5,7 @@ from functools import wraps
 from dtb.settings import ENABLE_DECORATOR_LOGGING, TELEGRAM_TOKEN
 from django.utils import timezone
 from tgbot.models import UserActionLog, User
+from tgbot.utils import extract_user_data_from_update
 from telegram import MessageEntity
 
 logger = logging.getLogger('default')
@@ -25,13 +26,16 @@ def handler_logging(action_name=None):
     """ Turn on this decorator via ENABLE_DECORATOR_LOGGING variable in dtb.settings """
     def decor(func):
         def handler(update, context, *args, **kwargs):
-            user, _ = User.get_user_and_created(update, context)
+            user_id = extract_user_data_from_update(update)['user_id']
+            #user, _ = User.get_user_and_created(update, context)
+            user = User.get_user_by_username_or_user_id(user_id)
             action = f"{func.__module__}.{func.__name__}" if not action_name else action_name
             try:
                 text = update.message['text'] if update.message else ''
             except AttributeError:
                 text = ''
-            UserActionLog.objects.create(user_id=user.user_id, action=action, text=text, created_at=timezone.now())
+            if user != None:
+                UserActionLog.objects.create(user_id=user.user_id, action=action, text=text, created_at=timezone.now())
             return func(update, context, *args, **kwargs)
         return handler if ENABLE_DECORATOR_LOGGING else func
     return decor

@@ -3,7 +3,7 @@ version: "3.9"
 services:
   web:
     build: .
-    container_name: django_urban
+    container_name: urban_web
     command: bash -c "python manage.py runserver 0.0.0.0:8001"
     volumes:
       - .:/code
@@ -12,15 +12,15 @@ services:
     environment:
       - DJANGO_DEBUG='True'
     env_file:
-      - ./.env
+      - ./.env_dep
     entrypoint: /entrypoint.sh
   bot:
     build: .
-    container_name: tg_bot_urban
+    container_name: urban_bot
     command: python run_pooling.py
     volumes:
       - .:/code
     env_file:
-      - ./.env
+      - ./.env_dep
     depends_on:
       - web

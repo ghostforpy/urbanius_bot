@@ -136,7 +136,8 @@ class SocialNets(models.Model):
         ordering = ['user']
 
 class Status(models.Model):
-    name = models.CharField("Статус пользователя",unique=True, max_length=150, blank=False)
+    stat_id = models.IntegerField("ИД статуса", null=True)
+    name = models.CharField("Статус пользователя", unique=True, max_length=150, blank=False)
     def __str__(self):
         return self.name
     class Meta:
@@ -146,12 +147,25 @@ class Status(models.Model):
 
 class tgGroups(models.Model):
     name = models.CharField("Группа пользователей",unique=True, max_length=150, blank=False)
+    chat_id = models.BigIntegerField("ИД чата в Телеграм", null=True)
     def __str__(self):
         return self.name
     class Meta:
         verbose_name_plural = 'Группы пользователей' 
         verbose_name = 'Группа пользователей'
         ordering = ['name']
+
+class UsertgGroups(models.Model):
+    group = models.ForeignKey(tgGroups,on_delete=models.CASCADE, verbose_name="Группа")
+    user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
+    def __str__(self):
+        return str(self.need)
+    class Meta:
+        verbose_name_plural = 'Группы пользователя' 
+        verbose_name = 'Группа пользователя' 
+        ordering = ['user', 'group']
+
+
 
 class UserReferrers(models.Model):
     referrer = models.ForeignKey("User",on_delete=models.CASCADE, related_name="referrer", verbose_name="Рекомендатель")

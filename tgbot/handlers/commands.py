@@ -4,7 +4,8 @@ import datetime
 import logging
 import re
 import telegram
-
+from telegram.update import Update
+from telegram.ext.callbackcontext import CallbackContext
 from django.utils import timezone
 from tgbot.handlers import static_text
 from tgbot.models import User
@@ -18,17 +19,15 @@ logger.info("Command handlers check!")
 
 
 @handler_logging()
-def command_start(update, context):
-    #user, created = User.get_user_and_created(update, context)
+def command_start(update: Update, context: CallbackContext):
     user_id = extract_user_data_from_update(update)['user_id']
-    user = User()
-    user.user_id = user_id
-    created = True
-    if created:
+    user = User.get_user_by_username_or_user_id(user_id)
+
+    if user == None:
         registration_start(update, context)
     elif user.is_blocked_bot:
         text = static_text.account_blocked.format(user.comment)
-        context.bot.send_message(chat_id=user.user_id, text=text, reply_markup=make_keyboard_for_start_command())
+        update.message.reply_text(text=text, reply_markup=make_keyboard_for_start_command())
     else:
         payload = context.args[0] if context.args else user.deep_link  # if empty payload, check what was stored in DB
 

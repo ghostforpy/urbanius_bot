@@ -31,6 +31,9 @@ class UserSportInline(admin.TabularInline):
 class UserHobbyInline(admin.TabularInline):
     model = UserHobby
 
+class UsertgGroupsInline(admin.TabularInline):
+    model = UsertgGroups
+
 class UserReferrersInline(admin.TabularInline):
     model = UserReferrers
     fk_name = "user"
@@ -40,8 +43,7 @@ class UserAdmin(admin.ModelAdmin):
     readonly_fields = ['avatar_tag'] # Be sure to read only mode
     list_display = [
         'user_id', 'username', 'first_name', 'last_name', 
-        'deep_link',
-        'created_at', 'updated_at', 'is_blocked_bot'
+        'created_at',  'is_blocked_bot', "comment"
     ]
     list_filter = ["is_blocked_bot", "is_moderator"]
     search_fields = ('username', 'user_id', 'last_name')
@@ -55,7 +57,7 @@ class UserAdmin(admin.ModelAdmin):
               'about',              
               'comment'
               ]
-    inlines = [OffersInline, SocialNetsInline, UserNeedsInline, UserSportInline, UserHobbyInline, UserReferrersInline]
+    inlines = [UsertgGroupsInline, OffersInline, SocialNetsInline, UserNeedsInline, UserSportInline, UserHobbyInline, UserReferrersInline]
     formfield_overrides = {
         #models.CharField: {'widget': TextInput(attrs={'size':'20'})},
         models.TextField: {'widget': Textarea(attrs={'rows':2, 'cols':100})},
@@ -119,29 +121,15 @@ class BranchAdmin(admin.ModelAdmin) :
     search_fields = ("name",)
 
 
-# @admin.register(Offers)
-# class OffersAdmin(admin.ModelAdmin) :
-#     list_display = ("user","offer",) 
-#     list_display_links = ("user","offer", ) 
-#     search_fields = ("user","offer",)
-
-
-
-# @admin.register(SocialNets)
-# class SocialNetsAdmin(admin.ModelAdmin) :
-#     list_display = ("user","name",) 
-#     list_display_links = ("user","name", ) 
-#     search_fields = ("user","name",)
-
 @admin.register(Status)
 class StatusAdmin(admin.ModelAdmin) :
-    list_display = ("name",) 
+    list_display = ("stat_id", "name",) 
     list_display_links = ("name", ) 
     search_fields = ("name",)
 
 @admin.register(tgGroups)
 class tgGroupsAdmin(admin.ModelAdmin) :
-    list_display = ("name",) 
+    list_display = ("name", "chat_id",) 
     list_display_links = ("name", ) 
     search_fields = ("name",)
 
