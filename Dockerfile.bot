@@ -9,6 +9,6 @@ COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 # Скопируем остальные файлы в контейнер
 COPY . .
-EXPOSE 8001
+COPY .env_dep .env
 # запускаем скрипт
 CMD ["python", "run_pooling.py"]
