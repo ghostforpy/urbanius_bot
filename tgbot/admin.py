@@ -50,23 +50,23 @@ class UserAdmin(admin.ModelAdmin):
     fields = [('user_id', 'username', 'deep_link'), 
               ('last_name', 'first_name', 'sur_name', 'date_of_birth'), 
               ('avatar_tag', 'main_photo', 'telefon', 'email'),
-              ('status', 'club_groups'),
+              ('status'),
               ('is_blocked_bot', 'is_banned', 'is_admin', 'is_moderator'),
               ('job_region', 'citi', 'branch'), 
               ('company', 'job', 'site', 'tags'),
-              'about',              
-              'comment'
+              'about','comment'
               ]
     inlines = [UsertgGroupsInline, OffersInline, SocialNetsInline, UserNeedsInline, UserSportInline, UserHobbyInline, UserReferrersInline]
     formfield_overrides = {
         #models.CharField: {'widget': TextInput(attrs={'size':'20'})},
         models.TextField: {'widget': Textarea(attrs={'rows':2, 'cols':100})},
     }
-    actions = ['broadcast']
+    actions = ['broadcast', 'reg_confirm']
 
     def invited_users(self, obj):
         return obj.invited_users().count()
 
+    @admin.action(description='Разослать сообщения')
     def broadcast(self, request, queryset):
         """ Select users via check mark in django-admin panel, then select "Broadcast" to send message"""
         if 'apply' in request.POST:
@@ -75,7 +75,7 @@ class UserAdmin(admin.ModelAdmin):
             # TODO: for all platforms?
             if len(queryset) <= 3 or DEBUG:  # for test / debug purposes - run in same thread
                 for u in queryset:
-                    utils.send_message(user_id=u.id, text=broadcast_message_text, parse_mode=telegram.ParseMode.MARKDOWN)
+                    utils.send_message(user_id=u.user_id, text=broadcast_message_text, parse_mode=telegram.ParseMode.MARKDOWN)
                 self.message_user(request, "Just broadcasted to %d users" % len(queryset))
             else:
                 user_ids = list(set(u.user_id for u in queryset))
@@ -89,7 +89,33 @@ class UserAdmin(admin.ModelAdmin):
         return render(
             request, "admin/broadcast_message.html", {'items': queryset,'form': form, 'title':u' '}
         )
+    
+    @admin.action(description='Подтвердить регистрацию')
+    def reg_confirm(self, request, queryset):
+        """ Select users via check mark in django-admin panel, then select "Broadcast" to send message"""
+        if 'apply' in request.POST:
+            broadcast_message_text = request.POST["broadcast_text"]
+            # снимаем блокировку
+            for u in queryset:
+                u.is_blocked_bot = False
+                u.save()
+            # TODO: for all platforms?
+            if len(queryset) <= 3 or DEBUG:  # for test / debug purposes - run in same thread
+                for u in queryset:
+                    utils.send_message(user_id=u.user_id, text=broadcast_message_text, parse_mode=telegram.ParseMode.MARKDOWN)
+                self.message_user(request, "Just broadcasted to %d users" % len(queryset))
+            else:
+                user_ids = list(set(u.user_id for u in queryset))
+                random.shuffle(user_ids)
+                #broadcast_message.delay(message=broadcast_message_text, user_ids=user_ids)
+                self.message_user(request, "Broadcasting of %d messages has been started" % len(queryset))
 
+            return HttpResponseRedirect(request.get_full_path())
+        text = "Ваша регистрация подтверждена. Наберите /start для обновления меню"
+        form = BroadcastForm(initial={"broadcast_text":text,'_selected_action': queryset.values_list('user_id', flat=True)})
+        return render(
+            request, "admin/confirn_registration.html", {'items': queryset,'form': form, 'title':u' '}
+        )
 @admin.register(Sport)
 class SportAdmin(admin.ModelAdmin) :
     list_display = ("name",) 
@@ -144,9 +170,9 @@ class tgGroupsAdmin(admin.ModelAdmin) :
 #     list_display = ['location', 'city', 'country_code']
 
 
-# @admin.register(UserActionLog)
-# class UserActionLogAdmin(admin.ModelAdmin):
-#     list_display = ['user', 'action', 'created_at']
+@admin.register(UserActionLog)
+class UserActionLogAdmin(admin.ModelAdmin):
+    list_display = ['user', 'action', 'created_at']
 
 
 # @admin.register(Config)

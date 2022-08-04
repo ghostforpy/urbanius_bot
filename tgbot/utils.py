@@ -8,6 +8,7 @@ from datetime import datetime
 
 from django.conf import settings
 
+
 logger = logging.getLogger('default')
 
 
@@ -81,3 +82,9 @@ def is_email(email: str):
         return email
     else:
         return False
+
+def mystr(val)->str:
+    if val == None:
+        return ""
+    else:
+        return str(val)

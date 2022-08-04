@@ -150,6 +150,11 @@ class tgGroups(models.Model):
     chat_id = models.BigIntegerField("ИД чата в Телеграм", null=True)
     def __str__(self):
         return self.name
+
+    @classmethod
+    def get_group_by_name(cls, gr_name: str) -> "tgGroups":
+        return cls.objects.filter(name = gr_name).first()
+
     class Meta:
         verbose_name_plural = 'Группы пользователей' 
         verbose_name = 'Группа пользователей'
@@ -211,7 +216,7 @@ class User(models.Model):
     job_region = models.ForeignKey(JobRegions, on_delete=models.DO_NOTHING, verbose_name="Регион работы",null=True, blank=True)
     branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, verbose_name="Отрасль",null=True, blank=True)
     status = models.ForeignKey(Status, on_delete=models.DO_NOTHING, verbose_name="Статус",null=True, blank=True)
-    club_groups = models.ForeignKey(tgGroups, on_delete=models.DO_NOTHING, verbose_name="Клубная группа",null=True, blank=True)
+
     
     def __str__(self):
         res = f'@{self.username}' if self.username is not None else f'{self.user_id}'
@@ -252,12 +257,12 @@ class User(models.Model):
         return u, created
 
     @classmethod
-    def get_user(cls, update, context):
+    def get_user(cls, update, context) -> "User":
         u, _ = cls.get_user_and_created(update, context)
         return u
 
     @classmethod
-    def get_user_by_username_or_user_id(cls, string):
+    def get_user_by_username_or_user_id(cls, string) -> "User":
         """ Search user in DB, return User or None if not found """
         username = str(string).replace("@", "").strip().lower()
         if username.isdigit():  # user_id
@@ -268,8 +273,8 @@ class User(models.Model):
         return User.objects.filter(deep_link=str(self.user_id), created_at__gt=self.created_at)
 
     class Meta:
-        verbose_name = 'Член клуба'
-        verbose_name_plural = 'Члены клуба'
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
 
 class Location(models.Model):

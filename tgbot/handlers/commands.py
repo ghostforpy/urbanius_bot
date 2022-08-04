@@ -6,31 +6,37 @@ import re
 import telegram
 from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
+from telegram.ext import ConversationHandler
 from django.utils import timezone
 from tgbot.handlers import static_text
 from tgbot.models import User
 from tgbot.utils import extract_user_data_from_update
 from tgbot.handlers.keyboard_utils import make_keyboard_for_start_command, keyboard_confirm_decline_broadcasting
 from tgbot.handlers.utils import handler_logging
-from tgbot.handlers.registration.handlers import registration_start
+#from tgbot.handlers.registration.handlers import registration_start
+from tgbot.handlers.keyboard import make_keyboard
+from tgbot.handlers.registration.messages import REGISTRATION_START_MESSS
+from tgbot.handlers.registration.answers import REGISTRATION_START_BTN
+from tgbot.handlers.main.answers import get_start_menu
+from tgbot.handlers.main.messages import get_start_mess
 
 logger = logging.getLogger('default')
 logger.info("Command handlers check!")
 
-
 @handler_logging()
 def command_start(update: Update, context: CallbackContext):
-    user_id = extract_user_data_from_update(update)['user_id']
+    context.user_data.clear()
+    userdata = extract_user_data_from_update(update)
+    user_id = userdata['user_id']
     user = User.get_user_by_username_or_user_id(user_id)
-
+    if user != None:
+        user.username = userdata["username"]
+        user.save()
     if user == None:
-        registration_start(update, context)
-    elif user.is_blocked_bot:
-        text = static_text.account_blocked.format(user.comment)
-        update.message.reply_text(text=text, reply_markup=make_keyboard_for_start_command())
+        update.message.reply_text(REGISTRATION_START_MESSS, reply_markup=make_keyboard(REGISTRATION_START_BTN,"usual",2))
     else:
-        payload = context.args[0] if context.args else user.deep_link  # if empty payload, check what was stored in DB
-
+        update.message.reply_text(get_start_mess(user), reply_markup=get_start_menu(user))
+    return ConversationHandler.END
 
 def stats(update, context):
     """ Show help info about all secret admins commands """

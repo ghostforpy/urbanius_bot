@@ -1,12 +1,13 @@
 import logging
 import telegram
-
+from typing import Optional
 from functools import wraps
 from dtb.settings import ENABLE_DECORATOR_LOGGING, TELEGRAM_TOKEN
 from django.utils import timezone
-from tgbot.models import UserActionLog, User
+from tgbot.models import UserActionLog, User, tgGroups
 from tgbot.utils import extract_user_data_from_update
 from telegram import MessageEntity
+
 
 logger = logging.getLogger('default')
 
@@ -72,5 +73,7 @@ def send_message(user_id, text, parse_mode=None, reply_markup=None, reply_to_mes
         success = False
     else:
         success = True
-        User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
+        #User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
     return success
+
+

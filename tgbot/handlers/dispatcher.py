@@ -6,7 +6,7 @@ import telegram
 
 from telegram.ext import (
     Updater, Dispatcher, Filters,
-    CommandHandler, MessageHandler,
+    CommandHandler, MessageHandler, 
     InlineQueryHandler, CallbackQueryHandler,
     ChosenInlineResultHandler, PollAnswerHandler, Defaults
 )
@@ -16,16 +16,21 @@ from dtb.settings import TELEGRAM_TOKEN
 
 from tgbot.handlers import commands
 from tgbot.handlers.registration.handlers import setup_dispatcher_reg
-
+from tgbot.handlers.main.handlers import setup_dispatcher_main
+from tgbot.handlers.profile.handlers import setup_dispatcher_prof
 
 def setup_dispatcher(dp: Dispatcher):
     """
     Adding handlers for events from Telegram
     """
 
-    dp.add_handler(CommandHandler("start", commands.command_start))
-    setup_dispatcher_reg(dp) #заполнение обработчиков регистрации
+    dp.add_handler(CommandHandler("start", commands.command_start, Filters.chat_type.private))
 
+    setup_dispatcher_reg(dp) #заполнение обработчиков регистрации
+    setup_dispatcher_main(dp) #заполнение обработчиков главного диалога
+    setup_dispatcher_prof(dp) #заполнение обработчиков работы с профайлом
+
+    dp.add_handler(MessageHandler(Filters.text & Filters.chat_type.private, commands.command_start))
     # EXAMPLES FOR HANDLERS
     # dp.add_handler(MessageHandler(Filters.text, <function_handler>))
     # dp.add_handler(MessageHandler(

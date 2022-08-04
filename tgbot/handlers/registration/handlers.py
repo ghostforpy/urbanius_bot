@@ -13,12 +13,17 @@ from telegram.ext import (
 from telegram import KeyboardButton, ReplyKeyboardMarkup
 from tgbot.handlers.registration.messages import *
 from tgbot.handlers.registration.answers import *
-from tgbot.models import User
+from tgbot.handlers.main.messages import NO_ADMIN_GROUP
+from tgbot.models import User, tgGroups
+
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot import utils
+from tgbot.handlers.filters import FilterPrivateNoCommand
+from tgbot.handlers.utils import send_message
+
 
 # Шаги диалога
-APROVAL,PHONE,FIO,BIRHDAY,EMAIL,CITI,COMPANY,JOB,SITE = range(9)
+APROVAL,PHONE,FIO,ABOUT,BIRHDAY,EMAIL,CITI,COMPANY,JOB,SITE = range(10)
 
 def registration_stop(update: Update, context: CallbackContext):
     # Заканчиваем разговор.
@@ -35,25 +40,27 @@ def registration_start(update: Update, context: CallbackContext):
     context.user_data["is_blocked_bot"] = True
     context.user_data["comment"] = "Ожидает подтверждения регистрации"
     update.message.reply_text(WELCOME, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
-
+    return APROVAL
+  
+def phone_keyboard():
+    tg_keys = []
+    tg_keys.append(KeyboardButton(text="Отправить телефонный номер", request_contact=True))
+    tg_keys.append(KeyboardButton(text=CANCEL_SKIP["cancel"]))
+    tg_keys.append(KeyboardButton(text=CANCEL_SKIP["skip"]))
+    return ReplyKeyboardMarkup([tg_keys], resize_keyboard=True)     
 
 def processing_aproval(update: Update, context: CallbackContext):
-    if update.message.text == APPROVAL_ANSWERS["yes"]: # В этом поле хранится согласие
-        tg_keys = []
-        tg_keys.append(KeyboardButton(text="Отправить телефонный номер", request_contact=True))
-        tg_keys.append(KeyboardButton(text=CANCEL_SKIP["cancel"]))
-        tg_keys.append(KeyboardButton(text=CANCEL_SKIP["skip"]))
-        keyboard = ReplyKeyboardMarkup([tg_keys], resize_keyboard=True)        
-        update.message.reply_text(ASK_PHONE, reply_markup=keyboard)
+    if update.message.text == APPROVAL_ANSWERS["yes"]: # В этом поле хранится согласие       
+        update.message.reply_text(ASK_PHONE, reply_markup=phone_keyboard())
         return PHONE
     elif update.message.text == APPROVAL_ANSWERS["no"]: # В этом поле хранится отказ
         registration_stop(update, context)
         return ConversationHandler.END
     else:
-        update.message.reply_text(ASK_REENTER)
+        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
 
 def processing_phone(update: Update, context: CallbackContext):
-    fullname = " ".join([context.user_data["first_name"], context.user_data["last_name"]])
+    fullname = " ".join([utils.mystr(context.user_data["first_name"]), utils.mystr(context.user_data["last_name"])])
     if update.message.contact != None: # Был прислан контакт        
         # Запоминаем телефон
         context.user_data["telefon"] = update.message.contact.phone_number
@@ -67,20 +74,20 @@ def processing_phone(update: Update, context: CallbackContext):
         registration_stop(update, context)
         return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",1)
+        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
         update.message.reply_text(ASK_FIO.format(fullname), reply_markup=keyboard)
         return FIO
     else:
-        update.message.reply_text(ASK_REENTER)
+        update.message.reply_text(ASK_REENTER, reply_markup=phone_keyboard())
 
 def processing_fio(update: Update, context: CallbackContext):
     if update.message.text == CANCEL["cancel"]:
         registration_stop(update, context)
         return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",1)
-        update.message.reply_text(ASK_BIRHDAY, reply_markup=keyboard)
-        return BIRHDAY
+        keyboard = make_keyboard(CANCEL,"usual",1)
+        update.message.reply_text(ASK_ABOUT, reply_markup=keyboard)
+        return ABOUT
     else:
         fio = update.message.text.split()
         len_fio = len(fio)
@@ -94,6 +101,17 @@ def processing_fio(update: Update, context: CallbackContext):
             context.user_data["first_name"] = fio[1] # Имя
             context.user_data["sur_name"] = fio[2]   # Отчество
         
+        keyboard = make_keyboard(CANCEL,"usual",2)
+        update.message.reply_text(ASK_ABOUT, reply_markup=keyboard)
+        return ABOUT
+
+def processing_about(update: Update, context: CallbackContext):
+    if update.message.text == CANCEL["cancel"]:
+        registration_stop(update, context)
+        return ConversationHandler.END
+
+    else:
+        context.user_data["about"] = update.message.text        
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
         update.message.reply_text(ASK_BIRHDAY, reply_markup=keyboard)
         return BIRHDAY
@@ -109,7 +127,7 @@ def processing_birhday(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_EMAIL, reply_markup=keyboard)
         return EMAIL
     elif not(date): # ввели неверную дату
-        update.message.reply_text(BAD_DATE)
+        update.message.reply_text(BAD_DATE, make_keyboard(CANCEL_SKIP,"usual",2))
         return    
     else: # ввели верный дату
         context.user_data["date_of_birth"] = date
@@ -128,7 +146,7 @@ def processing_email(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_CITI, reply_markup=keyboard)
         return CITI
     elif not(email): # ввели неверную email
-        update.message.reply_text(BAD_EMAIL)
+        update.message.reply_text(BAD_EMAIL,make_keyboard(CANCEL_SKIP,"usual",2))
         return    
     else: 
         context.user_data["email"] = email
@@ -194,26 +212,36 @@ def processing_site(update: Update, context: CallbackContext):
     keyboard = make_keyboard(START,"usual",1)
     update.message.reply_text(FIN_MESS, reply_markup=keyboard)
     context.user_data.clear()
+    group = tgGroups.get_group_by_name("Администраторы")
+    if (group == None) or (group.chat_id == 0):
+        update.message.reply_text(NO_ADMIN_GROUP)
+    else:
+        text = " ".join(["Зарегистрирован новый пользователь", "@"+context.user_data["username"],
+                        context.user_data["first_name"], context.user_data["last_name"]])
+        send_message(group.chat_id, text)
+   
     return ConversationHandler.END
 
 
 def setup_dispatcher_reg(dp: Dispatcher):
     conv_handler_reg = ConversationHandler( # здесь строится логика разговора
         # точка входа в разговор
-        entry_points=[MessageHandler(Filters.text, processing_aproval)],
+        entry_points=[MessageHandler(Filters.text(REGISTRATION_START_BTN["reg_start"]) & FilterPrivateNoCommand, registration_start)],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
-            PHONE: [MessageHandler(Filters.contact | Filters.text, processing_phone)],
-            FIO: [MessageHandler(Filters.text, processing_fio)],
-            BIRHDAY: [MessageHandler(Filters.text, processing_birhday)],
-            EMAIL: [MessageHandler(Filters.text, processing_email)],
-            CITI: [MessageHandler(Filters.text, processing_citi)],
-            COMPANY: [MessageHandler(Filters.text, processing_company)],
-            JOB: [MessageHandler(Filters.text, processing_job)],
-            SITE: [MessageHandler(Filters.text, processing_site)],
+            APROVAL:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_aproval)],
+            PHONE: [MessageHandler((Filters.contact | Filters.text) & FilterPrivateNoCommand, processing_phone)],
+            FIO: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_fio)],
+            ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about)],
+            BIRHDAY: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_birhday)],
+            EMAIL: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_email)],
+            CITI: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_citi)],
+            COMPANY: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company)],
+            JOB: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_job)],
+            SITE: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_site)],
         },
         # точка выхода из разговора
-        fallbacks=[MessageHandler(Filters.text, processing_site)],
+        fallbacks=[CommandHandler('cancel', registration_stop, Filters.chat_type.private)],
     )
     dp.add_handler(conv_handler_reg)
     
