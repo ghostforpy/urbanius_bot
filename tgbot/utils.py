@@ -4,6 +4,7 @@ import datetime
 import logging
 import uuid
 import re
+import os
 from datetime import datetime
 
 from django.conf import settings
@@ -88,3 +89,9 @@ def mystr(val)->str:
         return ""
     else:
         return str(val)
+
+def get_uniq_file_name(path, name, ext):
+    for num in range(999999):
+        filename = f"{path}/{name}-{num}.{ext}"
+        if not os.path.exists(filename):
+            return f"{name}-{num}.{ext}"

@@ -77,7 +77,7 @@ def back_to_main_menu_handler(update, context):  # callback_data: BUTTON_BACK_IN
         chat_id=user_id,
         text=text,
         message_id=update.callback_query.message.message_id,
-        reply_markup=kb.make_keyboard_for_start_command(),
+        reply_markup="",
         parse_mode=telegram.ParseMode.MARKDOWN
     )
 

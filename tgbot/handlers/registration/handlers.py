@@ -60,7 +60,7 @@ def processing_aproval(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
 
 def processing_phone(update: Update, context: CallbackContext):
-    fullname = " ".join([utils.mystr(context.user_data["first_name"]), utils.mystr(context.user_data["last_name"])])
+    fullname = " ".join([utils.mystr(context.user_data.get("first_name")), utils.mystr(context.user_data.get("last_name"))])
     if update.message.contact != None: # Был прислан контакт        
         # Запоминаем телефон
         context.user_data["telefon"] = update.message.contact.phone_number
@@ -211,15 +211,15 @@ def processing_site(update: Update, context: CallbackContext):
  
     keyboard = make_keyboard(START,"usual",1)
     update.message.reply_text(FIN_MESS, reply_markup=keyboard)
-    context.user_data.clear()
+ 
     group = tgGroups.get_group_by_name("Администраторы")
     if (group == None) or (group.chat_id == 0):
         update.message.reply_text(NO_ADMIN_GROUP)
     else:
-        text = " ".join(["Зарегистрирован новый пользователь", "@"+context.user_data["username"],
-                        context.user_data["first_name"], context.user_data["last_name"]])
+        text = " ".join(["Зарегистрирован новый пользователь", "@"+context.user_data.get("username"),
+                        context.user_data.get("first_name"), context.user_data.get("last_name")])
         send_message(group.chat_id, text)
-   
+    context.user_data.clear()   
     return ConversationHandler.END
 
 

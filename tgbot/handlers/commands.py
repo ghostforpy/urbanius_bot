@@ -11,9 +11,8 @@ from django.utils import timezone
 from tgbot.handlers import static_text
 from tgbot.models import User
 from tgbot.utils import extract_user_data_from_update
-from tgbot.handlers.keyboard_utils import make_keyboard_for_start_command, keyboard_confirm_decline_broadcasting
+from tgbot.handlers.keyboard_utils import keyboard_confirm_decline_broadcasting
 from tgbot.handlers.utils import handler_logging
-#from tgbot.handlers.registration.handlers import registration_start
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.registration.messages import REGISTRATION_START_MESSS
 from tgbot.handlers.registration.answers import REGISTRATION_START_BTN

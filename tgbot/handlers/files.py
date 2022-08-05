@@ -43,12 +43,13 @@ def _get_file_id(m):
     """ extract file_id from message (and file type?) """
 
     for doc_type in ALL_TG_FILE_TYPES:
-        if doc_type in m and doc_type != "photo":
-            return m[doc_type]["file_id"]
+        if (m[doc_type] != None) and (doc_type != "photo"):
+            return m[doc_type]["file_id"], m[doc_type]["file_name"]
 
-    if "photo" in m:
+    if len(m["photo"]) > 0:
         best_photo = m["photo"][-1]
-        return best_photo["file_id"]
+        return best_photo["file_id"], "userfoto.jpg"
+    return None, None
 
 
 def show_file_id(update, context):

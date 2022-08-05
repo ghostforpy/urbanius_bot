@@ -3,7 +3,7 @@ import telegram
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.forms import TextInput, Textarea
+from django.forms import TextInput, Textarea, NumberInput
 
 from dtb.settings import DEBUG
 
@@ -45,7 +45,8 @@ class UserAdmin(admin.ModelAdmin):
         'user_id', 'username', 'first_name', 'last_name', 
         'created_at',  'is_blocked_bot', "comment"
     ]
-    list_filter = ["is_blocked_bot", "is_moderator"]
+    list_display_links = ['user_id', 'username', 'first_name', 'last_name']
+    list_filter = ["is_blocked_bot", "is_banned", "is_moderator"]
     search_fields = ('username', 'user_id', 'last_name')
     fields = [('user_id', 'username', 'deep_link'), 
               ('last_name', 'first_name', 'sur_name', 'date_of_birth'), 
@@ -58,7 +59,7 @@ class UserAdmin(admin.ModelAdmin):
               ]
     inlines = [UsertgGroupsInline, OffersInline, SocialNetsInline, UserNeedsInline, UserSportInline, UserHobbyInline, UserReferrersInline]
     formfield_overrides = {
-        #models.CharField: {'widget': TextInput(attrs={'size':'20'})},
+        models.IntegerField: {'widget': NumberInput(attrs={'size':'20'})},
         models.TextField: {'widget': Textarea(attrs={'rows':2, 'cols':100})},
     }
     actions = ['broadcast', 'reg_confirm']
@@ -98,6 +99,7 @@ class UserAdmin(admin.ModelAdmin):
             # снимаем блокировку
             for u in queryset:
                 u.is_blocked_bot = False
+                u.comment = "Регистрация подтверждена"
                 u.save()
             # TODO: for all platforms?
             if len(queryset) <= 3 or DEBUG:  # for test / debug purposes - run in same thread
@@ -170,9 +172,9 @@ class tgGroupsAdmin(admin.ModelAdmin) :
 #     list_display = ['location', 'city', 'country_code']
 
 
-@admin.register(UserActionLog)
-class UserActionLogAdmin(admin.ModelAdmin):
-    list_display = ['user', 'action', 'created_at']
+# @admin.register(UserActionLog)
+# class UserActionLogAdmin(admin.ModelAdmin):
+#     list_display = ['user', 'action', 'created_at']
 
 
 # @admin.register(Config)

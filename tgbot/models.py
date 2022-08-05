@@ -124,6 +124,7 @@ class Offers(models.Model):
         verbose_name = 'Предложение' 
         ordering = ['user']
 
+
 class SocialNets(models.Model):
     name = models.CharField("Название сети", max_length=50, blank=False)
     link = models.URLField("Ссылка", blank=False)
@@ -164,12 +165,11 @@ class UsertgGroups(models.Model):
     group = models.ForeignKey(tgGroups,on_delete=models.CASCADE, verbose_name="Группа")
     user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
     def __str__(self):
-        return str(self.need)
+        return str(self.group)
     class Meta:
         verbose_name_plural = 'Группы пользователя' 
         verbose_name = 'Группа пользователя' 
         ordering = ['user', 'group']
-
 
 
 class UserReferrers(models.Model):
@@ -390,3 +390,50 @@ class UserActionLog(models.Model):
 
     def __str__(self):
         return f"user: {self.user}, made: {self.action}, created at {self.created_at.strftime('(%H:%M, %d %B %Y)')}"
+
+
+# Получает из всех записей модели словарь 
+# key - имя поля чье значение попадет в ключ, 
+# value имя поля чье значение попадет в значение если "NN" то подставится порядковый номер
+# parent значение родительской модели для выборки подчиненных элементов 
+def get_dict(model, key: str, value: str, parent = None):
+    res = dict()
+    if parent:
+        model_set = getattr(parent,model._meta.model_name+"_set").all() # получаем выборку дочерних записей parent
+    else:
+        model_set = model.objects.all() # получаем выборку записей
+    str_num = 0
+    for elem in model_set:
+        str_num += 1
+        if value == "NN":
+            res[str(getattr(elem, key))] = str(str_num)
+        else:
+            res[str(getattr(elem, key))] = str(getattr(elem, value))
+
+    return res
+
+# Получает из всех записей текст 
+# fields - список полей которые попадут в текст "NN" - спец поле будет подставляться номер строки
+# parent значение родительской модели для выборки подчиненных элементов 
+def get_model_text(model, fields: list, parent = None):
+    res = ""
+    if parent:
+        model_set = getattr(parent,model._meta.model_name+"_set").all() # получаем выборку дочерних записей parent
+    else:
+        model_set = model.objects.all() # получаем выборку записей
+    str_num = 0
+    for elem in model_set:
+        str_num += 1
+        txt_str_lst = []
+        for field in fields:
+            if field == "NN":
+                txt_str_lst.append(str(str_num)) 
+            else:
+                txt_str_lst.append(str(getattr(elem, field)))
+        txt_str = ", ".join(txt_str_lst)+"\n"
+        res += txt_str
+
+    return res
+
+
+

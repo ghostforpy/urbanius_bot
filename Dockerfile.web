@@ -14,3 +14,4 @@ EXPOSE 8001
 
 # запускаем скрипт
 CMD ["bash", "entrypoint.sh"]
+
