@@ -1,4 +1,5 @@
 import os
+import urllib.parse as urllibparse
 from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext import (
@@ -7,7 +8,7 @@ from telegram.ext import (
     Filters,
     ConversationHandler,
 )
-from telegram import InputMediaDocument
+from telegram import InputMediaDocument, MessageEntity
 
 from django.conf import settings
 from tgbot.handlers.profile.messages import *
@@ -404,10 +405,10 @@ def manage_needs_action(update: Update, context: CallbackContext):
         return "working"
     elif update.message.text == ADD_DEL_SKIP["del"]:
         update.message.reply_text("Удаление потребностей", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_needs = mymodels.get_dict(mymodels.UserNeeds,"pk","NN", user)
-        all_needs_txt = mymodels.get_model_text(mymodels.UserNeeds,["NN","need"], user)
-        text = all_needs_txt + "Введите номер удаляемой строки"
-        update.message.reply_text(text, reply_markup=make_keyboard(all_needs,"inline",8,None,FINISH))
+        all_needs = mymodels.get_dict(mymodels.UserNeeds,"pk","need", user)
+        #all_needs_txt = mymodels.get_model_text(mymodels.UserNeeds,["NN","need"], user)
+        text = "Выберите удаляемую потребность"
+        update.message.reply_text(text, reply_markup=make_keyboard(all_needs,"inline",2,None,FINISH))
         return "delete_need"
     elif update.message.text == ADD_DEL_SKIP["add"]:
         all_user_needs_txt = mymodels.get_model_text(mymodels.UserNeeds,["NN","need"], user)
@@ -439,7 +440,7 @@ def delete_need(update: Update, context: CallbackContext):
     else:
         need = mymodels.UserNeeds.objects.get(pk=int(variant))
         need.delete()
-        all_needs = mymodels.get_dict(mymodels.UserNeeds,"pk","NN", user)
+        all_needs = mymodels.get_dict(mymodels.UserNeeds,"pk","need", user)
         if len(all_needs) == 0:
             all_needs_txt = "Все потребности удалены"
             query.edit_message_text(text=all_needs_txt)
@@ -448,9 +449,10 @@ def delete_need(update: Update, context: CallbackContext):
             send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
             return "working"
         else:           
-            all_needs_txt = mymodels.get_model_text(mymodels.UserNeeds,["NN","need"], user)
-            text = all_needs_txt + "Введите номер удаляемой строки"
-            query.edit_message_text(text, reply_markup=make_keyboard(all_needs,"inline",8,None,FINISH))
+            #all_needs_txt = mymodels.get_model_text(mymodels.UserNeeds,["NN","need"], user)
+            #text = all_needs_txt + "Введите номер удаляемой строки"
+            text = "Выберите удаляемую потребность"
+            query.edit_message_text(text, reply_markup=make_keyboard(all_needs,"inline",2,None,FINISH))
 
 def add_need(update: Update, context: CallbackContext):
     user = context.user_data["user"]
@@ -496,10 +498,10 @@ def manage_sport_action(update: Update, context: CallbackContext):
         return "working"
     elif update.message.text == ADD_DEL_SKIP["del"]:
         update.message.reply_text("Удаление видов спорта", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_sport = mymodels.get_dict(mymodels.UserSport,"pk","NN", user)
-        all_sport_txt = mymodels.get_model_text(mymodels.UserSport,["NN","sport"], user)
-        text = all_sport_txt + "Введите номер удаляемой строки"
-        update.message.reply_text(text, reply_markup=make_keyboard(all_sport,"inline",8,None,FINISH))
+        all_sport = mymodels.get_dict(mymodels.UserSport,"pk","sport", user)
+        #all_sport_txt = mymodels.get_model_text(mymodels.UserSport,["NN","sport"], user)
+        text = "Выберите удаляемый вид спорта"
+        update.message.reply_text(text, reply_markup=make_keyboard(all_sport,"inline",2,None,FINISH))
         return "delete_sport"
     elif update.message.text == ADD_DEL_SKIP["add"]:
         all_user_sport_txt = mymodels.get_model_text(mymodels.UserSport,["NN","sport"], user)
@@ -531,7 +533,7 @@ def delete_sport(update: Update, context: CallbackContext):
     else:
         sport = mymodels.UserSport.objects.get(pk=int(variant))
         sport.delete()
-        all_sport = mymodels.get_dict(mymodels.UserSport,"pk","NN", user)
+        all_sport = mymodels.get_dict(mymodels.UserSport,"pk","sport", user)
         if len(all_sport) == 0:
             all_sport_txt = "Все виды спорта удалены"
             query.edit_message_text(text=all_sport_txt)
@@ -540,9 +542,9 @@ def delete_sport(update: Update, context: CallbackContext):
             send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
             return "working"
         else:           
-            all_sport_txt = mymodels.get_model_text(mymodels.UserSport,["NN","sport"], user)
-            text = all_sport_txt + "Введите номер удаляемой строки"
-            query.edit_message_text(text, reply_markup=make_keyboard(all_sport,"inline",8,None,FINISH))
+            #all_sport_txt = mymodels.get_model_text(mymodels.UserSport,["NN","sport"], user)
+            text = "Выберите удаляемый вид спорта"
+            query.edit_message_text(text, reply_markup=make_keyboard(all_sport,"inline",2,None,FINISH))
 
 def add_sport(update: Update, context: CallbackContext):
     user = context.user_data["user"]
@@ -588,10 +590,10 @@ def manage_hobby_action(update: Update, context: CallbackContext):
         return "working"
     elif update.message.text == ADD_DEL_SKIP["del"]:
         update.message.reply_text("Удаление видов хобби", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_hobby = mymodels.get_dict(mymodels.UserHobby,"pk","NN", user)
-        all_hobby_txt = mymodels.get_model_text(mymodels.UserHobby,["NN","hobby"], user)
-        text = all_hobby_txt + "Введите номер удаляемой строки"
-        update.message.reply_text(text, reply_markup=make_keyboard(all_hobby,"inline",8,None,FINISH))
+        all_hobby = mymodels.get_dict(mymodels.UserHobby,"pk","hobby", user)
+        #all_hobby_txt = mymodels.get_model_text(mymodels.UserHobby,["NN","hobby"], user)
+        text = "Выберите удаляемый вид хобби"
+        update.message.reply_text(text, reply_markup=make_keyboard(all_hobby,"inline",2,None,FINISH))
         return "delete_hobby"
     elif update.message.text == ADD_DEL_SKIP["add"]:
         all_user_hobby_txt = mymodels.get_model_text(mymodels.UserHobby,["NN","hobby"], user)
@@ -623,7 +625,7 @@ def delete_hobby(update: Update, context: CallbackContext):
     else:
         hobby = mymodels.UserHobby.objects.get(pk=int(variant))
         hobby.delete()
-        all_hobby = mymodels.get_dict(mymodels.UserHobby,"pk","NN", user)
+        all_hobby = mymodels.get_dict(mymodels.UserHobby,"pk","hobby", user)
         if len(all_hobby) == 0:
             all_hobby_txt = "Все виды хобби удалены"
             query.edit_message_text(text=all_hobby_txt)
@@ -632,9 +634,9 @@ def delete_hobby(update: Update, context: CallbackContext):
             send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
             return "working"
         else:           
-            all_hobby_txt = mymodels.get_model_text(mymodels.UserHobby,["NN","hobby"], user)
-            text = all_hobby_txt + "Введите номер удаляемой строки"
-            query.edit_message_text(text, reply_markup=make_keyboard(all_hobby,"inline",8,None,FINISH))
+            #all_hobby_txt = mymodels.get_model_text(mymodels.UserHobby,["NN","hobby"], user)
+            text ="Выберите удаляемый вид хобби"
+            query.edit_message_text(text, reply_markup=make_keyboard(all_hobby,"inline",2,None,FINISH))
 
 def add_hobby(update: Update, context: CallbackContext):
     user = context.user_data["user"]
@@ -695,10 +697,10 @@ def manage_offers_action(update: Update, context: CallbackContext):
         return "working"
     elif update.message.text == ADD_DEL_SKIP["del"]:
         update.message.reply_text("Удаление предложений", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_offers = mymodels.get_dict(mymodels.Offers,"pk","NN", user)
-        all_offers_txt = mymodels.get_model_text(mymodels.Offers,["NN","offer","image"], user)
-        text = all_offers_txt + "Введите номер удаляемой строки"
-        update.message.reply_text(text, reply_markup=make_keyboard(all_offers,"inline",8,None,FINISH))
+        all_offers = mymodels.get_dict(mymodels.Offers,"pk","offer", user)
+        #all_offers_txt = mymodels.get_model_text(mymodels.Offers,["NN","offer","image"], user)
+        text = "Выберите удаляемое предложение"
+        update.message.reply_text(text, reply_markup=make_keyboard(all_offers,"inline",1,None,FINISH))
         return "delete_offers"
     elif update.message.text == ADD_DEL_SKIP["add"]:
         all_offers_txt = mymodels.get_model_text(mymodels.Offers,["NN","offer","image"], user)
@@ -723,7 +725,7 @@ def delete_offers(update: Update, context: CallbackContext):
     else:
         offers = mymodels.Offers.objects.get(pk=int(variant))
         offers.delete()
-        all_offers = mymodels.get_dict(mymodels.Offers,"pk","NN", user)
+        all_offers = mymodels.get_dict(mymodels.Offers,"pk","offer", user)
         if len(all_offers) == 0:
             all_offers_txt = "Все предложения удалены"
             query.edit_message_text(text=all_offers_txt)
@@ -732,9 +734,9 @@ def delete_offers(update: Update, context: CallbackContext):
             send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
             return "working"
         else:           
-            all_offers_txt = mymodels.get_model_text(mymodels.Offers,["NN","offer","image"], user)
-            text = all_offers_txt + "Введите номер удаляемой строки"
-            query.edit_message_text(text, reply_markup=make_keyboard(all_offers,"inline",8,None,FINISH))
+            #all_offers_txt = mymodels.get_model_text(mymodels.Offers,["NN","offer","image"], user)
+            text = text = "Выберите удаляемое предложение"
+            query.edit_message_text(text, reply_markup=make_keyboard(all_offers,"inline",1,None,FINISH))
 
 def add_offers(update: Update, context: CallbackContext):
     user = context.user_data["user"]
@@ -767,6 +769,196 @@ def add_offers(update: Update, context: CallbackContext):
     text = ADD_OFFERS+"\nВаши предложения \n" + all_offers_txt
     update.message.reply_text(text, reply_markup=make_keyboard(FINISH,"usual",1))
 
+#-------------------------------------------  
+# Обработчик Соцсетей
+def manage_social_nets(update: Update, context: CallbackContext):
+    user = context.user_data["user"]
+    all_social_nets_txt = mymodels.get_model_text(mymodels.SocialNets,["NN","soc_net_site", "link"], user)
+    update.message.reply_text(ASK_SOC_NET.format(str(all_social_nets_txt)), reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2), disable_web_page_preview=True)
+    return "choose_action_social_nets"
+
+def manage_social_nets_action(update: Update, context: CallbackContext):
+    user = context.user_data["user"]    
+    if update.message.text == ADD_DEL_SKIP["skip"]:        
+        text = "Соцсети не изменены"
+        update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
+        return "working"
+    elif update.message.text == ADD_DEL_SKIP["del"]:
+        update.message.reply_text("Удаление соцсетей", reply_markup=make_keyboard(EMPTY,"usual",1))
+        all_social_nets = mymodels.get_dict(mymodels.SocialNets,"pk","soc_net_site", user)
+        text = "Выберите удаляемую соцсеть"
+        update.message.reply_text(text, reply_markup=make_keyboard(all_social_nets,"inline",2,None,FINISH))
+        return "delete_social_nets"
+    elif update.message.text == ADD_DEL_SKIP["add"]:
+        all_social_nets_txt = mymodels.get_model_text(mymodels.SocialNets,["NN","soc_net_site", "link"], user)
+        text = all_social_nets_txt + "\nДля добавления соц. сети введите ссылку на вашу страницу"
+        update.message.reply_text(text, reply_markup=make_keyboard(FINISH,"usual",1), disable_web_page_preview=True)
+
+        return "add_social_nets"
+    else:
+        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
+
+def delete_social_nets(update: Update, context: CallbackContext):
+    user = context.user_data["user"]
+    query = update.callback_query
+    variant = query.data
+    query.answer()
+    if variant == "finish":
+        all_social_nets_txt = mymodels.get_model_text(mymodels.SocialNets,["NN","soc_net_site"], user)
+        query.edit_message_text(text=all_social_nets_txt)
+        text = "Удаление соцсетей завершено"
+        reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK) 
+        send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
+        return "working"
+    else:
+        social_nets = mymodels.SocialNets.objects.get(pk=int(variant))
+        social_nets.delete()
+        all_social_nets = mymodels.get_dict(mymodels.SocialNets,"pk","soc_net_site", user)
+        if len(all_social_nets) == 0:
+            all_social_nets_txt = "Все соцсети удалены"
+            query.edit_message_text(text=all_social_nets_txt)
+            text = "Удаление соцсетей завершено"
+            reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK) 
+            send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
+            return "working"
+        else:           
+            text ="Выберите удаляемую соцсеть"
+            query.edit_message_text(text, reply_markup=make_keyboard(all_social_nets,"inline",2,None,FINISH))
+
+def add_social_nets(update: Update, context: CallbackContext):
+    user = context.user_data["user"]
+    if update.message.text == FINISH["finish"]:        
+        text = "Завершено добавление соц. сетей"
+        update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
+        return "working"
+    elif (len(update.message.entities)>0)and(update.message.entities[0].type == "url"):
+        url = update.message.text
+        parsed_url = urllibparse.urlparse(url)
+        site_name = parsed_url.hostname
+        url_parts = list(parsed_url)
+        url_parts[2] = ""
+        url_parts[3] = ""
+        url_parts[4] = ""
+        url_parts[5] = ""
+        site_url = urllibparse.urlunparse(url_parts)
+        user_soc_net_set = user.socialnets_set.filter(link = url)
+        if len(user_soc_net_set) == 0:
+            soc_net_site_set = mymodels.SocialNetSites.objects.filter(link = site_url)
+            if len(soc_net_site_set) == 0:
+                soc_net_site = mymodels.SocialNetSites(name = site_name, link = site_url)
+                soc_net_site.save()
+            else:
+                soc_net_site = soc_net_site_set[0]
+            user_soc_net = mymodels.SocialNets(soc_net_site = soc_net_site, link = url, user = user)
+            user_soc_net.save()
+        
+        all_social_nets_txt = mymodels.get_model_text(mymodels.SocialNets,["NN","soc_net_site", "link"], user)
+        text = all_social_nets_txt + "\nДля добавления соц. сети введите ссылку на вашу страницу"
+        update.message.reply_text(text, reply_markup=make_keyboard(FINISH,"usual",1), disable_web_page_preview=True)
+
+    else:
+        text = "Введите именно ссылку на web страницу"
+        update.message.reply_text(text, reply_markup=make_keyboard(FINISH,"usual",1), disable_web_page_preview=True)
+
+#-------------------------------------------  
+# Обработчик Рекомендатели
+def manage_referes(update: Update, context: CallbackContext):
+    user = context.user_data["user"]
+    all_referes_txt = mymodels.get_model_text(mymodels.UserReferrers,["NN","referrer"], user)
+    update.message.reply_text(ASK_REFERES.format(str(all_referes_txt)), reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2), disable_web_page_preview=True)
+    return "choose_action_referes"
+
+def manage_referes_action(update: Update, context: CallbackContext):
+    user = context.user_data["user"]    
+    if update.message.text == ADD_DEL_SKIP["skip"]:        
+        text = "Рекомендатели не изменены"
+        update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
+        return "working"
+    elif update.message.text == ADD_DEL_SKIP["del"]:
+        update.message.reply_text("Удаление рекомендателей", reply_markup=make_keyboard(EMPTY,"usual",1))
+        all_referes = mymodels.get_dict(mymodels.UserReferrers,"pk","referrer", user)
+        text = "Выберите удаляемого рекомендателя"
+        update.message.reply_text(text, reply_markup=make_keyboard(all_referes,"inline",2,None,FINISH))
+        return "delete_referes"
+    elif update.message.text == ADD_DEL_SKIP["add"]:
+        all_referes_txt = mymodels.get_model_text(mymodels.UserReferrers,["NN","referrer"], user)
+        text = all_referes_txt + "\nДля добавления рекомендателя введите его фамилию"
+        update.message.reply_text(text, reply_markup=make_keyboard(FINISH,"usual",1))
+
+        return "add_referes"
+    else:
+        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
+
+
+def delete_referes(update: Update, context: CallbackContext):
+    user = context.user_data["user"]
+    query = update.callback_query
+    variant = query.data
+    query.answer()
+    if variant == "finish":
+        all_referes_txt = mymodels.get_model_text(mymodels.UserReferrers,["NN","referrer"], user)
+        query.edit_message_text(text=all_referes_txt)
+        text = "Удаление рекомендателей завершено"
+        reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK) 
+        send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
+        return "working"
+    else:
+        referer = mymodels.UserReferrers.objects.get(pk=int(variant))
+        referer.delete()
+        all_referes = mymodels.get_dict(mymodels.UserReferrers,"pk","referrer", user)
+        if len(all_referes) == 0:
+            all_referes_txt = "Все рекомендатели удалены"
+            query.edit_message_text(text=all_referes_txt)
+            text = "Удаление рекомендателей завершено"
+            reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK) 
+            send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
+            return "working"
+        else:           
+            text ="Выберите удаляемого рекомендателя"
+            query.edit_message_text(text, reply_markup=make_keyboard(all_referes,"inline",2,None,FINISH))
+
+def add_referes(update: Update, context: CallbackContext):
+    user = context.user_data["user"]
+    if update.message.text == FINISH["finish"]:        
+        text = "Завершено добавление рекомендателей"
+        update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
+        return "working"
+    else:
+        selected_users = mymodels.get_dict(mymodels.User,"pk","first_name,last_name", None,{"last_name":update.message.text})
+        if len(selected_users) == 0:
+            text = "Такие пользователи не найдены. Повторите ввод или завершите добавление"        
+            update.message.reply_text(text, reply_markup=make_keyboard(FINISH,"usual",1), disable_web_page_preview=True)
+            return "add_referes"
+        else:
+            update.message.reply_text("Выбор рекомендателя", reply_markup=make_keyboard(EMPTY,"usual",1))
+            text = "Выберите рекомендателя"
+            update.message.reply_text(text, reply_markup=make_keyboard(selected_users,"inline",1,None,FINISH))
+            return "select_referes"
+
+def select_referes(update: Update, context: CallbackContext):
+    user = context.user_data["user"]
+    query = update.callback_query
+    variant = query.data
+    query.answer()
+    if variant == "finish":
+        all_referes_txt = mymodels.get_model_text(mymodels.UserReferrers,["NN","referrer"], user)
+        query.edit_message_text(text=all_referes_txt)
+        text = "Добавление рекомендателей завершено"
+        reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK) 
+        send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
+        return "working"
+    else:
+        referer = mymodels.User.objects.get(pk=int(variant))
+        user_referers =mymodels.UserReferrers.objects.filter(referrer = referer, user = user)
+        if len(user_referers) == 0:
+            user_referer = mymodels.UserReferrers(referrer = referer, user = user)
+            user_referer.save()  
+        all_referes_txt = mymodels.get_model_text(mymodels.UserReferrers,["NN","referrer"], user)
+        query.edit_message_text(text=all_referes_txt)
+        text = "Для добавления рекомендателя введите его фамилию"
+        reply_markup=make_keyboard(FINISH,"usual",1)
+        send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
+        return "add_referes"
 
 
 def setup_dispatcher_prof(dp: Dispatcher):
@@ -796,6 +988,9 @@ def setup_dispatcher_prof(dp: Dispatcher):
                        MessageHandler(Filters.text(PROF_MENU["sport"]) & FilterPrivateNoCommand, manage_sport),
                        MessageHandler(Filters.text(PROF_MENU["hobby"]) & FilterPrivateNoCommand, manage_hobby),
                        MessageHandler(Filters.text(PROF_MENU["offers"]) & FilterPrivateNoCommand, manage_offers),
+                       MessageHandler(Filters.text(PROF_MENU["social_nets"]) & FilterPrivateNoCommand, manage_social_nets),
+                       MessageHandler(Filters.text(PROF_MENU["referes"]) & FilterPrivateNoCommand, manage_referes),
+                      
 
                        MessageHandler(Filters.text(BACK["back"]) & FilterPrivateNoCommand, back_to_start),
                        MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
@@ -837,7 +1032,17 @@ def setup_dispatcher_prof(dp: Dispatcher):
             "delete_offers":[CallbackQueryHandler(delete_offers),
                            MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],
             "add_offers":[MessageHandler((Filters.text|Filters.audio|Filters.document|Filters.photo|
-                          Filters.video|Filters.video_note|Filters.voice) & FilterPrivateNoCommand, add_offers)], 
+                          Filters.video|Filters.video_note|Filters.voice) & FilterPrivateNoCommand, add_offers)],
+            "choose_action_social_nets":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_social_nets_action)], 
+            "delete_social_nets":[CallbackQueryHandler(delete_social_nets),
+                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],
+            "add_social_nets":[MessageHandler((Filters.text|Filters.entity(MessageEntity.ALL_TYPES)) & FilterPrivateNoCommand, add_social_nets)], 
+            "choose_action_referes":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_referes_action)],
+            "delete_referes":[CallbackQueryHandler(delete_referes),
+                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],
+            "add_referes":[MessageHandler(Filters.text & FilterPrivateNoCommand, add_referes)],
+            "select_referes":[CallbackQueryHandler(select_referes),
+                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],
 
         },
         # точка выхода из разговора
