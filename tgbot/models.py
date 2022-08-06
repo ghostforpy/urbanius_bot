@@ -76,13 +76,14 @@ class UserHobby(models.Model):
         ordering = ['user', 'hobby']        
 
 class JobRegions(models.Model):
+    code = models.IntegerField("Код региона",unique=False, null=True)
     name = models.CharField("Название региона работы",unique=True, max_length=150, blank=False)
     def __str__(self):
         return self.name
     class Meta:
         verbose_name_plural = 'Регионы работы' 
         verbose_name = 'Регион работы' 
-        ordering = ['name']
+        ordering = ['code']
 
 class Needs(models.Model):
     name = models.CharField("Потребности",unique=True, max_length=150, blank=False)
@@ -124,16 +125,25 @@ class Offers(models.Model):
         verbose_name = 'Предложение' 
         ordering = ['user']
 
+class SocialNetSites(models.Model):
+    name = models.CharField("Название сайта", max_length=50, blank=False)
+    link = models.URLField("Ссылка", blank=False)
+    def __str__(self):
+        return str(self.name)
+    class Meta:
+        verbose_name_plural = 'Сайты соц. сетей' 
+        verbose_name = 'Сайт соц. сети'
+        ordering = ['name']
 
 class SocialNets(models.Model):
-    name = models.CharField("Название сети", max_length=50, blank=False)
-    link = models.URLField("Ссылка", blank=False)
+    soc_net_site = models.ForeignKey(SocialNetSites, on_delete=models.CASCADE, verbose_name="Сайт соц. сети")
+    link = models.URLField("Страница", blank=False)
     user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
     def __str__(self):
         return ": ".join([str(self.name), str(self.link)])
     class Meta:
-        verbose_name_plural = 'Соц. сети' 
-        verbose_name = 'Соц. сеть'
+        verbose_name_plural = 'Страницы в соц. сети' 
+        verbose_name = 'Страница в соц. сети'
         ordering = ['user']
 
 class Status(models.Model):
@@ -149,6 +159,7 @@ class Status(models.Model):
 class tgGroups(models.Model):
     name = models.CharField("Группа пользователей",unique=True, max_length=150, blank=False)
     chat_id = models.BigIntegerField("ИД чата в Телеграм", null=True)
+    link = models.CharField("Ссылка на группу",unique=False, max_length=150, blank=True)
     def __str__(self):
         return self.name
 

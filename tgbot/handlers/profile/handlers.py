@@ -306,8 +306,10 @@ def manage_job_region_action(update: Update, context: CallbackContext):
         return "working"
     elif update.message.text == CHANGE_SKIP["change"]:
         update.message.reply_text("Редактирование региона", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_regions = mymodels.get_dict(mymodels.JobRegions,"pk","name")
-        update.message.reply_text("Выберите регион", reply_markup=make_keyboard(all_regions,"inline",4))
+        all_regions = mymodels.get_dict(mymodels.JobRegions,"pk","code")
+        all_regions_txt = mymodels.get_model_text(mymodels.JobRegions,["code","name"])
+        text = "Выберите номер региона\n"+all_regions_txt
+        update.message.reply_text(text, reply_markup=make_keyboard(all_regions,"inline",8))
         return "select_region"
     else:
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(CHANGE_SKIP,"usual",2))
@@ -345,8 +347,10 @@ def manage_branch_action(update: Update, context: CallbackContext):
         return "working"
     elif update.message.text == CHANGE_SKIP["change"]:
         update.message.reply_text("Редактирование отрасли", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_branchs = mymodels.get_dict(mymodels.Branch,"pk","name")
-        update.message.reply_text("Выберите отрасль", reply_markup=make_keyboard(all_branchs,"inline",4))
+        all_branchs = mymodels.get_dict(mymodels.Branch,"pk","NN")
+        all_branchs_txt = mymodels.get_model_text(mymodels.Branch,["NN","name"])
+        text = "Выберите номер отрасли\n"+all_branchs_txt
+        update.message.reply_text(text, reply_markup=make_keyboard(all_branchs,"inline",8))
         return "select_branch"
     else:
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(CHANGE_SKIP,"usual",2))

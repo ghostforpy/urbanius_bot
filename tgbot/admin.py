@@ -46,7 +46,7 @@ class UserAdmin(admin.ModelAdmin):
         'created_at',  'is_blocked_bot', "comment"
     ]
     list_display_links = ['user_id', 'username', 'first_name', 'last_name']
-    list_filter = ["is_blocked_bot", "is_banned", "is_moderator"]
+    list_filter = ["is_blocked_bot", "is_banned"]
     search_fields = ('username', 'user_id', 'last_name')
     fields = [('user_id', 'username', 'deep_link'), 
               ('last_name', 'first_name', 'sur_name', 'date_of_birth'), 
@@ -116,7 +116,7 @@ class UserAdmin(admin.ModelAdmin):
         text = "Ваша регистрация подтверждена. Наберите /start для обновления меню"
         form = BroadcastForm(initial={"broadcast_text":text,'_selected_action': queryset.values_list('user_id', flat=True)})
         return render(
-            request, "admin/confirn_registration.html", {'items': queryset,'form': form, 'title':u' '}
+            request, "admin/confirm_registration.html", {'items': queryset,'form': form, 'title':u' '}
         )
 @admin.register(Sport)
 class SportAdmin(admin.ModelAdmin) :
@@ -124,17 +124,27 @@ class SportAdmin(admin.ModelAdmin) :
     list_display_links = ("name", ) 
     search_fields = ("name",)
 
+
 @admin.register(Hobby)
 class HobbyAdmin(admin.ModelAdmin) :
     list_display = ("name",) 
     list_display_links = ("name", ) 
     search_fields = ("name",)
 
+
 @admin.register(JobRegions)
 class JobRegionsAdmin(admin.ModelAdmin) :
-    list_display = ("name",) 
-    list_display_links = ("name", ) 
-    search_fields = ("name",)
+    list_display = ("code","name") 
+    list_display_links = ("code","name" ) 
+    search_fields = ("code","name")
+
+
+@admin.register(SocialNetSites)
+class SocialNetSitesAdmin(admin.ModelAdmin) :
+    list_display = ("name", "link") 
+    list_display_links = ("name", "link") 
+    search_fields = ("name", "link")
+
 
 @admin.register(Needs)
 class NeedsAdmin(admin.ModelAdmin) :
@@ -142,11 +152,13 @@ class NeedsAdmin(admin.ModelAdmin) :
     list_display_links = ("name", ) 
     search_fields = ("name",)
 
+
 @admin.register(Branch)
 class BranchAdmin(admin.ModelAdmin) :
     list_display = ("name",) 
     list_display_links = ("name", ) 
     search_fields = ("name",)
+
 
 @admin.register(Status)
 class StatusAdmin(admin.ModelAdmin) :
@@ -154,11 +166,13 @@ class StatusAdmin(admin.ModelAdmin) :
     list_display_links = ("name", ) 
     search_fields = ("name",)
 
+
 @admin.register(tgGroups)
 class tgGroupsAdmin(admin.ModelAdmin) :
-    list_display = ("name", "chat_id",) 
+    list_display = ("name", "chat_id", "link") 
     list_display_links = ("name", ) 
     search_fields = ("name",)
+
 
 
 
