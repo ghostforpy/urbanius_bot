@@ -1,0 +1,23 @@
+
+Payment providers for urbanius_bot @UrbanisFistBot.
+1 method connected:
+- ЮKassa Test: 381764678:TEST:40874
+
+
+Payment providers for urbanius_test_bot @tm_big_bot.
+- ЮKassa Test: 381764678:TEST:40872 
+Принято! Ваши тестовые настройки:
+shopId 506751
+shopArticleId 538350
+Здесь всё. Теперь возвращайтесь к @BotFather — он пришлет тестовый платежный токен. 
+Для оплаты используйте данные тестовой карты: 
+1111 1111 1111 1026, 12/22, CVC 000.
+
+- Сбербанк Test: 401643678:TEST:418d6023-fe02-4934-a754-d0a764b86dc0 
+Номер карты	4111 1111 1111 1111
+Дата истечения срока действия	
+2024/12
+
+Проверочный код на обратной стороне	123
+3-D Secure	veres=y, pares=y
+Проверочный код 3-D Secure	12345678
