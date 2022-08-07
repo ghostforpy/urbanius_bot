@@ -13,7 +13,8 @@ TO_ADMINS = {"to_admins":"Сообщение администраторам"}
 
 START_MENU_FULL = {
         "profile":"Профиль пользователя",
-        "to_admins":"Сообщение администраторам"
+        "to_admins":"Сообщение администраторам",
+        "payment":"Оплатить подписку"
     }
 
 START_MENU_SHORT = {
@@ -27,4 +28,4 @@ def get_start_menu(user: User):
     elif user.is_blocked_bot:
         return  make_keyboard(START_MENU_SHORT,"usual",1)       
     else:
-        return  make_keyboard(START_MENU_SHORT,"usual",1)
+        return  make_keyboard(START_MENU_FULL,"usual",1)

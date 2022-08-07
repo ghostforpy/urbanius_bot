@@ -1,7 +1,7 @@
 import os
 import urllib.parse as urllibparse
 from telegram import Update
-from telegram.ext import ContextTypes,filters
+from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext import (
     Dispatcher, CommandHandler,
     MessageHandler, CallbackQueryHandler,
@@ -28,36 +28,36 @@ from tgbot.handlers.utils import send_message
 from tgbot.utils import extract_user_data_from_update, mystr, is_date, is_email, get_uniq_file_name
 from tgbot.handlers.files import _get_file_id
 # Возврат к главному меню в исключительных ситуациях
-def pay_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def pay_stop(update: Update, context: CallbackContext):
     # Заканчиваем разговор.
     command_start(update, context)
     return ConversationHandler.END
 
 # Временная заглушка
-def blank(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def blank(update: Update, context: CallbackContext):
     A=90
     pass
 
 # Возврат к главному меню по кнопке
-def back_to_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def back_to_start(update: Update, context: CallbackContext):
     # Заканчиваем разговор.
     command_start(update, context)
     return ConversationHandler.END
 
-def bad_callback_enter(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def bad_callback_enter(update: Update, context: CallbackContext):
     update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(EMPTY,"usual",2))
 
 # Начало работы с платежами
-def start_manage_pay(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    userdata = extract_user_data_from_update(update)
-    user = mymodels.User.get_user_by_username_or_user_id(userdata["user_id"])
-    context.user_data["user"] = user
+# def start_manage_pay(update: Update, context: CallbackContext):
+#     userdata = extract_user_data_from_update(update)
+#     user = mymodels.User.get_user_by_username_or_user_id(userdata["user_id"])
+#     context.user_data["user"] = user
   
-    update.message.reply_text(PAY_HELLO, reply_markup=make_keyboard(PAY_BACK,"usual",1))
-    return "start_payment"
+#     update.message.reply_text(PAY_HELLO, reply_markup=make_keyboard(PAY_BACK,"usual",1))
+#     return "start_payment"
 
 
-def make_invoice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def make_invoice(update: Update, context: CallbackContext):
     """Sends an invoice with shipping-payment."""
     chat_id = update.message.chat_id
     title = "Payment Example"
@@ -107,7 +107,7 @@ def make_invoice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return "proc_invoice"
 
 # after (optional) shipping, it's the pre-checkout
-def precheckout_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+def precheckout_callback(update: Update, context: CallbackContext) -> None:
     """Answers the PreQecheckoutQuery"""
     query = update.pre_checkout_query
     # check the payload, is this from your bot?
@@ -118,7 +118,7 @@ def precheckout_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         query.answer(ok=True)
     return 
 
-def shipping_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+def shipping_callback(update: Update, context: CallbackContext) -> None:
     """Answers the ShippingQuery with ShippingOptions"""
     query = update.shipping_query
     # check the payload, is this from your bot?
@@ -137,7 +137,7 @@ def shipping_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 
 # finally, after contacting the payment provider...
-def successful_payment_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+def successful_payment_callback(update: Update, context: CallbackContext) -> None:
     """Confirms the successful payment."""
     # do something after successfully receiving payment?
     update.message.reply_text("Thank you for your payment!")
@@ -146,8 +146,8 @@ def successful_payment_callback(update: Update, context: ContextTypes.DEFAULT_TY
 def setup_dispatcher_pay(dp: Dispatcher):
     # Диалог отправки сообщения
     conv_handler = ConversationHandler( 
-        # точка входа в разговор (START_MENU_FULL["payment"])
-        entry_points=[MessageHandler(Filters.text & FilterPrivateNoCommand, start_manage_pay)],      
+        # точка входа в разговор 
+        entry_points=[MessageHandler(Filters.text(START_MENU_FULL["payment"]) & FilterPrivateNoCommand, make_invoice)],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
             "start_payment":[
