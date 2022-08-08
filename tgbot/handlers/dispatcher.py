@@ -15,10 +15,11 @@ from telegram.ext import (
 from dtb.settings import TELEGRAM_TOKEN
 
 from tgbot.handlers import commands
-from tgbot.handlers.registration.handlers import setup_dispatcher_reg
-from tgbot.handlers.main.handlers import setup_dispatcher_main
-from tgbot.handlers.profile.handlers import setup_dispatcher_prof
-from tgbot.handlers.payments.handlers import setup_dispatcher_pay
+from tgbot.handlers.registration.handlers import setup_dispatcher_conv as setup_dispatcher_reg
+from tgbot.handlers.main.handlers import setup_dispatcher_conv as setup_dispatcher_main
+from tgbot.handlers.profile.handlers import setup_dispatcher_conv as setup_dispatcher_prof
+from tgbot.handlers.payments.handlers import setup_dispatcher_conv as setup_dispatcher_pay
+from tgbot.handlers.find_members.handlers import setup_dispatcher_conv as setup_dispatcher_find
 
 def setup_dispatcher(dp: Dispatcher):
     """
@@ -31,6 +32,7 @@ def setup_dispatcher(dp: Dispatcher):
     setup_dispatcher_main(dp) #заполнение обработчиков главного диалога
     setup_dispatcher_prof(dp) #заполнение обработчиков работы с профайлом
     setup_dispatcher_pay(dp) #заполнение обработчиков работы с платежами
+    setup_dispatcher_find(dp) #заполнение обработчиков работы с поиском
 
     dp.add_handler(MessageHandler(Filters.text & Filters.chat_type.private, commands.command_start))
     # EXAMPLES FOR HANDLERS

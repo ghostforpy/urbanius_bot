@@ -6,13 +6,14 @@ from telegram.ext import (
     MessageHandler,
     Filters,
     PreCheckoutQueryHandler,
+    
 )
 from telegram import (LabeledPrice)
-from telegram import __version__ as TG_VER
+from tgbot.my_telegram import ConversationHandler
 
 from django.conf import settings
-from tgbot.handlers.payments.messages import *
-from tgbot.handlers.payments.answers import *
+from .messages import *
+from .answers import *
 
 from tgbot.handlers.filters import FilterPrivateNoCommand
 from tgbot.handlers.commands import command_start
@@ -21,20 +22,18 @@ from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.main.answers import get_start_menu, START_MENU_FULL
 from tgbot.utils import extract_user_data_from_update
 
+def bad_input(update: Update, context: CallbackContext):
+    update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(EMPTY,"usual",2))
+
 # Возврат к главному меню в исключительных ситуациях
-def pay_stop(update: Update, context: CallbackContext):
+def stop_conversation(update: Update, context: CallbackContext):
     # Заканчиваем разговор.
     command_start(update, context)
+    return ConversationHandler.END
 
 # Временная заглушка
 def ask_reenter(update: Update, context: CallbackContext):
     update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(CANCEL,"usual",1))
-
-# Возврат к главному меню по кнопке
-def back_to_start(update: Update, context: CallbackContext):
-    # Заканчиваем разговор.
-    context.user_data["payment_started"] = False
-    command_start(update, context)
 
 def make_invoice(update: Update, context: CallbackContext):
     """Sends an invoice with shipping-payment."""
@@ -68,20 +67,29 @@ def make_invoice(update: Update, context: CallbackContext):
         need_phone_number=True,
         need_email=True,
     )
+    return "invois_sended"
 
 # after (optional) shipping, it's the pre-checkout
 def precheckout_callback(update: Update, context: CallbackContext) -> None:
     """Answers the PreQecheckoutQuery"""
+    userdata = extract_user_data_from_update(update)
+    user = mymodels.User.get_user_by_username_or_user_id(userdata["user_id"])  
     query = update.pre_checkout_query
     if context.user_data.get("payment_started"):
         # check the payload, is this from your bot?
         if query.invoice_payload != "URBANIUS_CLUB_description":
             # answer False pre_checkout_query
             query.answer(ok=False, error_message="Что-то пошло не так...")
+            update.message.reply_text("Что-то пошло не так...", reply_markup=get_start_menu(user))
+            return ConversationHandler.END
         else:
             query.answer(ok=True)
+            return "checkout"
     else:
         query.answer(ok=False, error_message="Срок платежа прошел. Начните новый платеж")
+        update.message.reply_text("Срок платежа прошел. Начните новый платеж", reply_markup=get_start_menu(user))
+        return ConversationHandler.END
+
 
 # finally, after contacting the payment provider...
 def successful_payment_callback(update: Update, context: CallbackContext) -> None:
@@ -91,20 +99,28 @@ def successful_payment_callback(update: Update, context: CallbackContext) -> Non
     userdata = extract_user_data_from_update(update)
     user = mymodels.User.get_user_by_username_or_user_id(userdata["user_id"])   
     update.message.reply_text("Спасибо за Ваш платеж! Подписка продлена по 31.12.2022", reply_markup=get_start_menu(user))
+    return ConversationHandler.END
 
 
-def setup_dispatcher_pay(dp: Dispatcher):
-    # Диалог оплаты
-
-    # точка входа в разговор    # точка входа в разговор 
-    dp.add_handler(MessageHandler(Filters.text(START_MENU_FULL["payment"]) & FilterPrivateNoCommand, make_invoice))
-    # этапы разговора, каждый со своим списком обработчиков сообщений
-    dp.add_handler(PreCheckoutQueryHandler(precheckout_callback))
-    dp.add_handler(MessageHandler(Filters.text(CANCEL["cancel"]) & FilterPrivateNoCommand, pay_stop))
-    dp.add_handler(MessageHandler(Filters.successful_payment, successful_payment_callback))
-    # точка выхода из разговора
-    dp.add_handler(CommandHandler('cancel', pay_stop, Filters.chat_type.private))
-    dp.add_handler(MessageHandler(Filters.text & FilterPrivateNoCommand, ask_reenter))
-
+def setup_dispatcher_conv(dp: Dispatcher):
+    # Диалог отправки сообщения
+    conv_handler = ConversationHandler( 
+        # точка входа в разговор
+        entry_points=[MessageHandler(Filters.text(START_MENU_FULL["payment"]) & FilterPrivateNoCommand, make_invoice)],      
+        # этапы разговора, каждый со своим списком обработчиков сообщений
+        states={
+            "invois_sended":[
+                       PreCheckoutQueryHandler(precheckout_callback),                    
+                       MessageHandler(Filters.text([CANCEL["cancel"]]) & FilterPrivateNoCommand, stop_conversation),
+                       MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),
+                      ],
+            "checkout":[MessageHandler(Filters.successful_payment, successful_payment_callback)]         
+        },
+        # точка выхода из разговора
+        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
+                   MessageHandler(Filters.text([CANCEL["cancel"]]) & FilterPrivateNoCommand, stop_conversation)
+                  ]
+    )
+    dp.add_handler(conv_handler)   
 
     

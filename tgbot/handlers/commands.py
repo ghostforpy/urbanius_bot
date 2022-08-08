@@ -34,7 +34,8 @@ def command_start(update: Update, context: CallbackContext):
     if user == None:
         update.message.reply_text(REGISTRATION_START_MESSS, reply_markup=make_keyboard(REGISTRATION_START_BTN,"usual",2))
     else:
-        update.message.reply_text(get_start_mess(user), reply_markup=get_start_menu(user))
+        reply_markup=get_start_menu(user)
+        update.message.reply_text(get_start_mess(user), reply_markup=reply_markup)
     return ConversationHandler.END
 
 def stats(update, context):

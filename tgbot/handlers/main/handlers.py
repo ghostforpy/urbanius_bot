@@ -7,8 +7,8 @@ from telegram.ext import (
     Filters,
     ConversationHandler,
 )
-from tgbot.handlers.main.messages import *
-from tgbot.handlers.main.answers import *
+from .messages import *
+from .answers import *
 from tgbot.models import User, tgGroups
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
@@ -16,19 +16,19 @@ from tgbot.handlers.commands import command_start
 from tgbot.handlers.utils import send_message
 from tgbot.utils import extract_user_data_from_update
 
-def mess_stop(update: Update, context: CallbackContext):
+def stop_conversation(update: Update, context: CallbackContext):
     # Заканчиваем разговор.
     update.message.reply_text(SENDING_CANCELED)
     command_start(update, context)
     return ConversationHandler.END
 
-def send_message_to_admins(update: Update, context: CallbackContext):
+def start_conversation(update: Update, context: CallbackContext):
     update.message.reply_text(ASK_MESS, reply_markup=make_keyboard(CANCEL,"usual",1))
     return "sending"
 
 def sending_mess(update: Update, context: CallbackContext):
     if update.message.text == CANCEL["cancel"]:
-        mess_stop(update, context)
+        stop_conversation(update, context)
         return ConversationHandler.END
     else:
         group = tgGroups.get_group_by_name("Администраторы")
@@ -44,16 +44,16 @@ def sending_mess(update: Update, context: CallbackContext):
         return ConversationHandler.END
 
 
-def setup_dispatcher_main(dp: Dispatcher):
+def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
     conv_handler_send_mess = ConversationHandler( # здесь строится логика разговора
         # точка входа в разговор
-        entry_points=[MessageHandler(Filters.text(TO_ADMINS["to_admins"]) & FilterPrivateNoCommand, send_message_to_admins)],      
+        entry_points=[MessageHandler(Filters.text([TO_ADMINS["to_admins"]]) & FilterPrivateNoCommand, start_conversation)],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
             "sending":[MessageHandler(Filters.text & FilterPrivateNoCommand, sending_mess)],
         },
         # точка выхода из разговора
-        fallbacks=[CommandHandler('cancel', mess_stop, Filters.chat_type.private)],
+        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private)],
     )
     dp.add_handler(conv_handler_send_mess)   

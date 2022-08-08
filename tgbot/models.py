@@ -14,31 +14,6 @@ from django.utils.safestring import mark_safe
 
 from tgbot import utils
 
-
-class Config(models.Model):
-    """Модель настроек бота."""
-
-    param_name = models.CharField(_('Наименование параметра'), max_length=255)
-    param_val = models.TextField(_('Значение параметра'), null=True, blank=True)
-
-    def __str__(self):
-        return self.param_name
-
-    class Meta:
-        ordering = ['param_name']
-        verbose_name = 'Параметр бота'
-        verbose_name_plural = 'Параметры бота'
-
-    @classmethod
-    def load_config(cls) -> Dict[str, str]:
-        config_params = cls.objects.all()
-        result = {}
-        for config_param in config_params:
-            result[config_param.param_name] = config_param.param_val
-
-        return result
-
-
 class Sport(models.Model):
     name = models.CharField("Вид спорта",unique=True, max_length=150, blank=False)
     def __str__(self):
@@ -282,6 +257,42 @@ class User(models.Model):
             return cls.objects.filter(user_id=int(username)).first()
         return cls.objects.filter(username__iexact=username).first()
 
+
+    @classmethod
+    def find_users_by_keywords(cls, keywords) -> list:
+        """ осуществляет поиск участников, у которых в любом поле упоминаются ключевые слова """
+        q = Q(username__icontains = keywords)| \
+            Q(last_name__icontains = keywords)| \
+            Q(first_name__icontains = keywords)| \
+            Q(sur_name__icontains = keywords)| \
+            Q(deep_link__icontains = keywords)| \
+            Q(telefon__icontains = keywords)| \
+            Q(email__icontains = keywords)| \
+            Q(citi__icontains = keywords)| \
+            Q(company__icontains = keywords)| \
+            Q(job__icontains = keywords)| \
+            Q(site__icontains = keywords)| \
+            Q(tags__icontains = keywords)| \
+            Q(about__icontains = keywords)| \
+            Q(comment__icontains = keywords)| \
+            Q(job_region__name__icontains = keywords)| \
+            Q(branch__name__icontains = keywords)| \
+            Q(status__name__icontains = keywords)| \
+            Q(usersport__sport__name__icontains = keywords)| \
+            Q(userhobby__hobby__name__icontains = keywords)| \
+            Q(userneeds__need__name__icontains = keywords)| \
+            Q(offers__offer__icontains = keywords)| \
+            Q(socialnets__link__icontains = keywords)| \
+            Q(socialnets__soc_net_site__name__icontains = keywords)| \
+            Q(usertggroups__group__name__icontains = keywords)|\
+            Q(userreferrers_set__referrer__username__icontains = keywords)|\
+            Q(userreferrers_set__referrer__last_name__icontains = keywords)
+        users = cls.objects.filter(q).distinct()
+
+
+        return users
+
+
     def invited_users(self):  # --> User queryset 
         return User.objects.filter(deep_link=str(self.user_id), created_at__gt=self.created_at)
 
@@ -290,109 +301,109 @@ class User(models.Model):
         verbose_name_plural = 'Пользователи'
 
 
-class Location(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-    created_at = models.DateTimeField(auto_now_add=True)
+# class Location(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE)
+#     latitude = models.FloatField()
+#     longitude = models.FloatField()
+#     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"user: {self.user}, created at {self.created_at.strftime('(%H:%M, %d %B %Y)')}"
+#     def __str__(self):
+#         return f"user: {self.user}, created at {self.created_at.strftime('(%H:%M, %d %B %Y)')}"
 
-    def save(self, *args, **kwargs):
-        super(Location, self).save(*args, **kwargs)
-        # Parse location with arcgis
-        #from .tasks import save_data_from_arcgis
-        #save_data_from_arcgis.delay(latitude=self.latitude, longitude=self.longitude, location_id=self.pk)
+#     def save(self, *args, **kwargs):
+#         super(Location, self).save(*args, **kwargs)
+#         # Parse location with arcgis
+#         #from .tasks import save_data_from_arcgis
+#         #save_data_from_arcgis.delay(latitude=self.latitude, longitude=self.longitude, location_id=self.pk)
 
 
-class Arcgis(models.Model):
-    location = models.OneToOneField(Location, on_delete=models.CASCADE, primary_key=True)
+# class Arcgis(models.Model):
+#     location = models.OneToOneField(Location, on_delete=models.CASCADE, primary_key=True)
 
-    match_addr = models.CharField(max_length=200)
-    long_label = models.CharField(max_length=200)
-    short_label = models.CharField(max_length=128)
+#     match_addr = models.CharField(max_length=200)
+#     long_label = models.CharField(max_length=200)
+#     short_label = models.CharField(max_length=128)
 
-    addr_type = models.CharField(max_length=128)
-    location_type = models.CharField(max_length=64)
-    place_name = models.CharField(max_length=128)
+#     addr_type = models.CharField(max_length=128)
+#     location_type = models.CharField(max_length=64)
+#     place_name = models.CharField(max_length=128)
 
-    add_num = models.CharField(max_length=50)
-    address = models.CharField(max_length=128)
-    block = models.CharField(max_length=128)
-    sector = models.CharField(max_length=128)
-    neighborhood = models.CharField(max_length=128)
-    district = models.CharField(max_length=128)
-    city = models.CharField(max_length=64)
-    metro_area = models.CharField(max_length=64)
-    subregion = models.CharField(max_length=64)
-    region = models.CharField(max_length=128)
-    territory = models.CharField(max_length=128)
-    postal = models.CharField(max_length=128)
-    postal_ext = models.CharField(max_length=128)
+#     add_num = models.CharField(max_length=50)
+#     address = models.CharField(max_length=128)
+#     block = models.CharField(max_length=128)
+#     sector = models.CharField(max_length=128)
+#     neighborhood = models.CharField(max_length=128)
+#     district = models.CharField(max_length=128)
+#     city = models.CharField(max_length=64)
+#     metro_area = models.CharField(max_length=64)
+#     subregion = models.CharField(max_length=64)
+#     region = models.CharField(max_length=128)
+#     territory = models.CharField(max_length=128)
+#     postal = models.CharField(max_length=128)
+#     postal_ext = models.CharField(max_length=128)
 
-    country_code = models.CharField(max_length=32)
+#     country_code = models.CharField(max_length=32)
 
-    lng = models.DecimalField(max_digits=21, decimal_places=18)
-    lat = models.DecimalField(max_digits=21, decimal_places=18)
+#     lng = models.DecimalField(max_digits=21, decimal_places=18)
+#     lat = models.DecimalField(max_digits=21, decimal_places=18)
 
-    updated_at = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.location}, city: {self.city}, country_code: {self.country_code}"
+#     def __str__(self):
+#         return f"{self.location}, city: {self.city}, country_code: {self.country_code}"
 
-    @classmethod
-    def from_json(cls, j, location_id):
-        a = j.get("address")
-        l = j.get("location")
+#     @classmethod
+#     def from_json(cls, j, location_id):
+#         a = j.get("address")
+#         l = j.get("location")
 
-        if "address" not in j or "location" not in j:
-            return
+#         if "address" not in j or "location" not in j:
+#             return
 
-        arcgis_data = {
-            "match_addr": a.get("Match_addr"),
-            "long_label": a.get("LongLabel"),
-            "short_label": a.get("ShortLabel"),
-            "addr_type": a.get("Addr_type"),
-            "location_type": a.get("Type"),
-            "place_name": a.get("PlaceName"),
-            "add_num": a.get("AddNum"),
-            "address": a.get("Address"),
-            "block": a.get("Block"),
-            "sector": a.get("Sector"),
-            "neighborhood": a.get("Neighborhood"),
-            "district": a.get("District"),
-            "city": a.get("City"),
-            "metro_area": a.get("MetroArea"),
-            "subregion": a.get("Subregion"),
-            "region": a.get("Region"),
-            "territory": a.get("Territory"),
-            "postal": a.get("Postal"),
-            "postal_ext": a.get("PostalExt"),
-            "country_code": a.get("CountryCode"),
-            "lng": l.get("x"),
-            "lat": l.get("y")
-        }
+#         arcgis_data = {
+#             "match_addr": a.get("Match_addr"),
+#             "long_label": a.get("LongLabel"),
+#             "short_label": a.get("ShortLabel"),
+#             "addr_type": a.get("Addr_type"),
+#             "location_type": a.get("Type"),
+#             "place_name": a.get("PlaceName"),
+#             "add_num": a.get("AddNum"),
+#             "address": a.get("Address"),
+#             "block": a.get("Block"),
+#             "sector": a.get("Sector"),
+#             "neighborhood": a.get("Neighborhood"),
+#             "district": a.get("District"),
+#             "city": a.get("City"),
+#             "metro_area": a.get("MetroArea"),
+#             "subregion": a.get("Subregion"),
+#             "region": a.get("Region"),
+#             "territory": a.get("Territory"),
+#             "postal": a.get("Postal"),
+#             "postal_ext": a.get("PostalExt"),
+#             "country_code": a.get("CountryCode"),
+#             "lng": l.get("x"),
+#             "lat": l.get("y")
+#         }
 
-        arc, _ = cls.objects.update_or_create(location_id=location_id, defaults=arcgis_data)
-        return
+#         arc, _ = cls.objects.update_or_create(location_id=location_id, defaults=arcgis_data)
+#         return
 
-    @staticmethod
-    def reverse_geocode(lat, lng):
-        r = requests.post(
-            "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode",
-            params={
-                'f': 'json',
-                'location': f'{lng}, {lat}',
-                'distance': 50000,
-                'outSR': '',
-            },
-            headers={
-                'Content-Type': 'application/json',
-            }
-        )
-        return r.json()
+#     @staticmethod
+#     def reverse_geocode(lat, lng):
+#         r = requests.post(
+#             "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode",
+#             params={
+#                 'f': 'json',
+#                 'location': f'{lng}, {lat}',
+#                 'distance': 50000,
+#                 'outSR': '',
+#             },
+#             headers={
+#                 'Content-Type': 'application/json',
+#             }
+#         )
+#         return r.json()
 
 
 class UserActionLog(models.Model):

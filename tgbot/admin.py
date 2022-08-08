@@ -43,10 +43,10 @@ class UserAdmin(admin.ModelAdmin):
     readonly_fields = ['avatar_tag'] # Be sure to read only mode
     list_display = [
         'user_id', 'username', 'first_name', 'last_name', 
-        'created_at',  'is_blocked_bot', "comment"
+        'created_at',  'is_blocked_bot', 'comment'
     ]
     list_display_links = ['user_id', 'username', 'first_name', 'last_name']
-    list_filter = ["is_blocked_bot", "is_banned"]
+    list_filter = ["is_blocked_bot", "is_banned", "status"]
     search_fields = ('username', 'user_id', 'last_name')
     fields = [('user_id', 'username', 'deep_link'), 
               ('last_name', 'first_name', 'sur_name', 'date_of_birth'), 

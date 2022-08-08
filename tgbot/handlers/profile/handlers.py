@@ -11,8 +11,8 @@ from telegram.ext import (
 from telegram import InputMediaDocument, MessageEntity
 
 from django.conf import settings
-from tgbot.handlers.profile.messages import *
-from tgbot.handlers.profile.answers import *
+from .messages import *
+from .answers import *
 from tgbot.handlers.main.answers import START_MENU_FULL
 import tgbot.models as mymodels
 from tgbot.handlers.keyboard import make_keyboard
@@ -22,7 +22,7 @@ from tgbot.handlers.utils import send_message
 from tgbot.utils import extract_user_data_from_update, mystr, is_date, is_email, get_uniq_file_name
 from tgbot.handlers.files import _get_file_id
 # Возврат к главному меню в исключительных ситуациях
-def prof_stop(update: Update, context: CallbackContext):
+def stop_conversation(update: Update, context: CallbackContext):
     # Заканчиваем разговор.
     command_start(update, context)
     return ConversationHandler.END
@@ -31,17 +31,11 @@ def prof_stop(update: Update, context: CallbackContext):
 def blank(update: Update, context: CallbackContext):
     pass
 
-# Возврат к главному меню по кнопке
-def back_to_start(update: Update, context: CallbackContext):
-    # Заканчиваем разговор.
-    command_start(update, context)
-    return ConversationHandler.END
-
 def bad_callback_enter(update: Update, context: CallbackContext):
     update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(EMPTY,"usual",2))
 
 # Начало работы с профилем
-def start_manage_profile(update: Update, context: CallbackContext):
+def start_conversation(update: Update, context: CallbackContext):
     userdata = extract_user_data_from_update(update)
     user = mymodels.User.get_user_by_username_or_user_id(userdata["user_id"])
     context.user_data["user"] = user    
@@ -961,38 +955,38 @@ def select_referes(update: Update, context: CallbackContext):
         return "add_referes"
 
 
-def setup_dispatcher_prof(dp: Dispatcher):
+def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
     conv_handler = ConversationHandler( 
         # точка входа в разговор
-        entry_points=[MessageHandler(Filters.text(START_MENU_FULL["profile"]) & FilterPrivateNoCommand, start_manage_profile)],      
+        entry_points=[MessageHandler(Filters.text(START_MENU_FULL["profile"]) & FilterPrivateNoCommand, start_conversation)],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
             "working":[
-                       MessageHandler(Filters.text(PROF_MENU["fio"]) & FilterPrivateNoCommand, manage_fio),
-                       MessageHandler(Filters.text(PROF_MENU["telefon"]) & FilterPrivateNoCommand, manage_phone),
-                       MessageHandler(Filters.text(PROF_MENU["about"]) & FilterPrivateNoCommand, manage_about),
-                       MessageHandler(Filters.text(PROF_MENU["citi"]) & FilterPrivateNoCommand, manage_citi),
-                       MessageHandler(Filters.text(PROF_MENU["company"]) & FilterPrivateNoCommand, manage_company),
-                       MessageHandler(Filters.text(PROF_MENU["job"]) & FilterPrivateNoCommand, manage_job),
-                       MessageHandler(Filters.text(PROF_MENU["site"]) & FilterPrivateNoCommand, manage_site),
-                       MessageHandler(Filters.text(PROF_MENU["date_of_birth"]) & FilterPrivateNoCommand, manage_date_of_birth),
-                       MessageHandler(Filters.text(PROF_MENU["email"]) & FilterPrivateNoCommand, manage_email),
-                       MessageHandler(Filters.text(PROF_MENU["tags"]) & FilterPrivateNoCommand, manage_tags),
-                       MessageHandler(Filters.text(PROF_MENU["main_photo"]) & FilterPrivateNoCommand, manage_main_photo),
-                       MessageHandler(Filters.text(PROF_MENU["job_region"]) & FilterPrivateNoCommand, manage_job_region),
-                       MessageHandler(Filters.text(PROF_MENU["branch"]) & FilterPrivateNoCommand, manage_branch),
-                       MessageHandler(Filters.text(PROF_MENU["status"]) & FilterPrivateNoCommand, manage_status),
-                       MessageHandler(Filters.text(PROF_MENU["groups"]) & FilterPrivateNoCommand, manage_groups),
-                       MessageHandler(Filters.text(PROF_MENU["needs"]) & FilterPrivateNoCommand, manage_needs),
-                       MessageHandler(Filters.text(PROF_MENU["sport"]) & FilterPrivateNoCommand, manage_sport),
-                       MessageHandler(Filters.text(PROF_MENU["hobby"]) & FilterPrivateNoCommand, manage_hobby),
-                       MessageHandler(Filters.text(PROF_MENU["offers"]) & FilterPrivateNoCommand, manage_offers),
-                       MessageHandler(Filters.text(PROF_MENU["social_nets"]) & FilterPrivateNoCommand, manage_social_nets),
-                       MessageHandler(Filters.text(PROF_MENU["referes"]) & FilterPrivateNoCommand, manage_referes),
+                       MessageHandler(Filters.text([PROF_MENU["fio"]]) & FilterPrivateNoCommand, manage_fio),
+                       MessageHandler(Filters.text([PROF_MENU["telefon"]]) & FilterPrivateNoCommand, manage_phone),
+                       MessageHandler(Filters.text([PROF_MENU["about"]]) & FilterPrivateNoCommand, manage_about),
+                       MessageHandler(Filters.text([PROF_MENU["citi"]]) & FilterPrivateNoCommand, manage_citi),
+                       MessageHandler(Filters.text([PROF_MENU["company"]]) & FilterPrivateNoCommand, manage_company),
+                       MessageHandler(Filters.text([PROF_MENU["job"]]) & FilterPrivateNoCommand, manage_job),
+                       MessageHandler(Filters.text([PROF_MENU["site"]]) & FilterPrivateNoCommand, manage_site),
+                       MessageHandler(Filters.text([PROF_MENU["date_of_birth"]]) & FilterPrivateNoCommand, manage_date_of_birth),
+                       MessageHandler(Filters.text([PROF_MENU["email"]]) & FilterPrivateNoCommand, manage_email),
+                       MessageHandler(Filters.text([PROF_MENU["tags"]]) & FilterPrivateNoCommand, manage_tags),
+                       MessageHandler(Filters.text([PROF_MENU["main_photo"]]) & FilterPrivateNoCommand, manage_main_photo),
+                       MessageHandler(Filters.text([PROF_MENU["job_region"]]) & FilterPrivateNoCommand, manage_job_region),
+                       MessageHandler(Filters.text([PROF_MENU["branch"]]) & FilterPrivateNoCommand, manage_branch),
+                       MessageHandler(Filters.text([PROF_MENU["status"]]) & FilterPrivateNoCommand, manage_status),
+                       MessageHandler(Filters.text([PROF_MENU["groups"]]) & FilterPrivateNoCommand, manage_groups),
+                       MessageHandler(Filters.text([PROF_MENU["needs"]]) & FilterPrivateNoCommand, manage_needs),
+                       MessageHandler(Filters.text([PROF_MENU["sport"]]) & FilterPrivateNoCommand, manage_sport),
+                       MessageHandler(Filters.text([PROF_MENU["hobby"]]) & FilterPrivateNoCommand, manage_hobby),
+                       MessageHandler(Filters.text([PROF_MENU["offers"]]) & FilterPrivateNoCommand, manage_offers),
+                       MessageHandler(Filters.text([PROF_MENU["social_nets"]]) & FilterPrivateNoCommand, manage_social_nets),
+                       MessageHandler(Filters.text([PROF_MENU["referes"]]) & FilterPrivateNoCommand, manage_referes),
                       
 
-                       MessageHandler(Filters.text(BACK["back"]) & FilterPrivateNoCommand, back_to_start),
+                       MessageHandler(Filters.text(BACK["back"]) & FilterPrivateNoCommand, stop_conversation),
                        MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
                       ],
             "choose_action_fio":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_fio_action)],
@@ -1046,7 +1040,7 @@ def setup_dispatcher_prof(dp: Dispatcher):
 
         },
         # точка выхода из разговора
-        fallbacks=[CommandHandler('cancel', prof_stop, Filters.chat_type.private)]
+        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private)]
     )
     dp.add_handler(conv_handler)   
     pass
