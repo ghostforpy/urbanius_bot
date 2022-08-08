@@ -30,12 +30,5 @@ def make_keyboard_for_start_command():
     return InlineKeyboardMarkup(buttons)
 
 
-def keyboard_confirm_decline_broadcasting():
-    buttons = [[
-        InlineKeyboardButton(st.confirm_broadcast, callback_data=f'{md.CONFIRM_DECLINE_BROADCAST}{md.CONFIRM_BROADCAST}'),
-        InlineKeyboardButton(st.decline_broadcast, callback_data=f'{md.CONFIRM_DECLINE_BROADCAST}{md.DECLINE_BROADCAST}')
-    ]]
-
-    return InlineKeyboardMarkup(buttons)
 
 

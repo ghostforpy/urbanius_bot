@@ -21,9 +21,11 @@ from tgbot.handlers.commands import command_start
 from tgbot.handlers.utils import send_message
 from tgbot.utils import extract_user_data_from_update, mystr, is_date, is_email, get_uniq_file_name
 from tgbot.handlers.files import _get_file_id
+from tgbot.handlers.registration.messages import REGISTRATION_START_MESSS
 # Возврат к главному меню в исключительных ситуациях
 def stop_conversation(update: Update, context: CallbackContext):
     # Заканчиваем разговор.
+    update.message.reply_text(PROF_FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
     command_start(update, context)
     return ConversationHandler.END
 
@@ -36,15 +38,17 @@ def bad_callback_enter(update: Update, context: CallbackContext):
 
 # Начало работы с профилем
 def start_conversation(update: Update, context: CallbackContext):
-    userdata = extract_user_data_from_update(update)
-    user = mymodels.User.get_user_by_username_or_user_id(userdata["user_id"])
-    context.user_data["user"] = user    
-    update.message.reply_text(PROF_HELLO, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
+    query = update.callback_query
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
+    query.answer()
+    query.edit_message_text(text=REGISTRATION_START_MESSS)
+    send_message(user_id=user.user_id, text=PROF_HELLO, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
+
     return "working"
 
 # Обработчик фамилиии
 def manage_fio(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     fio = " ".join([mystr(user.last_name), mystr(user.first_name), mystr(user.sur_name)])
     update.message.reply_text(ASK_FIO.format(fio), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_fio"
@@ -52,7 +56,8 @@ def manage_fio(update: Update, context: CallbackContext):
 def manage_fio_action(update: Update, context: CallbackContext):
     text = ""
     if update.message.text != SKIP["skip"]:        
-        user = context.user_data["user"]
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
         fio = update.message.text.split()
         len_fio = len(fio)
         if len_fio == 1:
@@ -76,14 +81,14 @@ def manage_fio_action(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик телефона
 def manage_phone(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     update.message.reply_text(ASK_PHONE.format(user.telefon), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_phone"
 
 def manage_phone_action(update: Update, context: CallbackContext):
     text = ""
     if update.message.text != SKIP["skip"]:        
-        user = context.user_data["user"]
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
         user.telefon = update.message.text
         user.save()
         text = "Телефон изменен"
@@ -94,14 +99,14 @@ def manage_phone_action(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик о себе
 def manage_about(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     update.message.reply_text(ASK_ABOUT.format(user.about), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_about"
 
 def manage_about_action(update: Update, context: CallbackContext):
     text = ""
     if update.message.text != SKIP["skip"]:        
-        user = context.user_data["user"]
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
         user.telefon = update.message.text
         user.save()
         text = "Информация 'О себе' изменена"
@@ -112,14 +117,14 @@ def manage_about_action(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик Город
 def manage_citi(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     update.message.reply_text(ASK_CITI.format(user.citi), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_citi"
 
 def manage_citi_action(update: Update, context: CallbackContext):
     text = ""
     if update.message.text != SKIP["skip"]:        
-        user = context.user_data["user"]
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
         user.citi = update.message.text
         user.save()
         text = "Город изменен"
@@ -130,14 +135,14 @@ def manage_citi_action(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик Компания
 def manage_company(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     update.message.reply_text(ASK_COMPANY.format(user.company), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_company"
 
 def manage_company_action(update: Update, context: CallbackContext):
     text = ""
     if update.message.text != SKIP["skip"]:        
-        user = context.user_data["user"]
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
         user.company = update.message.text
         user.save()
         text = "Компания изменена"
@@ -149,14 +154,14 @@ def manage_company_action(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик Должность
 def manage_job(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     update.message.reply_text(ASK_JOB.format(user.job), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_job"
 
 def manage_job_action(update: Update, context: CallbackContext):
     text = ""
     if update.message.text != SKIP["skip"]:        
-        user = context.user_data["user"]
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
         user.job = update.message.text
         user.save()
         text = "Должность изменена"
@@ -168,14 +173,14 @@ def manage_job_action(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик Сайт
 def manage_site(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     update.message.reply_text(ASK_SITE.format(user.site), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_site"
 
 def manage_site_action(update: Update, context: CallbackContext):
     text = ""
     if update.message.text != SKIP["skip"]:        
-        user = context.user_data["user"]
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
         user.site = update.message.text
         user.save()
         text = "Сайт изменен"
@@ -187,7 +192,7 @@ def manage_site_action(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик День рождения
 def manage_date_of_birth(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     update.message.reply_text(ASK_BIRHDAY.format(user.date_of_birth), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_date_of_birth"
 
@@ -200,7 +205,7 @@ def manage_date_of_birth_action(update: Update, context: CallbackContext):
         update.message.reply_text(BAD_DATE, make_keyboard(SKIP,"usual",1))
         return 
     else:
-        user = context.user_data["user"]
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
         user.date_of_birth = date
         user.save()
         text = "День рождения изменен"
@@ -210,7 +215,7 @@ def manage_date_of_birth_action(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик e-mail
 def manage_email(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     update.message.reply_text(ASK_EMAIL.format(user.email), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_email"
 
@@ -218,29 +223,29 @@ def manage_email_action(update: Update, context: CallbackContext):
     email = is_email(update.message.text)
     text = ""
     if update.message.text == SKIP["skip"]:        
-        text = "e-mail рождения не изменен"
+        text = "e-mail не изменен"
     elif not(email): # ввели неверную email
         update.message.reply_text(BAD_EMAIL, make_keyboard(SKIP,"usual",1))
         return 
     else:
-        user = context.user_data["user"]
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
         user.email = email
         user.save()
-        text = "e-mail рождения изменен"
+        text = "e-mail изменен"
         
     update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
     return "working"
 #-------------------------------------------  
 # Обработчик Теги
 def manage_tags(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     update.message.reply_text(ASK_TAGS.format(user.tags), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_tags"
 
 def manage_tags_action(update: Update, context: CallbackContext):
     text = ""
     if update.message.text != SKIP["skip"]:        
-        user = context.user_data["user"]
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
         user.tags = update.message.text
         user.save()
         text = "Теги изменены"
@@ -252,7 +257,7 @@ def manage_tags_action(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик Фото
 def manage_main_photo(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     if not(user.main_photo):
         photo = settings.BASE_DIR / 'media/no_foto.jpg'
     else:
@@ -264,7 +269,7 @@ def manage_main_photo(update: Update, context: CallbackContext):
     return "choose_action_main_photo"
 
 def manage_main_photo_action(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     foto_id, filename_orig = _get_file_id(update.message)
     filename_lst = filename_orig.split(".")
     newFile = context.bot.get_file(foto_id)
@@ -289,7 +294,7 @@ def manage_main_photo_txt_action(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик Региона
 def manage_job_region(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     update.message.reply_text(ASK_REGION.format(user.job_region), reply_markup=make_keyboard(CHANGE_SKIP,"usual",2))
     return "choose_action_job_region"
 
@@ -310,7 +315,7 @@ def manage_job_region_action(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(CHANGE_SKIP,"usual",2))
 
 def process_region(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
     query = update.callback_query
     variant = query.data
     query.answer()
@@ -330,7 +335,7 @@ def process_region(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик Отрасли
 def manage_branch(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     update.message.reply_text(ASK_BRANCH.format(user.branch), reply_markup=make_keyboard(CHANGE_SKIP,"usual",2))
     return "choose_action_branch"
 
@@ -351,7 +356,7 @@ def manage_branch_action(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(CHANGE_SKIP,"usual",2))
 
 def process_branch(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
     query = update.callback_query
     variant = query.data
     query.answer()
@@ -371,14 +376,14 @@ def process_branch(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик Статус
 def manage_status(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     update.message.reply_text(SAY_STATUS.format(user.status), reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
     return "working"
 
 #-------------------------------------------  
 # Обработчик Группы
 def manage_groups(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     all_groups = mymodels.get_model_text(mymodels.UsertgGroups,["NN","group"], user)
     update.message.reply_text(SAY_GROUPS.format(str(all_groups)), reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
     return "working"
@@ -386,13 +391,13 @@ def manage_groups(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик потребности
 def manage_needs(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     all_needs = mymodels.get_model_text(mymodels.UserNeeds,["NN","need"], user)
     update.message.reply_text(ASK_NEEDS.format(str(all_needs)), reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
     return "choose_action_needs"
 
 def manage_needs_action(update: Update, context: CallbackContext):
-    user = context.user_data["user"]    
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)    
     if update.message.text == ADD_DEL_SKIP["skip"]:        
         text = "Потребности не изменены"
         update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
@@ -420,7 +425,7 @@ def manage_needs_action(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
 
 def delete_need(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
     query = update.callback_query
     variant = query.data
     query.answer()
@@ -449,7 +454,7 @@ def delete_need(update: Update, context: CallbackContext):
             query.edit_message_text(text, reply_markup=make_keyboard(all_needs,"inline",2,None,FINISH))
 
 def add_need(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
     query = update.callback_query
     variant = query.data
     query.answer()
@@ -479,13 +484,13 @@ def add_need(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик Спорта
 def manage_sport(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     all_sport = mymodels.get_model_text(mymodels.UserSport,["NN","sport"], user)
     update.message.reply_text(ASK_SPORT.format(str(all_sport)), reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
     return "choose_action_sport"
 
 def manage_sport_action(update: Update, context: CallbackContext):
-    user = context.user_data["user"]    
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)    
     if update.message.text == ADD_DEL_SKIP["skip"]:        
         text = "Виды спорта не изменены"
         update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
@@ -513,7 +518,7 @@ def manage_sport_action(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
 
 def delete_sport(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
     query = update.callback_query
     variant = query.data
     query.answer()
@@ -541,7 +546,7 @@ def delete_sport(update: Update, context: CallbackContext):
             query.edit_message_text(text, reply_markup=make_keyboard(all_sport,"inline",2,None,FINISH))
 
 def add_sport(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
     query = update.callback_query
     variant = query.data
     query.answer()
@@ -571,13 +576,13 @@ def add_sport(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик Хобби
 def manage_hobby(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     all_hobby = mymodels.get_model_text(mymodels.UserHobby,["NN","hobby"], user)
     update.message.reply_text(ASK_HOBBY.format(str(all_hobby)), reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
     return "choose_action_hobby"
 
 def manage_hobby_action(update: Update, context: CallbackContext):
-    user = context.user_data["user"]    
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)    
     if update.message.text == ADD_DEL_SKIP["skip"]:        
         text = "Виды хобби не изменены"
         update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
@@ -605,7 +610,7 @@ def manage_hobby_action(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
 
 def delete_hobby(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
     query = update.callback_query
     variant = query.data
     query.answer()
@@ -633,7 +638,7 @@ def delete_hobby(update: Update, context: CallbackContext):
             query.edit_message_text(text, reply_markup=make_keyboard(all_hobby,"inline",2,None,FINISH))
 
 def add_hobby(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
     query = update.callback_query
     variant = query.data
     query.answer()
@@ -663,7 +668,7 @@ def add_hobby(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик Предложений
 def manage_offers(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     offers_set = user.offers_set.all()
     if len(offers_set) == 0:
         update.message.reply_text(NO_OFFERS, reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
@@ -684,7 +689,7 @@ def manage_offers(update: Update, context: CallbackContext):
     return "choose_action_offers"
 
 def manage_offers_action(update: Update, context: CallbackContext):
-    user = context.user_data["user"]    
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)    
     if update.message.text == ADD_DEL_SKIP["skip"]:        
         text = "Ваши предложения не изменены"
         update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
@@ -705,7 +710,7 @@ def manage_offers_action(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
 
 def delete_offers(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
     query = update.callback_query
     variant = query.data
     query.answer()
@@ -733,15 +738,15 @@ def delete_offers(update: Update, context: CallbackContext):
             query.edit_message_text(text, reply_markup=make_keyboard(all_offers,"inline",1,None,FINISH))
 
 def add_offers(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     if update.message.text == FINISH["finish"]:        
         text = "Завершено добавление предложений"
         update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
         return "working"
     if update.message.text != None:
         text = update.message.text
-    elif update._effective_message.caption != None:
-        text = update._effective_message.caption
+    elif update.message.caption != None:
+        text = update.message.caption
     else:
         text = ""
     
@@ -766,13 +771,13 @@ def add_offers(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик Соцсетей
 def manage_social_nets(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     all_social_nets_txt = mymodels.get_model_text(mymodels.SocialNets,["NN","soc_net_site", "link"], user)
     update.message.reply_text(ASK_SOC_NET.format(str(all_social_nets_txt)), reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2), disable_web_page_preview=True)
     return "choose_action_social_nets"
 
 def manage_social_nets_action(update: Update, context: CallbackContext):
-    user = context.user_data["user"]    
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)    
     if update.message.text == ADD_DEL_SKIP["skip"]:        
         text = "Соцсети не изменены"
         update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
@@ -793,7 +798,7 @@ def manage_social_nets_action(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
 
 def delete_social_nets(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
     query = update.callback_query
     variant = query.data
     query.answer()
@@ -820,7 +825,7 @@ def delete_social_nets(update: Update, context: CallbackContext):
             query.edit_message_text(text, reply_markup=make_keyboard(all_social_nets,"inline",2,None,FINISH))
 
 def add_social_nets(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     if update.message.text == FINISH["finish"]:        
         text = "Завершено добавление соц. сетей"
         update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
@@ -857,13 +862,13 @@ def add_social_nets(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик Рекомендатели
 def manage_referes(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     all_referes_txt = mymodels.get_model_text(mymodels.UserReferrers,["NN","referrer"], user)
     update.message.reply_text(ASK_REFERES.format(str(all_referes_txt)), reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2), disable_web_page_preview=True)
     return "choose_action_referes"
 
 def manage_referes_action(update: Update, context: CallbackContext):
-    user = context.user_data["user"]    
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)    
     if update.message.text == ADD_DEL_SKIP["skip"]:        
         text = "Рекомендатели не изменены"
         update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
@@ -885,7 +890,7 @@ def manage_referes_action(update: Update, context: CallbackContext):
 
 
 def delete_referes(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
     query = update.callback_query
     variant = query.data
     query.answer()
@@ -912,7 +917,7 @@ def delete_referes(update: Update, context: CallbackContext):
             query.edit_message_text(text, reply_markup=make_keyboard(all_referes,"inline",2,None,FINISH))
 
 def add_referes(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     if update.message.text == FINISH["finish"]:        
         text = "Завершено добавление рекомендателей"
         update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
@@ -930,7 +935,7 @@ def add_referes(update: Update, context: CallbackContext):
             return "select_referes"
 
 def select_referes(update: Update, context: CallbackContext):
-    user = context.user_data["user"]
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
     query = update.callback_query
     variant = query.data
     query.answer()
@@ -959,88 +964,89 @@ def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
     conv_handler = ConversationHandler( 
         # точка входа в разговор
-        entry_points=[MessageHandler(Filters.text(START_MENU_FULL["profile"]) & FilterPrivateNoCommand, start_conversation)],      
+        entry_points=[CallbackQueryHandler(start_conversation, pattern="^profile$", run_async=True)],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
             "working":[
-                       MessageHandler(Filters.text([PROF_MENU["fio"]]) & FilterPrivateNoCommand, manage_fio),
-                       MessageHandler(Filters.text([PROF_MENU["telefon"]]) & FilterPrivateNoCommand, manage_phone),
-                       MessageHandler(Filters.text([PROF_MENU["about"]]) & FilterPrivateNoCommand, manage_about),
-                       MessageHandler(Filters.text([PROF_MENU["citi"]]) & FilterPrivateNoCommand, manage_citi),
-                       MessageHandler(Filters.text([PROF_MENU["company"]]) & FilterPrivateNoCommand, manage_company),
-                       MessageHandler(Filters.text([PROF_MENU["job"]]) & FilterPrivateNoCommand, manage_job),
-                       MessageHandler(Filters.text([PROF_MENU["site"]]) & FilterPrivateNoCommand, manage_site),
-                       MessageHandler(Filters.text([PROF_MENU["date_of_birth"]]) & FilterPrivateNoCommand, manage_date_of_birth),
-                       MessageHandler(Filters.text([PROF_MENU["email"]]) & FilterPrivateNoCommand, manage_email),
-                       MessageHandler(Filters.text([PROF_MENU["tags"]]) & FilterPrivateNoCommand, manage_tags),
-                       MessageHandler(Filters.text([PROF_MENU["main_photo"]]) & FilterPrivateNoCommand, manage_main_photo),
-                       MessageHandler(Filters.text([PROF_MENU["job_region"]]) & FilterPrivateNoCommand, manage_job_region),
-                       MessageHandler(Filters.text([PROF_MENU["branch"]]) & FilterPrivateNoCommand, manage_branch),
-                       MessageHandler(Filters.text([PROF_MENU["status"]]) & FilterPrivateNoCommand, manage_status),
-                       MessageHandler(Filters.text([PROF_MENU["groups"]]) & FilterPrivateNoCommand, manage_groups),
-                       MessageHandler(Filters.text([PROF_MENU["needs"]]) & FilterPrivateNoCommand, manage_needs),
-                       MessageHandler(Filters.text([PROF_MENU["sport"]]) & FilterPrivateNoCommand, manage_sport),
-                       MessageHandler(Filters.text([PROF_MENU["hobby"]]) & FilterPrivateNoCommand, manage_hobby),
-                       MessageHandler(Filters.text([PROF_MENU["offers"]]) & FilterPrivateNoCommand, manage_offers),
-                       MessageHandler(Filters.text([PROF_MENU["social_nets"]]) & FilterPrivateNoCommand, manage_social_nets),
-                       MessageHandler(Filters.text([PROF_MENU["referes"]]) & FilterPrivateNoCommand, manage_referes),
+                       MessageHandler(Filters.text([PROF_MENU["fio"]]) & FilterPrivateNoCommand, manage_fio, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["telefon"]]) & FilterPrivateNoCommand, manage_phone, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["about"]]) & FilterPrivateNoCommand, manage_about, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["citi"]]) & FilterPrivateNoCommand, manage_citi, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["company"]]) & FilterPrivateNoCommand, manage_company, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["job"]]) & FilterPrivateNoCommand, manage_job, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["site"]]) & FilterPrivateNoCommand, manage_site, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["date_of_birth"]]) & FilterPrivateNoCommand, manage_date_of_birth, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["email"]]) & FilterPrivateNoCommand, manage_email, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["tags"]]) & FilterPrivateNoCommand, manage_tags, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["main_photo"]]) & FilterPrivateNoCommand, manage_main_photo, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["job_region"]]) & FilterPrivateNoCommand, manage_job_region, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["branch"]]) & FilterPrivateNoCommand, manage_branch, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["status"]]) & FilterPrivateNoCommand, manage_status, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["groups"]]) & FilterPrivateNoCommand, manage_groups, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["needs"]]) & FilterPrivateNoCommand, manage_needs, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["sport"]]) & FilterPrivateNoCommand, manage_sport, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["hobby"]]) & FilterPrivateNoCommand, manage_hobby, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["offers"]]) & FilterPrivateNoCommand, manage_offers, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["social_nets"]]) & FilterPrivateNoCommand, manage_social_nets, run_async=True),
+                       MessageHandler(Filters.text([PROF_MENU["referes"]]) & FilterPrivateNoCommand, manage_referes, run_async=True),
                       
 
-                       MessageHandler(Filters.text(BACK["back"]) & FilterPrivateNoCommand, stop_conversation),
-                       MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
+                       MessageHandler(Filters.text(BACK["back"]) & FilterPrivateNoCommand, stop_conversation, run_async=True),
+                       MessageHandler(Filters.text & FilterPrivateNoCommand, blank, run_async=True)
                       ],
-            "choose_action_fio":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_fio_action)],
-            "choose_action_phone":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_phone_action)],
-            "choose_action_about":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_about_action)],
-            "choose_action_citi":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_citi_action)],
-            "choose_action_company":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_company_action)],
-            "choose_action_job":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_job_action)],
-            "choose_action_site":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_site_action)],
-            "choose_action_date_of_birth":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_date_of_birth_action)],
-            "choose_action_email":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_email_action)],
-            "choose_action_tags":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_tags_action)],
-            "choose_action_main_photo":[MessageHandler(Filters.photo & FilterPrivateNoCommand, manage_main_photo_action),
-                                       MessageHandler(Filters.text & FilterPrivateNoCommand, manage_main_photo_txt_action)],
-            "choose_action_job_region":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_job_region_action)],
-            "select_region":[CallbackQueryHandler(process_region),
-                             MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)], 
-            "choose_action_branch":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_branch_action)],
-            "select_branch":[CallbackQueryHandler(process_branch),
-                             MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)], 
-            "choose_action_needs":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_needs_action)],
-            "delete_need":[CallbackQueryHandler(delete_need),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],
-            "add_need":[CallbackQueryHandler(add_need),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],                           
-            "choose_action_sport":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_sport_action)],
-            "delete_sport":[CallbackQueryHandler(delete_sport),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],
-            "add_sport":[CallbackQueryHandler(add_sport),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],                           
-            "choose_action_hobby":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_hobby_action)],
-            "delete_hobby":[CallbackQueryHandler(delete_hobby),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],
-            "add_hobby":[CallbackQueryHandler(add_hobby),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],                           
-            "choose_action_offers":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_offers_action)],
-            "delete_offers":[CallbackQueryHandler(delete_offers),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],
+            "choose_action_fio":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_fio_action, run_async=True)],
+            "choose_action_phone":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_phone_action, run_async=True)],
+            "choose_action_about":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_about_action, run_async=True)],
+            "choose_action_citi":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_citi_action, run_async=True)],
+            "choose_action_company":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_company_action, run_async=True)],
+            "choose_action_job":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_job_action, run_async=True)],
+            "choose_action_site":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_site_action, run_async=True)],
+            "choose_action_date_of_birth":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_date_of_birth_action, run_async=True)],
+            "choose_action_email":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_email_action, run_async=True)],
+            "choose_action_tags":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_tags_action, run_async=True)],
+            "choose_action_main_photo":[MessageHandler(Filters.photo & FilterPrivateNoCommand, manage_main_photo_action, run_async=True),
+                                       MessageHandler(Filters.text & FilterPrivateNoCommand, manage_main_photo_txt_action, run_async=True)],
+            "choose_action_job_region":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_job_region_action, run_async=True)],
+            "select_region":[CallbackQueryHandler(process_region, run_async=True),
+                             MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)], 
+            "choose_action_branch":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_branch_action, run_async=True)],
+            "select_branch":[CallbackQueryHandler(process_branch, run_async=True),
+                             MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)], 
+            "choose_action_needs":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_needs_action, run_async=True)],
+            "delete_need":[CallbackQueryHandler(delete_need, run_async=True),
+                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],
+            "add_need":[CallbackQueryHandler(add_need, run_async=True),
+                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],                           
+            "choose_action_sport":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_sport_action, run_async=True)],
+            "delete_sport":[CallbackQueryHandler(delete_sport, run_async=True),
+                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],
+            "add_sport":[CallbackQueryHandler(add_sport, run_async=True),
+                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],                           
+            "choose_action_hobby":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_hobby_action, run_async=True)],
+            "delete_hobby":[CallbackQueryHandler(delete_hobby, run_async=True),
+                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],
+            "add_hobby":[CallbackQueryHandler(add_hobby, run_async=True),
+                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],                           
+            "choose_action_offers":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_offers_action, run_async=True)],
+            "delete_offers":[CallbackQueryHandler(delete_offers, run_async=True),
+                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],
             "add_offers":[MessageHandler((Filters.text|Filters.audio|Filters.document|Filters.photo|
-                          Filters.video|Filters.video_note|Filters.voice) & FilterPrivateNoCommand, add_offers)],
-            "choose_action_social_nets":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_social_nets_action)], 
-            "delete_social_nets":[CallbackQueryHandler(delete_social_nets),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],
-            "add_social_nets":[MessageHandler((Filters.text|Filters.entity(MessageEntity.ALL_TYPES)) & FilterPrivateNoCommand, add_social_nets)], 
-            "choose_action_referes":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_referes_action)],
-            "delete_referes":[CallbackQueryHandler(delete_referes),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],
-            "add_referes":[MessageHandler(Filters.text & FilterPrivateNoCommand, add_referes)],
-            "select_referes":[CallbackQueryHandler(select_referes),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)],
+                          Filters.video|Filters.video_note|Filters.voice) & FilterPrivateNoCommand, add_offers, run_async=True)],
+            "choose_action_social_nets":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_social_nets_action, run_async=True)], 
+            "delete_social_nets":[CallbackQueryHandler(delete_social_nets, run_async=True),
+                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],
+            "add_social_nets":[MessageHandler((Filters.text|Filters.entity(MessageEntity.ALL_TYPES)) & FilterPrivateNoCommand, add_social_nets, run_async=True)], 
+            "choose_action_referes":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_referes_action, run_async=True)],
+            "delete_referes":[CallbackQueryHandler(delete_referes, run_async=True),
+                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],
+            "add_referes":[MessageHandler(Filters.text & FilterPrivateNoCommand, add_referes, run_async=True)],
+            "select_referes":[CallbackQueryHandler(select_referes, run_async=True),
+                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],
 
         },
         # точка выхода из разговора
-        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private)]
+        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private, run_async=True),
+                   CommandHandler('start', stop_conversation, Filters.chat_type.private, run_async=True)]
     )
     dp.add_handler(conv_handler)   
     pass

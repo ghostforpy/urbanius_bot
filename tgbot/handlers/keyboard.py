@@ -9,7 +9,16 @@ def build_menu(keys: dict, columns: int):
     col = columns
     for key in keys:
         col-=1
-        keys_row.append(KeyboardButton(text=keys[key]))
+        if type(keys[key]) == dict:
+            btn_txt = keys[key]["label"]
+            btn_type = keys[key]["type"]
+        else:
+            btn_txt = keys[key]
+            btn_type = None
+        if btn_type == "phone":
+            keys_row.append(KeyboardButton(text=btn_txt,request_contact=True))
+        else:
+            keys_row.append(KeyboardButton(text=btn_txt))
         if col == 0:
             col = columns
             tg_keys.append(keys_row)
@@ -38,7 +47,16 @@ def build_menu_inline(keys: dict, columns: int):
     col = columns
     for key in keys:
         col-=1
-        btn = InlineKeyboardButton(keys[key],callback_data=key)
+        if type(keys[key]) == dict:
+            btn_txt = keys[key]["label"]
+            btn_type = keys[key]["type"]
+        else:
+            btn_txt = keys[key]
+            btn_type = None
+        if btn_type == "switch_inline":
+            btn = InlineKeyboardButton(btn_txt,callback_data=key, switch_inline_query=True)
+        else:
+            btn = InlineKeyboardButton(btn_txt,callback_data=key)
         keys_row.append(btn)
         if col == 0:
             col = columns

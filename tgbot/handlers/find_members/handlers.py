@@ -33,7 +33,7 @@ def bad_callback_enter(update: Update, context: CallbackContext):
 # Начало разговора
 def start_conversation(update: Update, context: CallbackContext):
    
-    update.message.reply_text(HELLO_MESS, reply_markup=make_keyboard(BACK,"usual",4))
+    #update.message.reply_text(HELLO_MESS, reply_markup=make_keyboard(BACK,"usual",4))
     return "working"
 
 # Обработчик поиска
@@ -55,17 +55,18 @@ def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
     conv_handler = ConversationHandler( 
         # точка входа в разговор
-        entry_points=[MessageHandler(Filters.text(START_MENU_FULL["find_members"]) & FilterPrivateNoCommand, start_conversation, run_async=True)],      
+        entry_points=[CallbackQueryHandler(start_conversation, pattern="^find_members$", run_async=True)],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
             "working":[
                        MessageHandler(Filters.text & FilterPrivateNoCommand, manage_find, run_async=True),
                      
-                       MessageHandler(Filters.text([BACK["back"]]) & FilterPrivateNoCommand, stop_conversation),
+                       MessageHandler(Filters.text([BACK["back"]]) & FilterPrivateNoCommand, stop_conversation, run_async=True),
                        MessageHandler(Filters.text & FilterPrivateNoCommand, blank, run_async=True)
                       ],
         },
         # точка выхода из разговора
-        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private, run_async=True)]
+        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private, run_async=True),
+                   CommandHandler('start', stop_conversation, Filters.chat_type.private, run_async=True)]        
     )
     dp.add_handler(conv_handler)   

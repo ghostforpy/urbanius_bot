@@ -7,3 +7,5 @@ START = {"start":"/start"}
 APPROVAL_ANSWERS = {"yes":"Согласен", "no":"Не согласен"} 
 YES_NO = {"yes":"Да", "no":"Нет"}
 REGISTRATION_START_BTN = {"reg_start":"Начать регистрацию"}
+REQUEST_PHONE = {"reg_start":{"label":"Отправить телефонный номер","type":"phone"}}
+CANCEL_SKIP_REQUEST_PHONE = {"reg_start":{"label":"Отправить телефонный номер","type":"phone"},"cancel":"Прервать регистрацию","skip":"Пропустить"}

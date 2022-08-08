@@ -37,18 +37,11 @@ def start_conversation(update: Update, context: CallbackContext):
     context.user_data["is_blocked_bot"] = True
     context.user_data["comment"] = "Ожидает подтверждения регистрации"
     update.message.reply_text(WELCOME, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
-    return APROVAL
-  
-def phone_keyboard():
-    tg_keys = []
-    tg_keys.append(KeyboardButton(text="Отправить телефонный номер", request_contact=True))
-    tg_keys.append(KeyboardButton(text=CANCEL_SKIP["cancel"]))
-    tg_keys.append(KeyboardButton(text=CANCEL_SKIP["skip"]))
-    return ReplyKeyboardMarkup([tg_keys], resize_keyboard=True)     
+    return APROVAL  
 
 def processing_aproval(update: Update, context: CallbackContext):
     if update.message.text == APPROVAL_ANSWERS["yes"]: # В этом поле хранится согласие       
-        update.message.reply_text(ASK_PHONE, reply_markup=phone_keyboard())
+        update.message.reply_text(ASK_PHONE,  reply_markup=make_keyboard(CANCEL_SKIP,"usual",2,REQUEST_PHONE))
         return PHONE
     elif update.message.text == APPROVAL_ANSWERS["no"]: # В этом поле хранится отказ
         stop_conversation(update, context)
@@ -75,7 +68,7 @@ def processing_phone(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_FIO.format(fullname), reply_markup=keyboard)
         return FIO
     else:
-        update.message.reply_text(ASK_REENTER, reply_markup=phone_keyboard())
+        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(CANCEL_SKIP,"usual",2,REQUEST_PHONE))
 
 def processing_fio(update: Update, context: CallbackContext):
     if update.message.text == CANCEL["cancel"]:
@@ -213,8 +206,8 @@ def processing_site(update: Update, context: CallbackContext):
     if (group == None) or (group.chat_id == 0):
         update.message.reply_text(NO_ADMIN_GROUP)
     else:
-        text = " ".join(["Зарегистрирован новый пользователь", "@"+context.user_data.get("username"),
-                        context.user_data.get("first_name"), context.user_data.get("last_name")])
+        text = " ".join(["Зарегистрирован новый пользователь", "@"+utils.mystr(context.user_data.get("username")),
+                        context.user_data.get("first_name"), utils.mystr(context.user_data.get("last_name"))])
         send_message(group.chat_id, text)
     context.user_data.clear()   
     return ConversationHandler.END
@@ -238,7 +231,8 @@ def setup_dispatcher_conv(dp: Dispatcher):
             SITE: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_site)],
         },
         # точка выхода из разговора
-        fallbacks=[CommandHandler('cancel', start_conversation, Filters.chat_type.private)],
+        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
+                   CommandHandler('start', stop_conversation, Filters.chat_type.private)]
     )
     dp.add_handler(conv_handler_reg)
     

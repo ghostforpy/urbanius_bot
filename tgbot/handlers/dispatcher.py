@@ -6,11 +6,11 @@ import telegram
 
 from telegram.ext import (
     Updater, Dispatcher, Filters,
-    CommandHandler, MessageHandler, 
+    MessageHandler,
+    CommandHandler,
     InlineQueryHandler, CallbackQueryHandler,
     ChosenInlineResultHandler, PollAnswerHandler, Defaults
 )
-
 
 from dtb.settings import TELEGRAM_TOKEN
 
@@ -35,17 +35,7 @@ def setup_dispatcher(dp: Dispatcher):
     setup_dispatcher_find(dp) #заполнение обработчиков работы с поиском
 
     dp.add_handler(MessageHandler(Filters.text & Filters.chat_type.private, commands.command_start))
-    # EXAMPLES FOR HANDLERS
-    # dp.add_handler(MessageHandler(Filters.text, <function_handler>))
-    # dp.add_handler(MessageHandler(
-    #     Filters.document, <function_handler>,
-    # ))
-    # dp.add_handler(CallbackQueryHandler(<function_handler>, pattern="^r\d+_\d+"))
-    # dp.add_handler(MessageHandler(
-    #     Filters.chat(chat_id=int(TELEGRAM_FILESTORAGE_ID)),
-    #     # & Filters.forwarded & (Filters.photo | Filters.video | Filters.animation),
-    #     <function_handler>,
-    # ))
+
 
     return dp
 

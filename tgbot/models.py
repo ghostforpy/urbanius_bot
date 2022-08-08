@@ -171,7 +171,7 @@ class UserReferrers(models.Model):
         ordering = ['user', 'referrer'] 
 
 class User(models.Model):
-    user_id = models.IntegerField(primary_key=True)
+    user_id = models.BigIntegerField(primary_key=True)
     username = models.CharField("Телеграм логин",max_length=32, null=True, blank=True)
     last_name = models.CharField("Фамилия", max_length=256, null=True, blank=True)
     first_name = models.CharField("Имя", max_length=256)
