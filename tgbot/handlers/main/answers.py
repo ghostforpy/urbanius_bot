@@ -9,9 +9,12 @@ OK = {"ok":"OK"}
 START = {"start":"/start"}
 YES_NO = {"yes":"Да", "no":"Нет"}
 
+ON_OFF_CANCEL = {"on":"Включить Random coffe","off":"Выключить Random coffe","cancel":"Отмена"}
+
 TO_ADMINS = {"to_admins":"Сообщение администраторам"}
 
 START_MENU_FULL = {
+        "random_coffe":"Random coffe",
         "find_members":"Поиск участников",
         "profile":"Профиль пользователя",
         "to_admins":"Сообщение администраторам",

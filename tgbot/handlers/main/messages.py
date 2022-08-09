@@ -23,7 +23,15 @@ def get_start_mess(user: User):
         return  WELCOME    
 
 # Отправка сообщения админам
+SENDING_WELCOME = "Вы в режиме отправки сообщения администраторам"
 SENDING_CANCELED = "Отправка сообщения отменена"
 NO_ADMIN_GROUP = 'Группа "Администраторы" не найдена или не указан ее чат. Сообщите об ошибке'
 ASK_MESS = "Введите текст сообщения"
 MESS_SENDED = "Сообщение отослано"
+# Обработка Random coffe 
+COFFE_WELCOME = "Вы в режиме переключения Random coffe"
+COFFE_CANCELED = "Переключение Random coffe завершено"
+ASK_OFF_COFFE = "В данный момент услуга Random coffe подключена"
+ASK_ON_COFFE = "В данный момент услуга Random coffe отключена"
+COFFE_ON = "Переключение Random coffe завершено. Услуга Random coffe подключена"
+COFFE_OFF = "Переключение Random coffe завершено. Услуга Random coffe отключена"

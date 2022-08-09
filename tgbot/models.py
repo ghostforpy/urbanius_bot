@@ -185,6 +185,7 @@ class User(models.Model):
 
     is_admin = models.BooleanField("Администратор",default=False)
     is_moderator = models.BooleanField("Модератор",default=False)
+    random_coffe_on = models.BooleanField("Подключено Random coffe",default=False)
 
     created_at = models.DateTimeField("Создан", auto_now_add=True)
     updated_at = models.DateTimeField("Изменен", auto_now=True)
@@ -316,6 +317,23 @@ class User(models.Model):
         verbose_name_plural = 'Пользователи'
 
 
+class MessagesToSend(models.Model):
+    receiver  = models.ForeignKey("User", on_delete=models.CASCADE, related_name="receiver", verbose_name="Получатель", blank=False, null=False)    
+    text = models.TextField("Текст сообщения",unique=False, blank=False)
+    created_at = models.DateTimeField("Создано в", auto_now_add=True)
+    sended_at = models.DateTimeField("Отослано в")
+    sended = models.BooleanField("Отослано", default=False)
+    recommended_friend = models.ForeignKey("User", on_delete=models.SET_NULL, related_name="recommended_friend", verbose_name="Рекомендованный друг по Random coffe", blank=True, null=True)
+    file = models.FileField("Файл", blank=True, upload_to="messages")
+
+    def __str__(self):
+        return self.text
+    class Meta:
+        verbose_name_plural = 'Сообщения к отсылке' 
+        verbose_name = 'Сообщение к отсылке' 
+        ordering = ['created_at']
+
+
 class UserActionLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     action = models.CharField(max_length=128)
@@ -325,6 +343,28 @@ class UserActionLog(models.Model):
     def __str__(self):
         return f"user: {self.user}, made: {self.action}, created at {self.created_at.strftime('(%H:%M, %d %B %Y)')}"
 
+class Config(models.Model):
+    """Модель настроек бота."""
+
+    param_name = models.CharField(_('Наименование параметра'), max_length=255)
+    param_val = models.TextField(_('Значение параметра'), null=True, blank=True)
+
+    def __str__(self):
+        return self.param_name
+
+    class Meta:
+        ordering = ['param_name']
+        verbose_name = 'Параметр бота'
+        verbose_name_plural = 'Параметры бота'
+
+    @classmethod
+    def load_config(cls) -> Dict[str, str]:
+        config_params = cls.objects.all()
+        result = {}
+        for config_param in config_params:
+            result[config_param.param_name] = config_param.param_val
+
+        return result
 
 # Получает из всех записей модели словарь 
 # key - имя поля чье значение попадет в ключ, 

@@ -43,16 +43,16 @@ class UserAdmin(admin.ModelAdmin):
     readonly_fields = ['avatar_tag'] # Be sure to read only mode
     list_display = [
         'user_id', 'username', 'first_name', 'last_name', 
-        'created_at',  'is_blocked_bot', 'comment'
+        'created_at',  'is_blocked_bot', "random_coffe_on", 'comment'
     ]
     list_display_links = ['user_id', 'username', 'first_name', 'last_name']
-    list_filter = ["is_blocked_bot", "is_banned", "status"]
+    list_filter = ["is_blocked_bot", "is_banned", "random_coffe_on", "status",]
     search_fields = ('username', 'user_id', 'last_name')
     fields = [('user_id', 'username', 'deep_link'), 
               ('last_name', 'first_name', 'sur_name', 'date_of_birth'), 
               ('avatar_tag', 'main_photo', 'telefon', 'email'),
               ('status'),
-              ('is_blocked_bot', 'is_banned', 'is_admin', 'is_moderator'),
+              ('is_blocked_bot', 'is_banned', 'is_admin', 'is_moderator', "random_coffe_on"),
               ('job_region', 'citi', 'branch'), 
               ('company', 'job', 'site', 'tags'),
               'about','comment'
@@ -174,16 +174,12 @@ class tgGroupsAdmin(admin.ModelAdmin) :
     search_fields = ("name",)
 
 
+@admin.register(MessagesToSend)
+class MessagesToSendAdmin(admin.ModelAdmin) :
+    list_display = ("receiver","text", "created_at", "sended_at") 
+    list_display_links = ("receiver","text" ) 
+    search_fields = ("receiver",)
 
-
-# @admin.register(Location)
-# class LocationAdmin(admin.ModelAdmin):
-#     list_display = ['id', 'user_id', 'created_at']
-
-
-# @admin.register(Arcgis)
-# class ArcgisAdmin(admin.ModelAdmin):
-#     list_display = ['location', 'city', 'country_code']
 
 
 # @admin.register(UserActionLog)
@@ -191,6 +187,6 @@ class tgGroupsAdmin(admin.ModelAdmin) :
 #     list_display = ['user', 'action', 'created_at']
 
 
-# @admin.register(Config)
-# class ConfigAdmin(admin.ModelAdmin):
-#     list_display = ['param_name', 'param_val']
+@admin.register(Config)
+class ConfigAdmin(admin.ModelAdmin):
+    list_display = ['param_name', 'param_val']
