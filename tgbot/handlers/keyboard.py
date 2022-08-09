@@ -54,7 +54,7 @@ def build_menu_inline(keys: dict, columns: int):
             btn_txt = keys[key]
             btn_type = None
         if btn_type == "switch_inline":
-            btn = InlineKeyboardButton(btn_txt,callback_data=key, switch_inline_query=True)
+            btn = InlineKeyboardButton(btn_txt, switch_inline_query_current_chat = "")
         else:
             btn = InlineKeyboardButton(btn_txt,callback_data=key)
         keys_row.append(btn)

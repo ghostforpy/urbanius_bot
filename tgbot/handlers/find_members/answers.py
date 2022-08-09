@@ -11,6 +11,6 @@ START = {"start":"/start"}
 FINISH = {"finish":"Завершить"}
 YES_NO = {"yes":"Да", "no":"Нет"}
 CHANGE_SKIP = {"change":"Изменить", "skip":"Пропустить"}
-ADD_DEL_SKIP = {"add":"Добавить", "del":"Удалить", "skip":"Пропустить"}
 BACK = {"back":"Вернуться в основное меню"} 
+FIND = {"find_members":{"label":"Найти участников","type":"switch_inline"}}
 

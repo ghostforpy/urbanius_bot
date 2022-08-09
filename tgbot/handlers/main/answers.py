@@ -12,7 +12,7 @@ YES_NO = {"yes":"Да", "no":"Нет"}
 TO_ADMINS = {"to_admins":"Сообщение администраторам"}
 
 START_MENU_FULL = {
-        "find_members":{"label":"Найти участников","type":"switch_inline"},
+        "find_members":"Поиск участников",
         "profile":"Профиль пользователя",
         "to_admins":"Сообщение администраторам",
         "payment":"Оплатить подписку"

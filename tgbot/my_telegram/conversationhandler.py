@@ -531,7 +531,7 @@ class ConversationHandler(Handler[Update, CCT]):
             return None
         if self.per_message and not update.callback_query:
             return None
-        if update.callback_query and self.per_chat and not update.callback_query.message:
+        if update.callback_query and self.per_chat and (not update.callback_query.message and not update.callback_query.data):
             return None
 
         key = self._get_key(update)
