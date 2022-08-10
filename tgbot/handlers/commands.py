@@ -16,6 +16,7 @@ from tgbot.handlers.registration.messages import REGISTRATION_START_MESSS
 from tgbot.handlers.registration.answers import REGISTRATION_START_BTN
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
+from sheduler.tasks import restarts_tasks
 
 logger = logging.getLogger('default')
 logger.info("Command handlers check!")
@@ -36,20 +37,35 @@ def command_start(update: Update, context: CallbackContext):
         update.message.reply_text(get_start_mess(user), reply_markup=reply_markup)
     return ConversationHandler.END
 
-def stats(update, context):
-    """ Show help info about all secret admins commands """
-    u = User.get_user(update, context)
-    if not u.is_admin:
-        return
+@handler_logging()
+def command_restart_tasks(update: Update, context: CallbackContext):
+    userdata = extract_user_data_from_update(update)
+    user_id = userdata['user_id']
+    user = User.get_user_by_username_or_user_id(user_id)
+    if (user != None) and user.is_admin:
+        restarts_tasks(context.job_queue)
+        update.message.reply_text("Задания перезапущены")
+    else:
+        update.message.reply_text("Недостаточно прав")
 
-    text = f"""
-*Users*: {User.objects.count()}
-*24h active*: {User.objects.filter(updated_at__gte=timezone.now() - datetime.timedelta(hours=24)).count()}
-    """
 
-    return update.message.reply_text(
-        text, 
-        parse_mode=telegram.ParseMode.MARKDOWN,
-        disable_web_page_preview=True,
-    )
+    return ConversationHandler.END
+
+
+# def stats(update, context):
+#     """ Show help info about all secret admins commands """
+#     u = User.get_user(update, context)
+#     if not u.is_admin:
+#         return
+
+#     text = f"""
+# *Users*: {User.objects.count()}
+# *24h active*: {User.objects.filter(updated_at__gte=timezone.now() - datetime.timedelta(hours=24)).count()}
+#     """
+
+#     return update.message.reply_text(
+#         text, 
+#         parse_mode=telegram.ParseMode.MARKDOWN,
+#         disable_web_page_preview=True,
+#     )
 

@@ -62,25 +62,6 @@ class JobRegions(models.Model):
         verbose_name = 'Регион работы' 
         ordering = ['code']
 
-class Needs(models.Model):
-    name = models.CharField("Потребности",unique=True, max_length=150, blank=False)
-    def __str__(self):
-        return self.name
-    class Meta:
-        verbose_name_plural = 'Потребности' 
-        verbose_name = 'Потребность' 
-        ordering = ['name']
-
-class UserNeeds(models.Model):
-    need = models.ForeignKey(Needs,on_delete=models.CASCADE, verbose_name="Потребность")
-    user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
-    def __str__(self):
-        return str(self.need)
-    class Meta:
-        verbose_name_plural = 'Потребности пользователя' 
-        verbose_name = 'Потребность пользователя' 
-        ordering = ['user', 'need']
-
 
 class Branch(models.Model):
     name = models.CharField("Отрасль",unique=True, max_length=150, blank=False)
@@ -180,7 +161,7 @@ class User(models.Model):
     language_code = models.CharField(max_length=8, null=True, blank=True, help_text="Telegram client's lang")
     deep_link = models.CharField("Ссылка", max_length=64, null=True, blank=True)
 
-    is_blocked_bot = models.BooleanField("Заблоктрован", default=False)
+    is_blocked_bot = models.BooleanField("Заблокирован", default=False)
     is_banned = models.BooleanField("Забанен", default=False)
 
     is_admin = models.BooleanField("Администратор",default=False)
@@ -199,6 +180,7 @@ class User(models.Model):
     job = models.CharField("Должность", max_length=150, null=True, blank=True)
     site = models.CharField("Сайт", max_length=150, null=True, blank=True)
     tags = models.CharField("Тэги", max_length=150, null=True, blank=True)
+    needs = models.TextField("Потребности", null=True, blank=True)
     about = models.TextField("О себе", null=True, blank=True)
     comment = models.TextField("комментарий", null=True, blank=True)
     # Ссылочные поля
@@ -274,6 +256,7 @@ class User(models.Model):
             Q(job__icontains = keywords)| \
             Q(site__icontains = keywords)| \
             Q(tags__icontains = keywords)| \
+            Q(needs__icontains = keywords)| \
             Q(about__icontains = keywords)| \
             Q(comment__icontains = keywords)| \
             Q(job_region__name__icontains = keywords)| \
@@ -281,7 +264,6 @@ class User(models.Model):
             Q(status__name__icontains = keywords)| \
             Q(usersport__sport__name__icontains = keywords)| \
             Q(userhobby__hobby__name__icontains = keywords)| \
-            Q(userneeds__need__name__icontains = keywords)| \
             Q(offers__offer__icontains = keywords)| \
             Q(socialnets__link__icontains = keywords)| \
             Q(socialnets__soc_net_site__name__icontains = keywords)| \

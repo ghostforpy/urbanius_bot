@@ -22,9 +22,6 @@ class OffersInline(admin.TabularInline):
 class SocialNetsInline(admin.TabularInline):
     model = SocialNets
 
-class UserNeedsInline(admin.TabularInline):
-    model = UserNeeds
-
 class UserSportInline(admin.TabularInline):
     model = UserSport
 
@@ -55,9 +52,9 @@ class UserAdmin(admin.ModelAdmin):
               ('is_blocked_bot', 'is_banned', 'is_admin', 'is_moderator', "random_coffe_on"),
               ('job_region', 'citi', 'branch'), 
               ('company', 'job', 'site', 'tags'),
-              'about','comment'
+              'needs','about','comment'
               ]
-    inlines = [UsertgGroupsInline, OffersInline, SocialNetsInline, UserNeedsInline, UserSportInline, UserHobbyInline, UserReferrersInline]
+    inlines = [UsertgGroupsInline, OffersInline, SocialNetsInline, UserSportInline, UserHobbyInline, UserReferrersInline]
     formfield_overrides = {
         models.IntegerField: {'widget': NumberInput(attrs={'size':'20'})},
         models.TextField: {'widget': Textarea(attrs={'rows':2, 'cols':100})},
@@ -144,13 +141,6 @@ class SocialNetSitesAdmin(admin.ModelAdmin) :
     list_display = ("name", "link") 
     list_display_links = ("name", "link") 
     search_fields = ("name", "link")
-
-
-@admin.register(Needs)
-class NeedsAdmin(admin.ModelAdmin) :
-    list_display = ("name",) 
-    list_display_links = ("name", ) 
-    search_fields = ("name",)
 
 
 @admin.register(Branch)

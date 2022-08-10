@@ -47,7 +47,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_cleanup',
     # local apps
+    'sheduler.apps.ShedulerConfig',
     'tgbot.apps.TgbotConfig',
+
 ]
 
 MIDDLEWARE = [

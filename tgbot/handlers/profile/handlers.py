@@ -107,7 +107,7 @@ def manage_about_action(update: Update, context: CallbackContext):
     text = ""
     if update.message.text != SKIP["skip"]:        
         user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-        user.telefon = update.message.text
+        user.about = update.message.text
         user.save()
         text = "Информация 'О себе' изменена"
     else:
@@ -392,94 +392,20 @@ def manage_groups(update: Update, context: CallbackContext):
 # Обработчик потребности
 def manage_needs(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-    all_needs = mymodels.get_model_text(mymodels.UserNeeds,["NN","need"], user)
-    update.message.reply_text(ASK_NEEDS.format(str(all_needs)), reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
+    update.message.reply_text(ASK_NEEDS.format(user.needs), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_needs"
 
 def manage_needs_action(update: Update, context: CallbackContext):
-    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)    
-    if update.message.text == ADD_DEL_SKIP["skip"]:        
+    text = ""
+    if update.message.text != SKIP["skip"]:        
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+        user.needs = update.message.text
+        user.save()
+        text = "Потребности изменены"
+    else:
         text = "Потребности не изменены"
-        update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
-        return "working"
-    elif update.message.text == ADD_DEL_SKIP["del"]:
-        update.message.reply_text("Удаление потребностей", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_needs = mymodels.get_dict(mymodels.UserNeeds,"pk","need", user)
-        #all_needs_txt = mymodels.get_model_text(mymodels.UserNeeds,["NN","need"], user)
-        text = "Выберите удаляемую потребность"
-        update.message.reply_text(text, reply_markup=make_keyboard(all_needs,"inline",2,None,FINISH))
-        return "delete_need"
-    elif update.message.text == ADD_DEL_SKIP["add"]:
-        all_user_needs_txt = mymodels.get_model_text(mymodels.UserNeeds,["NN","need"], user)
-        all_needs_txt = mymodels.get_model_text(mymodels.Needs,["NN","name"])
-        all_needs = mymodels.get_dict(mymodels.Needs,"pk","NN")
-        update.message.reply_text("Добавление потребностей", reply_markup=make_keyboard(EMPTY,"usual",1))
-        text = "Возможные потребности:\n"
-        text += all_needs_txt
-        text += "\nВаши потребности:\n"
-        text += all_user_needs_txt
-        text += "Введите номер добавляемой потребности"
-        update.message.reply_text(text, reply_markup=make_keyboard(all_needs,"inline",8,None,FINISH))
-        return "add_need"
-    else:
-        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
-
-def delete_need(update: Update, context: CallbackContext):
-    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
-    query = update.callback_query
-    variant = query.data
-    query.answer()
-    if variant == "finish":
-        all_needs_txt = mymodels.get_model_text(mymodels.UserNeeds,["NN","need"], user)
-        query.edit_message_text(text=all_needs_txt)
-        text = "Удаление потребностей завершено"
-        reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK) 
-        send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
-        return "working"
-    else:
-        need = mymodels.UserNeeds.objects.get(pk=int(variant))
-        need.delete()
-        all_needs = mymodels.get_dict(mymodels.UserNeeds,"pk","need", user)
-        if len(all_needs) == 0:
-            all_needs_txt = "Все потребности удалены"
-            query.edit_message_text(text=all_needs_txt)
-            text = "Удаление потребностей завершено"
-            reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK) 
-            send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
-            return "working"
-        else:           
-            #all_needs_txt = mymodels.get_model_text(mymodels.UserNeeds,["NN","need"], user)
-            #text = all_needs_txt + "Введите номер удаляемой строки"
-            text = "Выберите удаляемую потребность"
-            query.edit_message_text(text, reply_markup=make_keyboard(all_needs,"inline",2,None,FINISH))
-
-def add_need(update: Update, context: CallbackContext):
-    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
-    query = update.callback_query
-    variant = query.data
-    query.answer()
-    if variant == "finish":
-        all_needs_txt = mymodels.get_model_text(mymodels.UserNeeds,["NN","need"], user)
-        query.edit_message_text(text=all_needs_txt)
-        text = "Добавление потребностей завершено"
-        reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK) 
-        send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
-        return "working"
-    else:
-        need = mymodels.Needs.objects.get(pk=int(variant))
-        user_needs =  mymodels.UserNeeds.objects.filter(need = need, user = user)
-        if len(user_needs) == 0:
-            user_need = mymodels.UserNeeds(need = need, user = user)
-            user_need.save()
-            all_user_needs_txt = mymodels.get_model_text(mymodels.UserNeeds,["NN","need"], user)
-            all_needs_txt = mymodels.get_model_text(mymodels.Needs,["NN","name"])
-            all_needs = mymodels.get_dict(mymodels.Needs,"pk","NN")
-            text = "Возможные потребности:\n"
-            text += all_needs_txt
-            text += "\nВаши потребности:\n"
-            text += all_user_needs_txt
-            text += "Введите номер добавляемой потребности"
-            query.edit_message_text(text, reply_markup=make_keyboard(all_needs,"inline",8,None,FINISH))
+    update.message.reply_text(text, reply_markup=make_keyboard(PROF_MENU,"usual",4,None,BACK))
+    return "working"
         
 #-------------------------------------------  
 # Обработчик Спорта
@@ -1012,11 +938,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
             "choose_action_branch":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_branch_action, run_async=True)],
             "select_branch":[CallbackQueryHandler(process_branch, run_async=True),
                              MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)], 
-            "choose_action_needs":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_needs_action, run_async=True)],
-            "delete_need":[CallbackQueryHandler(delete_need, run_async=True),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],
-            "add_need":[CallbackQueryHandler(add_need, run_async=True),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],                           
+            "choose_action_needs":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_needs_action, run_async=True)],                         
             "choose_action_sport":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_sport_action, run_async=True)],
             "delete_sport":[CallbackQueryHandler(delete_sport, run_async=True),
                            MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],

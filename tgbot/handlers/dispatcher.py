@@ -6,7 +6,7 @@ import telegram
 
 from telegram.ext import (
     Updater, Dispatcher, Filters,
-    MessageHandler,
+    MessageHandler,JobQueue,
     CommandHandler,
     InlineQueryHandler, CallbackQueryHandler,
     ChosenInlineResultHandler, PollAnswerHandler, Defaults
@@ -21,12 +21,15 @@ from tgbot.handlers.profile.handlers import setup_dispatcher_conv as setup_dispa
 from tgbot.handlers.payments.handlers import setup_dispatcher_conv as setup_dispatcher_pay
 from tgbot.handlers.find_members.handlers import setup_dispatcher_conv as setup_dispatcher_find
 
+from sheduler.tasks import restarts_tasks
+
 def setup_dispatcher(dp: Dispatcher):
     """
     Adding handlers for events from Telegram
     """
 
     dp.add_handler(CommandHandler("start", commands.command_start, Filters.chat_type.private))
+    dp.add_handler(CommandHandler("restart_tasks", commands.command_restart_tasks, Filters.chat_type.private))
 
     setup_dispatcher_reg(dp) #заполнение обработчиков регистрации
     setup_dispatcher_main(dp) #заполнение обработчиков главного диалога
@@ -48,19 +51,22 @@ def run_pooling():
 
     dp = updater.dispatcher
     dp = setup_dispatcher(dp)
+    jq = updater.job_queue
+    restarts_tasks(jq)
 
     bot_info = telegram.Bot(TELEGRAM_TOKEN).get_me()
     bot_link = f"https://t.me/" + bot_info["username"]
 
     print(f"Pooling of '{bot_link}' started")
+    # global POLLING_IS_RUNNING
+    # POLLING_IS_RUNNING = True
     updater.start_polling(timeout=123, drop_pending_updates=True)
     updater.idle()
 
 
 def process_telegram_event(update_json):
-    update = telegram.Update.de_json(update_json, bot)
+    update = telegram.Update.de_json(update_json,bot)
     dispatcher.process_update(update)
-
 
 # Global variable - best way I found to init Telegram bot
 bot = telegram.Bot(TELEGRAM_TOKEN)
