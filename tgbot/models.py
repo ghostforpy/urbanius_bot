@@ -291,6 +291,18 @@ class User(models.Model):
    
         return res
 
+    def full_profile(self)->str:
+        res = "<b>Пользователь:</b> \n"
+        res += str(self)        
+        res += "\n<b>Личная информация:</b> "
+        res += "\n  <b>e-mail:</b> " + utils.mystr(self.email)
+        res += "\n  <b>Телефон:</b> " + utils.mystr(self.telefon)
+        res += "\n  <b>Дата рождения:</b> " + utils.mystr(self.date_of_birth)
+        res += "\n  <b>Статус:</b> " + utils.mystr(self.status)
+        res += "\n<b>Группы:</b>\n" + get_model_text(UsertgGroups,["NN","group"], self)
+
+   
+        return res
     def invited_users(self):  # --> User queryset 
         return User.objects.filter(deep_link=str(self.user_id), created_at__gt=self.created_at)
 

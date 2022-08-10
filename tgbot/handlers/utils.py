@@ -66,7 +66,40 @@ def send_message(user_id, text, parse_mode=None, reply_markup=None, reply_to_mes
         )
     except telegram.error.Unauthorized:
         print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
-        User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
+        #User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
+        success = False
+    except Exception as e:
+        print(f"Can't send message to {user_id}. Reason: {e}")
+        success = False
+    else:
+        success = True
+        #User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
+    return success
+
+def send_photo(user_id, photo, caption=None, disable_notification=None, reply_to_message_id=None, 
+               reply_markup=None, timeout=20, parse_mode=None, api_kwargs=None, allow_sending_without_reply=None, 
+               caption_entities=None, filename=None, protect_content=None, tg_token=TELEGRAM_TOKEN):
+
+    bot = telegram.Bot(tg_token)
+    try:
+        m = bot.send_photo(
+            chat_id=user_id,
+            photo=photo,
+            caption=None, 
+            disable_notification=None, 
+            reply_to_message_id=None, 
+            reply_markup=None, 
+            timeout=20, 
+            parse_mode=None, 
+            api_kwargs=None, 
+            allow_sending_without_reply=None, 
+            caption_entities=None, 
+            filename=None, 
+            protect_content=None
+        )
+    except telegram.error.Unauthorized:
+        print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
+        #User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
         success = False
     except Exception as e:
         print(f"Can't send message to {user_id}. Reason: {e}")
