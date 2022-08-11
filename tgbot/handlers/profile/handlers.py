@@ -55,7 +55,8 @@ def start_conversation(update: Update, context: CallbackContext):
 
     profile_txt = user.full_profile()
     reply_markup = make_keyboard(START_MENU,"usual",2,None,BACK)
-    send_message(user_id = user.user_id, text = profile_txt, reply_markup = reply_markup, parse_mode = telegram.ParseMode.HTML)
+    send_message(user_id = user.user_id, text = profile_txt, reply_markup = reply_markup, 
+                 parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True)
 
     return "working"
 
@@ -284,41 +285,19 @@ def manage_job_action(update: Update, context: CallbackContext):
 # Обработчик Отрасли
 def manage_branch(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-    update.message.reply_text(ASK_BRANCH.format(user.branch), reply_markup=make_keyboard(CHANGE_SKIP,"usual",2))
+    update.message.reply_text(ASK_BRANCH.format(user.branch), reply_markup=make_keyboard(SKIP,"usual",2))
     return "choose_action_branch"
 
 def manage_branch_action(update: Update, context: CallbackContext):
-    text = ""
-    if update.message.text == CHANGE_SKIP["skip"]:        
-        text = "Отрасль  не изменена"
-        update.message.reply_text(text, reply_markup=make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF))
-        return "working_busines_info"
-    elif update.message.text == CHANGE_SKIP["change"]:
-        update.message.reply_text("Редактирование отрасли", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_branchs = mymodels.get_dict(mymodels.Branch,"pk","NN")
-        all_branchs_txt = mymodels.get_model_text(mymodels.Branch,["NN","name"])
-        text = "Выберите номер отрасли\n"+all_branchs_txt
-        update.message.reply_text(text, reply_markup=make_keyboard(all_branchs,"inline",8))
-        return "select_branch"
+    if update.message.text != SKIP["skip"]:        
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+        user.branch = update.message.text
+        user.save()
+        text = "Отрасль изменена"
     else:
-        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(CHANGE_SKIP,"usual",2))
-
-def process_branch(update: Update, context: CallbackContext):
-    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
-    query = update.callback_query
-    variant = query.data
-    query.answer()
-    new_reg = mymodels.Branch.objects.get(pk=int(variant))
-    # редактируем сообщение, тем самым кнопки 
-    # в чате заменятся на этот ответ.
-    query.edit_message_text(text=f"Выбранный вариант: {str(new_reg)}")
-    user.branch = new_reg
-    user.save()
-    text = "Отрасль  изменена"
-    reply_markup=make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF) 
-    send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
+        text = "Отрасль  не изменена"
+    update.message.reply_text(text, reply_markup=make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF))
     return "working_busines_info"
-
 #-------------------------------------------  
 # Обработчик Город
 def manage_citi(update: Update, context: CallbackContext):
@@ -342,41 +321,20 @@ def manage_citi_action(update: Update, context: CallbackContext):
 # Обработчик Региона
 def manage_job_region(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-    update.message.reply_text(ASK_REGION.format(user.job_region), reply_markup=make_keyboard(CHANGE_SKIP,"usual",2))
+    update.message.reply_text(ASK_REGION.format(user.job_region), reply_markup=make_keyboard(SKIP,"usual",2))
     return "choose_action_job_region"
 
 def manage_job_region_action(update: Update, context: CallbackContext):
     text = ""
-    if update.message.text == CHANGE_SKIP["skip"]:        
-        text = "Регион  не изменен"
-        update.message.reply_text(text, reply_markup=make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF))
-        return "working_busines_info"
-    elif update.message.text == CHANGE_SKIP["change"]:
-        update.message.reply_text("Редактирование региона", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_regions = mymodels.get_dict(mymodels.JobRegions,"pk","code")
-        all_regions_txt = mymodels.get_model_text(mymodels.JobRegions,["code","name"])
-        text = "Выберите номер региона\n"+all_regions_txt
-        update.message.reply_text(text, reply_markup=make_keyboard(all_regions,"inline",8))
-        return "select_region"
+    if update.message.text != SKIP["skip"]:        
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+        user.job_region = update.message.text
+        user.save()
+        text = "Регион  изменен"
     else:
-        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(CHANGE_SKIP,"usual",2))
-
-def process_region(update: Update, context: CallbackContext):
-    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
-    query = update.callback_query
-    variant = query.data
-    query.answer()
-    new_reg = mymodels.JobRegions.objects.get(pk=int(variant))
-    # редактируем сообщение, тем самым кнопки 
-    # в чате заменятся на этот ответ.
-    query.edit_message_text(text=f"Выбранный вариант: {str(new_reg)}")
-    user.job_region = new_reg
-    user.save()
-    text = "Регион  изменен"
-    reply_markup=make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF) 
-    send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
+        text = "Регион  не изменен"
+    update.message.reply_text(text, reply_markup=make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF))
     return "working_busines_info"
-
 #-------------------------------------------  
 # Обработчик Сайт
 def manage_site(update: Update, context: CallbackContext):
@@ -417,190 +375,40 @@ def manage_about_action(update: Update, context: CallbackContext):
         text = "Информация 'О себе' не изменена"
     update.message.reply_text(text, reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF))
     return "working_about_info"
-
 #-------------------------------------------  
 # Обработчик Спорта
 def manage_sport(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-    all_sport = mymodels.get_model_text(mymodels.UserSport,["NN","sport"], user)
-    update.message.reply_text(ASK_SPORT.format(str(all_sport)), reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
+    update.message.reply_text(ASK_SPORT.format(user.sport), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_sport"
 
 def manage_sport_action(update: Update, context: CallbackContext):
-    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)    
-    if update.message.text == ADD_DEL_SKIP["skip"]:        
+    if update.message.text != SKIP["skip"]:        
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+        user.sport = update.message.text
+        user.save()
+        text = "Виды спорта изменены"
+    else:
         text = "Виды спорта не изменены"
-        update.message.reply_text(text, reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF))
-        return "working_about_info"
-    elif update.message.text == ADD_DEL_SKIP["del"]:
-        update.message.reply_text("Удаление видов спорта", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_sport = mymodels.get_dict(mymodels.UserSport,"pk","sport", user)
-        #all_sport_txt = mymodels.get_model_text(mymodels.UserSport,["NN","sport"], user)
-        text = "Выберите удаляемый вид спорта"
-        update.message.reply_text(text, reply_markup=make_keyboard(all_sport,"inline",2,None,FINISH))
-        return "delete_sport"
-    elif update.message.text == ADD_DEL_SKIP["add"]:
-        all_user_sport_txt = mymodels.get_model_text(mymodels.UserSport,["NN","sport"], user)
-        all_sport_txt = mymodels.get_model_text(mymodels.Sport,["NN","name"])
-        all_sport = mymodels.get_dict(mymodels.Sport,"pk","NN")
-        update.message.reply_text("Добавление видов спорта", reply_markup=make_keyboard(EMPTY,"usual",1))
-        text = "Возможные виды спорта:\n"
-        text += all_sport_txt
-        text += "\nВаши виды спорта:\n"
-        text += all_user_sport_txt
-        text += "Введите номер добавляемого вида спорта"
-        update.message.reply_text(text, reply_markup=make_keyboard(all_sport,"inline",8,None,FINISH))
-        return "add_sport"
-    else:
-        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
-
-def delete_sport(update: Update, context: CallbackContext):
-    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
-    query = update.callback_query
-    variant = query.data
-    query.answer()
-    if variant == "finish":
-        all_sport_txt = mymodels.get_model_text(mymodels.UserSport,["NN","sport"], user)
-        query.edit_message_text(text=all_sport_txt)
-        text = "Удаление видов спорта завершено"
-        reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF) 
-        send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
-        return "working_about_info"
-    else:
-        sport = mymodels.UserSport.objects.get(pk=int(variant))
-        sport.delete()
-        all_sport = mymodels.get_dict(mymodels.UserSport,"pk","sport", user)
-        if len(all_sport) == 0:
-            all_sport_txt = "Все виды спорта удалены"
-            query.edit_message_text(text=all_sport_txt)
-            text = "Удаление видов спорта завершено"
-            reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF) 
-            send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
-            return "working_about_info"
-        else:           
-            text = "Выберите удаляемый вид спорта"
-            query.edit_message_text(text, reply_markup=make_keyboard(all_sport,"inline",2,None,FINISH))
-
-def add_sport(update: Update, context: CallbackContext):
-    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
-    query = update.callback_query
-    variant = query.data
-    query.answer()
-    if variant == "finish":
-        all_sport_txt = mymodels.get_model_text(mymodels.UserSport,["NN","sport"], user)
-        query.edit_message_text(text=all_sport_txt)
-        text = "Добавление видов спорта  завершено"
-        reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF) 
-        send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
-        return "working_about_info"
-    else:
-        sport = mymodels.Sport.objects.get(pk=int(variant))
-        user_sports = mymodels.UserSport.objects.filter(sport = sport, user = user)
-        if len(user_sports) == 0:
-            user_sport = mymodels.UserSport(sport = sport, user = user)
-            user_sport.save()
-            all_user_sport_txt = mymodels.get_model_text(mymodels.UserSport,["NN","sport"], user)
-            all_sport_txt = mymodels.get_model_text(mymodels.Sport,["NN","name"])
-            all_sport = mymodels.get_dict(mymodels.Sport,"pk","NN")
-            text = "Возможные виды спорта :\n"
-            text += all_sport_txt
-            text += "\nВаши виды спорта :\n"
-            text += all_user_sport_txt
-            text += "Введите номер добавляемго вида спорта "
-            query.edit_message_text(text, reply_markup=make_keyboard(all_sport,"inline",8,None,FINISH))
-        
+    update.message.reply_text(text, reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF))
+    return "working_about_info"  
 #-------------------------------------------  
 # Обработчик Хобби
 def manage_hobby(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-    all_hobby = mymodels.get_model_text(mymodels.UserHobby,["NN","hobby"], user)
-    update.message.reply_text(ASK_HOBBY.format(str(all_hobby)), reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
+    update.message.reply_text(ASK_HOBBY.format(user.hobby), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_hobby"
 
 def manage_hobby_action(update: Update, context: CallbackContext):
-    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)    
-    if update.message.text == ADD_DEL_SKIP["skip"]:        
+    if update.message.text != SKIP["skip"]:        
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+        user.hobby = update.message.text
+        user.save()
+        text = "Виды хобби изменены"
+    else:
         text = "Виды хобби не изменены"
-        update.message.reply_text(text, reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF))
-        return "working_about_info"
-    elif update.message.text == ADD_DEL_SKIP["del"]:
-        update.message.reply_text("Удаление видов хобби", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_hobby = mymodels.get_dict(mymodels.UserHobby,"pk","hobby", user)
-        #all_hobby_txt = mymodels.get_model_text(mymodels.UserHobby,["NN","hobby"], user)
-        text = "Выберите удаляемый вид хобби"
-        update.message.reply_text(text, reply_markup=make_keyboard(all_hobby,"inline",2,None,FINISH))
-        return "delete_hobby"
-    elif update.message.text == ADD_DEL_SKIP["add"]:
-        all_user_hobby_txt = mymodels.get_model_text(mymodels.UserHobby,["NN","hobby"], user)
-        all_hobby_txt = mymodels.get_model_text(mymodels.Hobby,["NN","name"])
-        all_hobby = mymodels.get_dict(mymodels.Hobby,"pk","NN")
-        update.message.reply_text("Добавление видов хобби", reply_markup=make_keyboard(EMPTY,"usual",1))
-        text = "Возможные виды хобби:\n"
-        text += all_hobby_txt
-        text += "\nВаши виды хобби:\n"
-        text += all_user_hobby_txt
-        text += "Введите номер добавляемого вида хобби"
-        update.message.reply_text(text, reply_markup=make_keyboard(all_hobby,"inline",8,None,FINISH))
-        return "add_hobby"
-    else:
-        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
-
-def delete_hobby(update: Update, context: CallbackContext):
-    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
-    query = update.callback_query
-    variant = query.data
-    query.answer()
-    if variant == "finish":
-        all_hobby_txt = mymodels.get_model_text(mymodels.UserHobby,["NN","hobby"], user)
-        query.edit_message_text(text=all_hobby_txt)
-        text = "Удаление видов хобби завершено"
-        reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF) 
-        send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
-        return "working_about_info"
-    else:
-        hobby = mymodels.UserHobby.objects.get(pk=int(variant))
-        hobby.delete()
-        all_hobby = mymodels.get_dict(mymodels.UserHobby,"pk","hobby", user)
-        if len(all_hobby) == 0:
-            all_hobby_txt = "Все виды хобби удалены"
-            query.edit_message_text(text=all_hobby_txt)
-            text = "Удаление видов хобби завершено"
-            reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF) 
-            send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
-            return "working_about_info"
-        else:           
-            #all_hobby_txt = mymodels.get_model_text(mymodels.UserHobby,["NN","hobby"], user)
-            text ="Выберите удаляемый вид хобби"
-            query.edit_message_text(text, reply_markup=make_keyboard(all_hobby,"inline",2,None,FINISH))
-
-def add_hobby(update: Update, context: CallbackContext):
-    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
-    query = update.callback_query
-    variant = query.data
-    query.answer()
-    if variant == "finish":
-        all_hobby_txt = mymodels.get_model_text(mymodels.UserHobby,["NN","hobby"], user)
-        query.edit_message_text(text=all_hobby_txt)
-        text = "Добавление видов хобби  завершено"
-        reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF) 
-        send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
-        return "working_about_info"
-    else:
-        hobby = mymodels.Hobby.objects.get(pk=int(variant))
-        user_hobbys = mymodels.UserHobby.objects.filter(hobby = hobby, user = user)
-        if len(user_hobbys) == 0:
-            user_hobby = mymodels.UserHobby(hobby = hobby, user = user)
-            user_hobby.save()
-            all_user_hobby_txt = mymodels.get_model_text(mymodels.UserHobby,["NN","hobby"], user)
-            all_hobby_txt = mymodels.get_model_text(mymodels.Hobby,["NN","name"])
-            all_hobby = mymodels.get_dict(mymodels.Hobby,"pk","NN")
-            text = "Возможные виды хобби :\n"
-            text += all_hobby_txt
-            text += "\nВаши виды хобби :\n"
-            text += all_user_hobby_txt
-            text += "Введите номер добавляемго вида хобби "
-            query.edit_message_text(text, reply_markup=make_keyboard(all_hobby,"inline",8,None,FINISH))
-        
+    update.message.reply_text(text, reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF))
+    return "working_about_info"   
 #-------------------------------------------  
 # Обработчик Соцсетей
 def manage_social_nets(update: Update, context: CallbackContext):
@@ -617,7 +425,7 @@ def manage_social_nets_action(update: Update, context: CallbackContext):
         return "working_about_info"
     elif update.message.text == ADD_DEL_SKIP["del"]:
         update.message.reply_text("Удаление соцсетей", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_social_nets = mymodels.get_dict(mymodels.SocialNets,"pk","soc_net_site", user)
+        all_social_nets = mymodels.get_model_dict(mymodels.SocialNets,"pk","soc_net_site", user)
         text = "Выберите удаляемую соцсеть"
         update.message.reply_text(text, reply_markup=make_keyboard(all_social_nets,"inline",2,None,FINISH))
         return "delete_social_nets"
@@ -645,7 +453,7 @@ def delete_social_nets(update: Update, context: CallbackContext):
     else:
         social_nets = mymodels.SocialNets.objects.get(pk=int(variant))
         social_nets.delete()
-        all_social_nets = mymodels.get_dict(mymodels.SocialNets,"pk","soc_net_site", user)
+        all_social_nets = mymodels.get_model_dict(mymodels.SocialNets,"pk","soc_net_site", user)
         if len(all_social_nets) == 0:
             all_social_nets_txt = "Все соцсети удалены"
             query.edit_message_text(text=all_social_nets_txt)
@@ -744,7 +552,7 @@ def manage_offers_action(update: Update, context: CallbackContext):
         return "working"
     elif update.message.text == ADD_DEL_SKIP["del"]:
         update.message.reply_text("Удаление предложений", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_offers = mymodels.get_dict(mymodels.Offers,"pk","offer", user)
+        all_offers = mymodels.get_model_dict(mymodels.Offers,"pk","offer", user)
         #all_offers_txt = mymodels.get_model_text(mymodels.Offers,["NN","offer","image"], user)
         text = "Выберите удаляемое предложение"
         update.message.reply_text(text, reply_markup=make_keyboard(all_offers,"inline",1,None,FINISH))
@@ -772,7 +580,7 @@ def delete_offers(update: Update, context: CallbackContext):
     else:
         offers = mymodels.Offers.objects.get(pk=int(variant))
         offers.delete()
-        all_offers = mymodels.get_dict(mymodels.Offers,"pk","offer", user)
+        all_offers = mymodels.get_model_dict(mymodels.Offers,"pk","offer", user)
         if len(all_offers) == 0:
             all_offers_txt = "Все предложения удалены"
             query.edit_message_text(text=all_offers_txt)
@@ -851,7 +659,7 @@ def manage_referes_action(update: Update, context: CallbackContext):
         return "working"
     elif update.message.text == ADD_DEL_SKIP["del"]:
         update.message.reply_text("Удаление рекомендателей", reply_markup=make_keyboard(EMPTY,"usual",1))
-        all_referes = mymodels.get_dict(mymodels.UserReferrers,"pk","referrer", user)
+        all_referes = mymodels.get_model_dict(mymodels.UserReferrers,"pk","referrer", user)
         text = "Выберите удаляемого рекомендателя"
         update.message.reply_text(text, reply_markup=make_keyboard(all_referes,"inline",2,None,FINISH))
         return "delete_referes"
@@ -880,7 +688,7 @@ def delete_referes(update: Update, context: CallbackContext):
     else:
         referer = mymodels.UserReferrers.objects.get(pk=int(variant))
         referer.delete()
-        all_referes = mymodels.get_dict(mymodels.UserReferrers,"pk","referrer", user)
+        all_referes = mymodels.get_model_dict(mymodels.UserReferrers,"pk","referrer", user)
         if len(all_referes) == 0:
             all_referes_txt = "Все рекомендатели удалены"
             query.edit_message_text(text=all_referes_txt)
@@ -899,7 +707,7 @@ def add_referes(update: Update, context: CallbackContext):
         update.message.reply_text(text, reply_markup=make_keyboard(START_MENU,"usual",2,None,BACK))
         return "working"
     else:
-        selected_users = mymodels.get_dict(mymodels.User,"pk","first_name,last_name", None,{"last_name":update.message.text})
+        selected_users = mymodels.get_model_dict(mymodels.User,"pk","first_name,last_name", None,{"last_name":update.message.text})
         if len(selected_users) == 0:
             text = "Такие пользователи не найдены. Повторите ввод или завершите добавление"        
             update.message.reply_text(text, reply_markup=make_keyboard(FINISH,"usual",1), disable_web_page_preview=True)
@@ -998,22 +806,10 @@ def setup_dispatcher_conv(dp: Dispatcher):
             "choose_action_main_photo":[MessageHandler(Filters.photo & FilterPrivateNoCommand, manage_main_photo_action, run_async=True),
                                        MessageHandler(Filters.text & FilterPrivateNoCommand, manage_main_photo_txt_action, run_async=True)],
             "choose_action_job_region":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_job_region_action, run_async=True)],
-            "select_region":[CallbackQueryHandler(process_region, run_async=True),
-                             MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)], 
             "choose_action_branch":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_branch_action, run_async=True)],
-            "select_branch":[CallbackQueryHandler(process_branch, run_async=True),
-                             MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)], 
             "choose_action_needs":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_needs_action, run_async=True)],                         
-            "choose_action_sport":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_sport_action, run_async=True)],
-            "delete_sport":[CallbackQueryHandler(delete_sport, run_async=True),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],
-            "add_sport":[CallbackQueryHandler(add_sport, run_async=True),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],                           
+            "choose_action_sport":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_sport_action, run_async=True)],                         
             "choose_action_hobby":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_hobby_action, run_async=True)],
-            "delete_hobby":[CallbackQueryHandler(delete_hobby, run_async=True),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],
-            "add_hobby":[CallbackQueryHandler(add_hobby, run_async=True),
-                           MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],                           
             "choose_action_offers":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_offers_action, run_async=True)],
             "delete_offers":[CallbackQueryHandler(delete_offers, run_async=True),
                            MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter, run_async=True)],

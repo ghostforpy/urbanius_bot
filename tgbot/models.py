@@ -14,64 +14,6 @@ from django.utils.safestring import mark_safe
 
 from tgbot import utils
 
-class Sport(models.Model):
-    name = models.CharField("Вид спорта",unique=True, max_length=150, blank=False)
-    def __str__(self):
-        return self.name
-    class Meta:
-        verbose_name_plural = 'Виды спорта' 
-        verbose_name = 'Вид спорта' 
-        ordering = ['name']
-
-class UserSport(models.Model):
-    sport = models.ForeignKey(Sport,on_delete=models.CASCADE, verbose_name="Вид спорта")
-    user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
-    def __str__(self):
-        return str(self.sport)
-    class Meta:
-        verbose_name_plural = 'Спорт' 
-        verbose_name = 'Спорт' 
-        ordering = ['user', 'sport']  
-
-class Hobby(models.Model):
-    name = models.CharField("Вид хобби",unique=True, max_length=150, blank=False)
-    def __str__(self):
-        return self.name
-    class Meta:
-        verbose_name_plural = 'Виды хобби' 
-        verbose_name = 'Вид хобби' 
-        ordering = ['name']
-
-class UserHobby(models.Model):
-    hobby = models.ForeignKey(Hobby,on_delete=models.CASCADE, verbose_name="Хобби")
-    user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
-    def __str__(self):
-        return str(self.hobby)
-    class Meta:
-        verbose_name_plural = 'Хобби пользователя' 
-        verbose_name = 'Хобби пользователя' 
-        ordering = ['user', 'hobby']        
-
-class JobRegions(models.Model):
-    code = models.IntegerField("Код региона",unique=False, null=True)
-    name = models.CharField("Название региона работы",unique=True, max_length=150, blank=False)
-    def __str__(self):
-        return self.name
-    class Meta:
-        verbose_name_plural = 'Регионы работы' 
-        verbose_name = 'Регион работы' 
-        ordering = ['code']
-
-
-class Branch(models.Model):
-    name = models.CharField("Отрасль",unique=True, max_length=150, blank=False)
-    def __str__(self):
-        return self.name
-    class Meta:
-        verbose_name_plural = 'Отрасли' 
-        verbose_name = 'Отрасль' 
-        ordering = ['name']
-
 class Offers(models.Model):
     offer = models.TextField("Суть предложения", blank=False)
     image = models.FileField("Файл", blank=True, upload_to="offers")
@@ -152,41 +94,44 @@ class UserReferrers(models.Model):
         ordering = ['user', 'referrer'] 
 
 class User(models.Model):
+    # Личная инфо:
     user_id = models.BigIntegerField(primary_key=True)
     username = models.CharField("Телеграм логин",max_length=32, null=True, blank=True)
     last_name = models.CharField("Фамилия", max_length=256, null=True, blank=True)
     first_name = models.CharField("Имя", max_length=256)
+    email = models.EmailField("E-mail", max_length=100, null=True, blank=True)
+    telefon = models.CharField("Телефон", max_length=13, null=True, blank=True)
     sur_name = models.CharField("Отчество", max_length=150, null=True, blank=True)
     date_of_birth = models.DateField("Дата рождения", null=True, default=timezone.now)    
-    language_code = models.CharField(max_length=8, null=True, blank=True, help_text="Telegram client's lang")
-    deep_link = models.CharField("Ссылка", max_length=64, null=True, blank=True)
+    main_photo = models.ImageField("Основное фото", upload_to='user_fotos', null=True, blank=True)
+    status = models.ForeignKey(Status, on_delete=models.DO_NOTHING, verbose_name="Статус",null=True, blank=True)
+
 
     is_blocked_bot = models.BooleanField("Заблокирован", default=False)
     is_banned = models.BooleanField("Забанен", default=False)
-
     is_admin = models.BooleanField("Администратор",default=False)
     is_moderator = models.BooleanField("Модератор",default=False)
     random_coffe_on = models.BooleanField("Подключено Random coffe",default=False)
+    # Бизнес инфо:
+    company = models.CharField("Компания", max_length=150, null=True, blank=True)
+    job = models.CharField("Должность", max_length=150, null=True, blank=True)
+    branch = models.CharField("Отрасль", max_length=150, null=True, blank=True)
+    citi = models.CharField("Город", max_length=150, null=True, blank=True)
+    job_region = models.CharField("Регион присутствия", max_length=150, null=True, blank=True)
+    site = models.CharField("Сайт", max_length=150, null=True, blank=True)
+    # О себе:
+    about = models.TextField("О себе", null=True, blank=True)
+    sport = models.TextField("Спорт", null=True, blank=True)
+    hobby = models.TextField("Хобби", null=True, blank=True)
+    tags = models.TextField("Тэги",  null=True, blank=True)
+    needs = models.TextField("Потребности", null=True, blank=True)
+    comment = models.TextField("комментарий", null=True, blank=True)
+    # Дополнительные поля
 
     created_at = models.DateTimeField("Создан", auto_now_add=True)
     updated_at = models.DateTimeField("Изменен", auto_now=True)
-
-    main_photo = models.ImageField("Основное фото", upload_to='user_fotos', null=True, blank=True)
-    telefon = models.CharField("Телефон", max_length=13, null=True, blank=True)
-    email = models.EmailField("E-mail", max_length=100, null=True, blank=True)
- 
-    citi = models.CharField("Город", max_length=150, null=True, blank=True)
-    company = models.CharField("Компания", max_length=150, null=True, blank=True)
-    job = models.CharField("Должность", max_length=150, null=True, blank=True)
-    site = models.CharField("Сайт", max_length=150, null=True, blank=True)
-    tags = models.CharField("Тэги", max_length=150, null=True, blank=True)
-    needs = models.TextField("Потребности", null=True, blank=True)
-    about = models.TextField("О себе", null=True, blank=True)
-    comment = models.TextField("комментарий", null=True, blank=True)
-    # Ссылочные поля
-    job_region = models.ForeignKey(JobRegions, on_delete=models.DO_NOTHING, verbose_name="Регион работы",null=True, blank=True)
-    branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, verbose_name="Отрасль",null=True, blank=True)
-    status = models.ForeignKey(Status, on_delete=models.DO_NOTHING, verbose_name="Статус",null=True, blank=True)
+    language_code = models.CharField(max_length=8, null=True, blank=True, help_text="Telegram client's lang")
+    deep_link = models.CharField("Ссылка", max_length=64, null=True, blank=True)
 
     
     def __str__(self):
@@ -259,11 +204,11 @@ class User(models.Model):
             Q(needs__icontains = keywords)| \
             Q(about__icontains = keywords)| \
             Q(comment__icontains = keywords)| \
-            Q(job_region__name__icontains = keywords)| \
-            Q(branch__name__icontains = keywords)| \
+            Q(job_region__icontains = keywords)| \
+            Q(branch__icontains = keywords)| \
             Q(status__name__icontains = keywords)| \
-            Q(usersport__sport__name__icontains = keywords)| \
-            Q(userhobby__hobby__name__icontains = keywords)| \
+            Q(sport__icontains = keywords)| \
+            Q(hobby__icontains = keywords)| \
             Q(offers__offer__icontains = keywords)| \
             Q(socialnets__link__icontains = keywords)| \
             Q(socialnets__soc_net_site__name__icontains = keywords)| \
@@ -278,14 +223,16 @@ class User(models.Model):
     def short_profile(self)->str:
         res = "<b>Пользователь:</b> \n"
         res += str(self)
-        res += "\n<b>Регион:</b> \n"
-        res += utils.mystr(self.job_region)
-        res += "\n<b>Отрасль:</b> \n"
-        res += utils.mystr(self.branch)
         res += "\n<b>Компания:</b> \n"
         res += utils.mystr(self.company)
         res += "\n<b>Должность:</b> \n"
         res += utils.mystr(self.job)
+        res += "\n<b>Отрасль:</b> \n"
+        res += utils.mystr(self.branch)
+        res += "\n<b>Город:</b> \n"
+        res += utils.mystr(self.citi)
+        res += "\n<b>Регион:</b> \n"
+        res += utils.mystr(self.job_region)
         res += "\n<b>О себе:</b> \n"
         res += utils.mystr(self.about)
    
@@ -299,7 +246,24 @@ class User(models.Model):
         res += "\n  <b>Телефон:</b> " + utils.mystr(self.telefon)
         res += "\n  <b>Дата рождения:</b> " + utils.mystr(self.date_of_birth)
         res += "\n  <b>Статус:</b> " + utils.mystr(self.status)
-        res += "\n<b>Группы:</b>\n" + get_model_text(UsertgGroups,["NN","group"], self)
+        res += "\n  <b>Группы:</b>\n    " + get_model_text(UsertgGroups,["group"], self).replace("\n", "\n    ")
+        res += "<b>Бизнес информация:</b> "
+        res += "\n  <b>Компания:</b> " + utils.mystr(self.company)
+        res += "\n  <b>Должность:</b> " + utils.mystr(self.job)
+        res += "\n  <b>Отрасль:</b> " + utils.mystr(self.branch)
+        res += "\n  <b>Город:</b> " + utils.mystr(self.citi)
+        res += "\n  <b>Регион:</b> " + utils.mystr(self.job_region)
+        res += "\n  <b>Сайт:</b> " + utils.mystr(self.site)
+        res += "\n<b>Информация о себе:</b> "
+        res += "\n  <b>О себе:</b> " + utils.mystr(self.about)
+        res += "\n  <b>Спорт:</b> " + utils.mystr(self.sport)
+        res += "\n  <b>Хобби:</b> " + utils.mystr(self.hobby)
+        res += "\n  <b>Соцсети:</b>\n    " + get_model_text(SocialNets,["soc_net_site","link"], self).replace("\n", "\n    ")
+        res += "  <b>Тэги:</b> " + utils.mystr(self.tags)
+
+        res += "\n<b>Предложения:</b>\n" + get_model_text(Offers,["NN","offer"], self)
+        res += "<b>Потребности:</b>\n" + utils.mystr(self.needs)
+        res += "\n<b>Рекомендатели:</b>\n" + get_model_text(UserReferrers,["NN","referrer"], self)
 
    
         return res
@@ -364,7 +328,7 @@ class Config(models.Model):
 # key - имя поля чье значение попадет в ключ, 
 # value имя поля чье значение попадет в значение если "NN" то подставится порядковый номер
 # parent значение родительской модели для выборки подчиненных элементов 
-def get_dict(model, key: str, value: str, parent = None, filter = None):
+def get_model_dict(model, key: str, value: str, parent = None, filter = None):
     res = dict()
     if parent:
         model_set = getattr(parent,model._meta.model_name+"_set") # получаем выборку дочерних записей parent

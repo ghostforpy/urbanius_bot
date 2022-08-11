@@ -22,12 +22,6 @@ class OffersInline(admin.TabularInline):
 class SocialNetsInline(admin.TabularInline):
     model = SocialNets
 
-class UserSportInline(admin.TabularInline):
-    model = UserSport
-
-class UserHobbyInline(admin.TabularInline):
-    model = UserHobby
-
 class UsertgGroupsInline(admin.TabularInline):
     model = UsertgGroups
 
@@ -48,13 +42,18 @@ class UserAdmin(admin.ModelAdmin):
     fields = [('user_id', 'username', 'deep_link'), 
               ('last_name', 'first_name', 'sur_name', 'date_of_birth'), 
               ('avatar_tag', 'main_photo', 'telefon', 'email'),
-              ('status'),
+              ('status', ),
               ('is_blocked_bot', 'is_banned', 'is_admin', 'is_moderator', "random_coffe_on"),
-              ('job_region', 'citi', 'branch'), 
-              ('company', 'job', 'site', 'tags'),
-              'needs','about','comment'
+              ('company', 'job', 'branch'),
+              ('citi', 'job_region', 'site'), 
+               'about',
+               'sport',
+               'hobby',
+               'tags',
+               'needs',
+               'comment'
               ]
-    inlines = [UsertgGroupsInline, OffersInline, SocialNetsInline, UserSportInline, UserHobbyInline, UserReferrersInline]
+    inlines = [OffersInline, UsertgGroupsInline, SocialNetsInline,  UserReferrersInline]
     formfield_overrides = {
         models.IntegerField: {'widget': NumberInput(attrs={'size':'20'})},
         models.TextField: {'widget': Textarea(attrs={'rows':2, 'cols':100})},
@@ -115,25 +114,6 @@ class UserAdmin(admin.ModelAdmin):
         return render(
             request, "admin/confirm_registration.html", {'items': queryset,'form': form, 'title':u' '}
         )
-@admin.register(Sport)
-class SportAdmin(admin.ModelAdmin) :
-    list_display = ("name",) 
-    list_display_links = ("name", ) 
-    search_fields = ("name",)
-
-
-@admin.register(Hobby)
-class HobbyAdmin(admin.ModelAdmin) :
-    list_display = ("name",) 
-    list_display_links = ("name", ) 
-    search_fields = ("name",)
-
-
-@admin.register(JobRegions)
-class JobRegionsAdmin(admin.ModelAdmin) :
-    list_display = ("code","name") 
-    list_display_links = ("code","name" ) 
-    search_fields = ("code","name")
 
 
 @admin.register(SocialNetSites)
@@ -141,13 +121,6 @@ class SocialNetSitesAdmin(admin.ModelAdmin) :
     list_display = ("name", "link") 
     list_display_links = ("name", "link") 
     search_fields = ("name", "link")
-
-
-@admin.register(Branch)
-class BranchAdmin(admin.ModelAdmin) :
-    list_display = ("name",) 
-    list_display_links = ("name", ) 
-    search_fields = ("name",)
 
 
 @admin.register(Status)
