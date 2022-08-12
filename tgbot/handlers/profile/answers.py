@@ -23,6 +23,7 @@ START_MENU ={
             "offers":"Предложения",
             "needs":"Потребности",#
             "view_profile":"Посмотреть профиль",#
+            "view_rating":"Рейтинг",#
             }
 
 PERSONAL_MENU ={

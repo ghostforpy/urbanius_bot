@@ -13,4 +13,3 @@ YES_NO = {"yes":"Да", "no":"Нет"}
 CHANGE_SKIP = {"change":"Изменить", "skip":"Пропустить"}
 BACK = {"back":"Вернуться в основное меню"} 
 FIND = {"find_members":{"label":"Найти участников","type":"switch_inline"}}
-

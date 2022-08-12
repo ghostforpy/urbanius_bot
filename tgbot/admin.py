@@ -42,8 +42,9 @@ class UserAdmin(admin.ModelAdmin):
     fields = [('user_id', 'username', 'deep_link'), 
               ('last_name', 'first_name', 'sur_name', 'date_of_birth'), 
               ('avatar_tag', 'main_photo', 'telefon', 'email'),
-              ('status', ),
-              ('is_blocked_bot', 'is_banned', 'is_admin', 'is_moderator', "random_coffe_on"),
+              ('status', 'rating'),
+              ('is_blocked_bot', 'is_banned', 'is_admin', 'is_moderator'),
+              ("verified_by_security", "random_coffe_on"),
               ('company', 'job', 'branch'),
               ('citi', 'job_region', 'site'), 
                'about',
@@ -145,6 +146,12 @@ class MessageTemplatesAdmin(admin.ModelAdmin) :
     list_display = ("code","name") 
     list_display_links = ("code","name" ) 
     search_fields = ("code","name")
+
+@admin.register(UsersRatings)
+class UsersRatingsAdmin(admin.ModelAdmin) :
+    list_display = ("user","rating","comment","created_at") 
+    list_display_links = ("rating","comment") 
+    search_fields = ("user","rating")
 
 # @admin.register(UserActionLog)
 # class UserActionLogAdmin(admin.ModelAdmin):

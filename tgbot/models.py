@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import requests
-import operator
-from django.db.models import Q
+from random import random
+from django.db.models import Q, Avg
 
 from datetime import timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Tuple
 
 from django.db import models
 from django.utils import timezone
@@ -15,7 +14,7 @@ from django.utils.safestring import mark_safe
 from tgbot import utils
 
 class Offers(models.Model):
-    offer = models.TextField("Суть предложения", blank=False)
+    offer = models.TextField("Суть предложения", blank = True, null = True)
     image = models.FileField("Файл", blank=True, upload_to="offers")
     user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
     def __str__(self):
@@ -93,6 +92,18 @@ class UserReferrers(models.Model):
         verbose_name = 'Рекомендатель' 
         ordering = ['user', 'referrer'] 
 
+class UsersRatings(models.Model):
+    rating = models.IntegerField("Оценка пользователя", default=3, null=True, blank=True)
+    comment = models.TextField("Комментарий к оценке", null=True, blank=True)
+    created_at = models.DateTimeField("Создана", auto_now_add=True)
+    user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
+    def __str__(self):
+        return str(str(self.rating) + ", " + str(self.comment))
+    class Meta:
+        verbose_name_plural = 'Оценки пользователей' 
+        verbose_name = 'Оценка пользователя' 
+        ordering = ['user', 'rating'] 
+
 class User(models.Model):
     # Личная инфо:
     user_id = models.BigIntegerField(primary_key=True)
@@ -105,13 +116,14 @@ class User(models.Model):
     date_of_birth = models.DateField("Дата рождения", null=True, default=timezone.now)    
     main_photo = models.ImageField("Основное фото", upload_to='user_fotos', null=True, blank=True)
     status = models.ForeignKey(Status, on_delete=models.DO_NOTHING, verbose_name="Статус",null=True, blank=True)
-
+    rating = models.IntegerField("Итоговый ретинг", default=3, null=True, blank=True)
 
     is_blocked_bot = models.BooleanField("Заблокирован", default=False)
     is_banned = models.BooleanField("Забанен", default=False)
     is_admin = models.BooleanField("Администратор",default=False)
     is_moderator = models.BooleanField("Модератор",default=False)
     random_coffe_on = models.BooleanField("Подключено Random coffe",default=False)
+    verified_by_security = models.BooleanField("Проверен службой безопасности",default=False)
     # Бизнес инфо:
     company = models.CharField("Компания", max_length=150, null=True, blank=True)
     job = models.CharField("Должность", max_length=150, null=True, blank=True)
@@ -138,7 +150,15 @@ class User(models.Model):
         res = f'@{self.username}' if self.username is not None else f'{self.user_id}'
         res = " ".join([res, str(self.first_name), str(self.last_name)])
         return res
-
+    # def save_model(self, request, obj, form, change):
+    #     import random
+    #     obj.rating = random.randint(0, 5)
+    #     super().save_model(request, obj, form, change)
+    def save(self, *args, **kwargs):
+        import random
+        self.rating = random.randint(0, 5)
+        super(User, self).save(*args, **kwargs)
+        
     # Here I return the avatar or picture with an owl, if the avatar is not selected
     def get_avatar(self):
         if not self.main_photo:
@@ -260,13 +280,20 @@ class User(models.Model):
         res += "\n  <b>Хобби:</b> " + utils.mystr(self.hobby)
         res += "\n  <b>Соцсети:</b>\n    " + get_model_text(SocialNets,["soc_net_site","link"], self).replace("\n", "\n    ")
         res += "  <b>Тэги:</b> " + utils.mystr(self.tags)
-
         res += "\n<b>Предложения:</b>\n" + get_model_text(Offers,["NN","offer"], self)
         res += "<b>Потребности:</b>\n" + utils.mystr(self.needs)
-        res += "\n<b>Рекомендатели:</b>\n" + get_model_text(UserReferrers,["NN","referrer"], self)
-
-   
+        res += "\n<b>Рекомендатели:</b>\n" + get_model_text(UserReferrers,["NN","referrer"], self)  
         return res
+
+    def get_users_rating(self):
+        avg_rating_set = self.usersratings_set.aggregate(avg_rating = Avg("rating"))
+        if avg_rating_set["avg_rating"]:
+            res = int(avg_rating_set["avg_rating"])
+        else:
+            res = None
+        return res
+        
+
     def invited_users(self):  # --> User queryset 
         return User.objects.filter(deep_link=str(self.user_id), created_at__gt=self.created_at)
 
