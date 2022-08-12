@@ -18,7 +18,7 @@ START_MENU_FULL = {
         "find_members":"Поиск участников",
         "profile":"Профиль пользователя",
         "to_admins":"Сообщение администраторам",
-        "payment":"Оплатить подписку"
+        "payment":"Оплатить"
     }
 
 START_MENU_SHORT = {

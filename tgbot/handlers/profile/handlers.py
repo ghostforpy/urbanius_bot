@@ -36,6 +36,21 @@ def blank(update: Update, context: CallbackContext):
 def bad_callback_enter(update: Update, context: CallbackContext):
     update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(EMPTY,"usual",2))
 
+def view_profile(update: Update, context: CallbackContext):
+    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
+    if not(user.main_photo):
+        photo = settings.BASE_DIR / 'media/no_foto.jpg'
+    else:
+        photo = user.main_photo.path
+    if os.path.exists(photo):
+        send_photo(user.user_id, open(photo, 'rb'))
+    else:
+        send_message(user_id = user.user_id,text = NOT_FOTO)
+    profile_txt = user.full_profile()
+    reply_markup = make_keyboard(START_MENU,"usual",2,None,BACK)
+    update.message.reply_text(profile_txt, reply_markup = reply_markup, 
+                   parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True)
+    return "working"
 # Начало работы с профилем
 def start_conversation(update: Update, context: CallbackContext):
 
@@ -758,7 +773,8 @@ def setup_dispatcher_conv(dp: Dispatcher):
                        MessageHandler(Filters.text([START_MENU["about_info"]]) & FilterPrivateNoCommand, manage_about_info, run_async=True),
                        MessageHandler(Filters.text([START_MENU["needs"]]) & FilterPrivateNoCommand, manage_needs, run_async=True),
                        MessageHandler(Filters.text([START_MENU["offers"]]) & FilterPrivateNoCommand, manage_offers, run_async=True),
-                       MessageHandler(Filters.text([START_MENU["referes"]]) & FilterPrivateNoCommand, manage_referes, run_async=True),                      
+                       MessageHandler(Filters.text([START_MENU["referes"]]) & FilterPrivateNoCommand, manage_referes, run_async=True),                     
+                       MessageHandler(Filters.text([START_MENU["view_profile"]]) & FilterPrivateNoCommand, view_profile, run_async=True),
                        MessageHandler(Filters.text(BACK["back"]) & FilterPrivateNoCommand, stop_conversation, run_async=True),
                        MessageHandler(Filters.text & FilterPrivateNoCommand, blank, run_async=True)
                       ],

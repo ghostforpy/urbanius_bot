@@ -122,13 +122,11 @@ class SocialNetSitesAdmin(admin.ModelAdmin) :
     list_display_links = ("name", "link") 
     search_fields = ("name", "link")
 
-
 @admin.register(Status)
 class StatusAdmin(admin.ModelAdmin) :
     list_display = ("stat_id", "name",) 
     list_display_links = ("name", ) 
     search_fields = ("name",)
-
 
 @admin.register(tgGroups)
 class tgGroupsAdmin(admin.ModelAdmin) :
@@ -136,14 +134,17 @@ class tgGroupsAdmin(admin.ModelAdmin) :
     list_display_links = ("name", ) 
     search_fields = ("name",)
 
-
 @admin.register(MessagesToSend)
 class MessagesToSendAdmin(admin.ModelAdmin) :
     list_display = ("receiver","text", "created_at", "sended_at") 
     list_display_links = ("receiver","text" ) 
     search_fields = ("receiver",)
 
-
+@admin.register(MessageTemplates)
+class MessageTemplatesAdmin(admin.ModelAdmin) :
+    list_display = ("code","name") 
+    list_display_links = ("code","name" ) 
+    search_fields = ("code","name")
 
 # @admin.register(UserActionLog)
 # class UserActionLogAdmin(admin.ModelAdmin):

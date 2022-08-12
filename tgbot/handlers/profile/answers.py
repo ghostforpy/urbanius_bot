@@ -19,9 +19,10 @@ START_MENU ={
             "personal_info": "Личная информация", #
             "busines_info": "Бизнес информация",  # 
             "about_info":"О себе",
-            "offers":"Предложение",
-            "needs":"Потребности",#
             "referes":"Рекомендатели",#
+            "offers":"Предложения",
+            "needs":"Потребности",#
+            "view_profile":"Посмотреть профиль",#
             }
 
 PERSONAL_MENU ={

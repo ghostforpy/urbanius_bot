@@ -247,13 +247,13 @@ class User(models.Model):
         res += "\n  <b>Дата рождения:</b> " + utils.mystr(self.date_of_birth)
         res += "\n  <b>Статус:</b> " + utils.mystr(self.status)
         res += "\n  <b>Группы:</b>\n    " + get_model_text(UsertgGroups,["group"], self).replace("\n", "\n    ")
-        res += "<b>Бизнес информация:</b> "
+        res += "\n<b>Бизнес информация:</b> "
         res += "\n  <b>Компания:</b> " + utils.mystr(self.company)
         res += "\n  <b>Должность:</b> " + utils.mystr(self.job)
         res += "\n  <b>Отрасль:</b> " + utils.mystr(self.branch)
         res += "\n  <b>Город:</b> " + utils.mystr(self.citi)
         res += "\n  <b>Регион:</b> " + utils.mystr(self.job_region)
-        res += "\n  <b>Сайт:</b> " + utils.mystr(self.site)
+        res += "\n  <b>Сайт:</b> " + utils.mystr(self.site) + "\n"
         res += "\n<b>Информация о себе:</b> "
         res += "\n  <b>О себе:</b> " + utils.mystr(self.about)
         res += "\n  <b>Спорт:</b> " + utils.mystr(self.sport)
@@ -276,13 +276,14 @@ class User(models.Model):
 
 
 class MessagesToSend(models.Model):
-    receiver  = models.ForeignKey("User", on_delete=models.CASCADE, related_name="receiver", verbose_name="Получатель", blank=False, null=False)    
+    receiver = models.ForeignKey("User", on_delete=models.CASCADE, related_name="receiver", verbose_name="Получатель", blank=False, null=False)    
     text = models.TextField("Текст сообщения",unique=False, blank=False)
     created_at = models.DateTimeField("Создано в", auto_now_add=True)
-    sended_at = models.DateTimeField("Отослано в")
+    sended_at = models.DateTimeField("Отослано в", blank=True, null=True)
     sended = models.BooleanField("Отослано", default=False)
     recommended_friend = models.ForeignKey("User", on_delete=models.SET_NULL, related_name="recommended_friend", verbose_name="Рекомендованный друг по Random coffe", blank=True, null=True)
-    file = models.FileField("Файл", blank=True, upload_to="messages")
+    file = models.FileField("Файл", blank=True, null=True, upload_to="messages")
+    #photo = models.ImageField("Фото", blank=True, null=True, upload_to="messages")
 
     def __str__(self):
         return self.text
@@ -291,6 +292,19 @@ class MessagesToSend(models.Model):
         verbose_name = 'Сообщение к отсылке' 
         ordering = ['created_at']
 
+
+class MessageTemplates(models.Model):
+    code = models.CharField("Код", max_length=256, null=False, blank=False)
+    name = models.CharField("Название", max_length=256, null=False, blank=False)
+    text = models.TextField("Текст сообщения", blank=False)
+    file = models.FileField("Файл", blank=True, null=True, upload_to="templates")
+
+    def __str__(self):
+        return self.text
+    class Meta:
+        verbose_name_plural = 'Шаблоны сообщений' 
+        verbose_name = 'Шаблон сообщения' 
+        ordering = ['code']
 
 class UserActionLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
