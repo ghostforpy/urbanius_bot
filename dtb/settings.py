@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     # local apps
     'sheduler.apps.ShedulerConfig',
     'tgbot.apps.TgbotConfig',
+    'statistic.apps.StatisticConfig',
 
 ]
 

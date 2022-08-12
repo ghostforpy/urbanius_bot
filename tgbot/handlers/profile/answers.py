@@ -51,3 +51,14 @@ ABOUT_MENU ={
                 "tags":"Тэги", #
 }
 
+def make_keyboard_start_menu():
+    return make_keyboard(START_MENU,"usual",2,None,BACK)
+
+def make_keyboard_pers_menu():
+    return make_keyboard(PERSONAL_MENU,"usual",4,None,BACK_PROF)
+
+def make_keyboard_busines_menu():
+    return make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF)
+
+def make_keyboard_about_menu():
+    return make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF)

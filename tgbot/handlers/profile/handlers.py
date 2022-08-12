@@ -54,32 +54,32 @@ def start_conversation(update: Update, context: CallbackContext):
         send_message(user_id = user.user_id,text = NOT_FOTO)
 
     profile_txt = user.full_profile()
-    reply_markup = make_keyboard(START_MENU,"usual",2,None,BACK)
+    reply_markup = make_keyboard_start_menu()
     send_message(user_id = user.user_id, text = profile_txt, reply_markup = reply_markup, 
                  parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True)
 
     return "working"
 
 def go_start_conversation(update: Update, context: CallbackContext):
-    reply_markup = make_keyboard(START_MENU,"usual",2,None,BACK)
+    reply_markup = make_keyboard_start_menu()
     update.message.reply_text(PROF_HELLO, reply_markup = reply_markup)
     return "working"
 
 # Начало работы с персональной инфо
 def manage_personal_info(update: Update, context: CallbackContext):
-    reply_markup = make_keyboard(PERSONAL_MENU,"usual",4,None,BACK_PROF)
+    reply_markup = make_keyboard_pers_menu()
     update.message.reply_text(PERSONAL_START_MESSS, reply_markup = reply_markup)
     return "working_personal_info"
 
 # Начало работы с бизнес инфо
 def manage_busines_info(update: Update, context: CallbackContext):
-    reply_markup = make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF)
+    reply_markup = make_keyboard_busines_menu()
     update.message.reply_text(BUSINES_START_MESSS, reply_markup = reply_markup)
     return "working_busines_info"    
 
 # Начало работы с инфо о себе
 def manage_about_info(update: Update, context: CallbackContext):
-    reply_markup = make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF)
+    reply_markup = make_keyboard_about_menu()
     update.message.reply_text(ABOUT_START_MESSS, reply_markup = reply_markup)
     return "working_about_info"
 
@@ -117,7 +117,7 @@ def manage_fio_action(update: Update, context: CallbackContext):
         text = "ФИО изменены"
     else:
         text = "ФИО не изменены"
-    update.message.reply_text(text, reply_markup=make_keyboard(PERSONAL_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
     return "working_personal_info"
 #-------------------------------------------  
 # Обработчик e-mail
@@ -140,7 +140,7 @@ def manage_email_action(update: Update, context: CallbackContext):
         user.save()
         text = "e-mail изменен"
         
-    update.message.reply_text(text, reply_markup=make_keyboard(PERSONAL_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
     return "working_personal_info"
 
 #-------------------------------------------  
@@ -159,7 +159,7 @@ def manage_phone_action(update: Update, context: CallbackContext):
         text = "Телефон изменен"
     else:
         text = "Телефон не изменен"
-    update.message.reply_text(text, reply_markup=make_keyboard(PERSONAL_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
     return "working_personal_info"
 
 #-------------------------------------------  
@@ -182,7 +182,7 @@ def manage_date_of_birth_action(update: Update, context: CallbackContext):
         user.date_of_birth = date
         user.save()
         text = "День рождения изменен"    
-    update.message.reply_text(text, reply_markup=make_keyboard(PERSONAL_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
     return "working_personal_info"
 
 #-------------------------------------------  
@@ -209,14 +209,14 @@ def manage_main_photo_action(update: Update, context: CallbackContext):
     user.main_photo = "user_fotos/"+filename
     user.save()
     text = "Фото изменено"
-    update.message.reply_text(text, reply_markup=make_keyboard(PERSONAL_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
     return "working_personal_info"
 
 def manage_main_photo_txt_action(update: Update, context: CallbackContext):
     text = ""
     if update.message.text == SKIP["skip"]:        
         text = "Фото  не изменено"
-        update.message.reply_text(text, reply_markup=make_keyboard(PERSONAL_MENU,"usual",4,None,BACK_PROF))
+        update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
         return "working_personal_info"
     else:
         text = "Пришлите именно фотографию или пропустите шаг"
@@ -227,7 +227,7 @@ def manage_main_photo_txt_action(update: Update, context: CallbackContext):
 def manage_status(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     text = SAY_STATUS.format(user.status)
-    update.message.reply_text(text, reply_markup=make_keyboard(PERSONAL_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
     return "working_personal_info"
 
 #-------------------------------------------  
@@ -236,7 +236,7 @@ def manage_groups(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     all_groups = mymodels.get_model_text(mymodels.UsertgGroups,["NN","group"], user)
     text = SAY_GROUPS.format(str(all_groups))
-    update.message.reply_text(text, reply_markup=make_keyboard(PERSONAL_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
     return "working_personal_info"
 
 
@@ -259,7 +259,7 @@ def manage_company_action(update: Update, context: CallbackContext):
         text = "Компания изменена"
     else:
         text = "Компания не изменена"
-    update.message.reply_text(text, reply_markup=make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
     return "working_busines_info"
 
 #-------------------------------------------  
@@ -278,7 +278,7 @@ def manage_job_action(update: Update, context: CallbackContext):
         text = "Должность изменена"
     else:
         text = "Должность не изменена"
-    update.message.reply_text(text, reply_markup=make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
     return "working_busines_info"
 
 #-------------------------------------------  
@@ -296,7 +296,7 @@ def manage_branch_action(update: Update, context: CallbackContext):
         text = "Отрасль изменена"
     else:
         text = "Отрасль  не изменена"
-    update.message.reply_text(text, reply_markup=make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
     return "working_busines_info"
 #-------------------------------------------  
 # Обработчик Город
@@ -314,7 +314,7 @@ def manage_citi_action(update: Update, context: CallbackContext):
         text = "Город изменен"
     else:
         text = "Город не изменен"
-    update.message.reply_text(text, reply_markup=make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
     return "working_busines_info"
 
 #-------------------------------------------  
@@ -333,7 +333,7 @@ def manage_job_region_action(update: Update, context: CallbackContext):
         text = "Регион  изменен"
     else:
         text = "Регион  не изменен"
-    update.message.reply_text(text, reply_markup=make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
     return "working_busines_info"
 #-------------------------------------------  
 # Обработчик Сайт
@@ -351,7 +351,7 @@ def manage_site_action(update: Update, context: CallbackContext):
         text = "Сайт изменен"
     else:
         text = "Сайт не изменен"
-    update.message.reply_text(text, reply_markup=make_keyboard(BUSINES_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
     return "working_busines_info"
 
 
@@ -373,7 +373,7 @@ def manage_about_action(update: Update, context: CallbackContext):
         text = "Информация 'О себе' изменена"
     else:
         text = "Информация 'О себе' не изменена"
-    update.message.reply_text(text, reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_about_menu())
     return "working_about_info"
 #-------------------------------------------  
 # Обработчик Спорта
@@ -390,7 +390,7 @@ def manage_sport_action(update: Update, context: CallbackContext):
         text = "Виды спорта изменены"
     else:
         text = "Виды спорта не изменены"
-    update.message.reply_text(text, reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_about_menu())
     return "working_about_info"  
 #-------------------------------------------  
 # Обработчик Хобби
@@ -407,7 +407,7 @@ def manage_hobby_action(update: Update, context: CallbackContext):
         text = "Виды хобби изменены"
     else:
         text = "Виды хобби не изменены"
-    update.message.reply_text(text, reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_about_menu())
     return "working_about_info"   
 #-------------------------------------------  
 # Обработчик Соцсетей
@@ -421,7 +421,7 @@ def manage_social_nets_action(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)    
     if update.message.text == ADD_DEL_SKIP["skip"]:        
         text = "Соцсети не изменены"
-        update.message.reply_text(text, reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF))
+        update.message.reply_text(text, reply_markup=make_keyboard_about_menu())
         return "working_about_info"
     elif update.message.text == ADD_DEL_SKIP["del"]:
         update.message.reply_text("Удаление соцсетей", reply_markup=make_keyboard(EMPTY,"usual",1))
@@ -447,7 +447,7 @@ def delete_social_nets(update: Update, context: CallbackContext):
         all_social_nets_txt = mymodels.get_model_text(mymodels.SocialNets,["NN","soc_net_site"], user)
         query.edit_message_text(text=all_social_nets_txt)
         text = "Удаление соцсетей завершено"
-        reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF) 
+        reply_markup=make_keyboard_about_menu() 
         send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
         return "working_about_info"
     else:
@@ -458,7 +458,7 @@ def delete_social_nets(update: Update, context: CallbackContext):
             all_social_nets_txt = "Все соцсети удалены"
             query.edit_message_text(text=all_social_nets_txt)
             text = "Удаление соцсетей завершено"
-            reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF) 
+            reply_markup=make_keyboard_about_menu() 
             send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
             return "working_about_info"
         else:           
@@ -469,7 +469,7 @@ def add_social_nets(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     if update.message.text == FINISH["finish"]:        
         text = "Завершено добавление соц. сетей"
-        update.message.reply_text(text, reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF))
+        update.message.reply_text(text, reply_markup=make_keyboard_about_menu())
         return "working_about_info"
     elif (len(update.message.entities)>0)and(update.message.entities[0].type == "url"):
         url = update.message.text
@@ -516,7 +516,7 @@ def manage_tags_action(update: Update, context: CallbackContext):
         text = "Теги изменены"
     else:
         text = "Теги  не изменены"
-    update.message.reply_text(text, reply_markup=make_keyboard(ABOUT_MENU,"usual",4,None,BACK_PROF))
+    update.message.reply_text(text, reply_markup=make_keyboard_about_menu())
     return "working_about_info"
 
 #-------------------------------------------  
@@ -548,7 +548,7 @@ def manage_offers_action(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)    
     if update.message.text == ADD_DEL_SKIP["skip"]:        
         text = "Ваши предложения не изменены"
-        update.message.reply_text(text, reply_markup=make_keyboard(START_MENU,"usual",2,None,BACK))
+        update.message.reply_text(text, reply_markup=make_keyboard_start_menu())
         return "working"
     elif update.message.text == ADD_DEL_SKIP["del"]:
         update.message.reply_text("Удаление предложений", reply_markup=make_keyboard(EMPTY,"usual",1))
@@ -574,7 +574,7 @@ def delete_offers(update: Update, context: CallbackContext):
         all_offers_txt = mymodels.get_model_text(mymodels.Offers,["NN","offer","image"], user)
         query.edit_message_text(text=all_offers_txt)
         text = "Удаление предложений завершено"
-        reply_markup=make_keyboard(START_MENU,"usual",2,None,BACK) 
+        reply_markup=make_keyboard_start_menu() 
         send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
         return "working"
     else:
@@ -585,7 +585,7 @@ def delete_offers(update: Update, context: CallbackContext):
             all_offers_txt = "Все предложения удалены"
             query.edit_message_text(text=all_offers_txt)
             text = "Удаление предложений завершено"
-            reply_markup=make_keyboard(START_MENU,"usual",2,None,BACK) 
+            reply_markup=make_keyboard_start_menu() 
             send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
             return "working"
         else:           
@@ -596,7 +596,7 @@ def add_offers(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     if update.message.text == FINISH["finish"]:        
         text = "Завершено добавление предложений"
-        update.message.reply_text(text, reply_markup=make_keyboard(START_MENU,"usual",2,None,BACK))
+        update.message.reply_text(text, reply_markup=make_keyboard_start_menu())
         return "working"
     if update.message.text != None:
         text = update.message.text
@@ -640,7 +640,7 @@ def manage_needs_action(update: Update, context: CallbackContext):
         text = "Потребности изменены"
     else:
         text = "Потребности не изменены"
-    update.message.reply_text(text, reply_markup=make_keyboard(START_MENU,"usual",2,None,BACK))
+    update.message.reply_text(text, reply_markup=make_keyboard_start_menu())
     return "working"
 
 #-------------------------------------------  
@@ -655,7 +655,7 @@ def manage_referes_action(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)    
     if update.message.text == ADD_DEL_SKIP["skip"]:        
         text = "Рекомендатели не изменены"
-        update.message.reply_text(text, reply_markup=make_keyboard(START_MENU,"usual",2,None,BACK))
+        update.message.reply_text(text, reply_markup=make_keyboard_start_menu())
         return "working"
     elif update.message.text == ADD_DEL_SKIP["del"]:
         update.message.reply_text("Удаление рекомендателей", reply_markup=make_keyboard(EMPTY,"usual",1))
@@ -682,7 +682,7 @@ def delete_referes(update: Update, context: CallbackContext):
         all_referes_txt = mymodels.get_model_text(mymodels.UserReferrers,["NN","referrer"], user)
         query.edit_message_text(text=all_referes_txt)
         text = "Удаление рекомендателей завершено"
-        reply_markup=make_keyboard(START_MENU,"usual",2,None,BACK) 
+        reply_markup=make_keyboard_start_menu() 
         send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
         return "working"
     else:
@@ -693,7 +693,7 @@ def delete_referes(update: Update, context: CallbackContext):
             all_referes_txt = "Все рекомендатели удалены"
             query.edit_message_text(text=all_referes_txt)
             text = "Удаление рекомендателей завершено"
-            reply_markup=make_keyboard(START_MENU,"usual",2,None,BACK) 
+            reply_markup=make_keyboard_start_menu() 
             send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
             return "working"
         else:           
@@ -704,7 +704,7 @@ def add_referes(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     if update.message.text == FINISH["finish"]:        
         text = "Завершено добавление рекомендателей"
-        update.message.reply_text(text, reply_markup=make_keyboard(START_MENU,"usual",2,None,BACK))
+        update.message.reply_text(text, reply_markup=make_keyboard_start_menu())
         return "working"
     else:
         selected_users = mymodels.get_model_dict(mymodels.User,"pk","first_name,last_name", None,{"last_name":update.message.text})
@@ -727,7 +727,7 @@ def select_referes(update: Update, context: CallbackContext):
         all_referes_txt = mymodels.get_model_text(mymodels.UserReferrers,["NN","referrer"], user)
         query.edit_message_text(text=all_referes_txt)
         text = "Добавление рекомендателей завершено"
-        reply_markup=make_keyboard(START_MENU,"usual",2,None,BACK) 
+        reply_markup=make_keyboard_start_menu() 
         send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)   
         return "working"
     else:
@@ -756,7 +756,7 @@ def view_profile(update: Update, context: CallbackContext):
     else:
         send_message(user_id = user.user_id,text = NOT_FOTO)
     profile_txt = user.full_profile()
-    reply_markup = make_keyboard(START_MENU,"usual",2,None,BACK)
+    reply_markup = make_keyboard_start_menu()
     update.message.reply_text(profile_txt, reply_markup = reply_markup, 
                    parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True)
     return "working"
@@ -766,11 +766,20 @@ def view_profile(update: Update, context: CallbackContext):
 def view_rating(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     text = f"Ваш итоговый рейтинг: {user.rating} \n"
+    if not(user.main_photo):
+        text += "Не загружено фото. Влияет на расчет рейтинга.\n"    
+    if not(user.verified_by_security):
+        text += "Не пройдена проверка безопасности. Влияет на расчет рейтинга.\n"
     users_rating = user.get_users_rating()
     if not users_rating:
-        users_rating = "Нет пользовательских оценок"
-    text += f"Ваш рейтинг, рассчитанный по оценкам пользователей: {users_rating}"
-    update.message.reply_text(text, reply_markup=make_keyboard(START_MENU,"usual",4,None,BACK))
+        users_rating = "Нет пользовательских оценок"   
+    text += f"Ваш рейтинг, рассчитанный по оценкам пользователей: {users_rating}\n"
+    user_messages = user.get_users_mess_count()
+    if not user_messages:
+        user_messages = "Нет сообщений в группах"   
+    text += f"Число сообщений отправленных в группы: {user_messages}\n"
+
+    update.message.reply_text(text, reply_markup=make_keyboard_start_menu())
     return "working"
 
 def setup_dispatcher_conv(dp: Dispatcher):
@@ -863,4 +872,3 @@ def setup_dispatcher_conv(dp: Dispatcher):
                    CommandHandler('start', stop_conversation, Filters.chat_type.private, run_async=True)]
     )
     dp.add_handler(conv_handler)   
-    pass

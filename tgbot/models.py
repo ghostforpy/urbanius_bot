@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from random import random
-from django.db.models import Q, Avg
+from django.db.models import Q, Avg, Sum
 
 from datetime import timedelta
 from typing import Dict, Tuple
@@ -58,7 +58,7 @@ class Status(models.Model):
 class tgGroups(models.Model):
     name = models.CharField("Группа пользователей",unique=True, max_length=150, blank=False)
     chat_id = models.BigIntegerField("ИД чата в Телеграм", null=True)
-    link = models.CharField("Ссылка на группу",unique=False, max_length=150, blank=True)
+    link = models.CharField("Ссылка на группу",unique=False, max_length=150, blank=True, null=True)
     def __str__(self):
         return self.name
 
@@ -293,6 +293,13 @@ class User(models.Model):
             res = None
         return res
         
+    def get_users_mess_count(self):
+        mess_count_set = self.messagestatistic_set.aggregate(mess_count = Sum("messages"))
+        if mess_count_set["mess_count"]:
+            res = int(mess_count_set["mess_count"])
+        else:
+            res = None
+        return res
 
     def invited_users(self):  # --> User queryset 
         return User.objects.filter(deep_link=str(self.user_id), created_at__gt=self.created_at)
