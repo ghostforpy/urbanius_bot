@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.utils.safestring import mark_safe
 
-from tgbot import utils
+from tgbot.utils import mystr, extract_user_data_from_update
 
 class Offers(models.Model):
     offer = models.TextField("Суть предложения", blank = True, null = True)
@@ -56,7 +56,7 @@ class Status(models.Model):
         ordering = ['name']
 
 class tgGroups(models.Model):
-    name = models.CharField("Группа пользователей",unique=True, max_length=150, blank=False)
+    name = models.CharField("Группа пользователей",unique=False, max_length=150, blank=False)
     chat_id = models.BigIntegerField("ИД чата в Телеграм", null=True)
     link = models.CharField("Ссылка на группу",unique=False, max_length=150, blank=True, null=True)
     def __str__(self):
@@ -115,6 +115,7 @@ class User(models.Model):
     sur_name = models.CharField("Отчество", max_length=150, null=True, blank=True)
     date_of_birth = models.DateField("Дата рождения", null=True, default=timezone.now)    
     main_photo = models.ImageField("Основное фото", upload_to='user_fotos', null=True, blank=True)
+    main_photo_id = models.CharField("id основного фото", max_length=150, null=True, blank=True)
     status = models.ForeignKey(Status, on_delete=models.DO_NOTHING, verbose_name="Статус",null=True, blank=True)
     rating = models.IntegerField("Итоговый ретинг", default=3, null=True, blank=True)
 
@@ -131,6 +132,7 @@ class User(models.Model):
     citi = models.CharField("Город", max_length=150, null=True, blank=True)
     job_region = models.CharField("Регион присутствия", max_length=150, null=True, blank=True)
     site = models.CharField("Сайт", max_length=150, null=True, blank=True)
+    inn = models.CharField("ИНН", max_length=12, null=True, blank=True)
     # О себе:
     about = models.TextField("О себе", null=True, blank=True)
     sport = models.TextField("Спорт", null=True, blank=True)
@@ -150,10 +152,7 @@ class User(models.Model):
         res = f'@{self.username}' if self.username is not None else f'{self.user_id}'
         res = " ".join([res, str(self.first_name), str(self.last_name)])
         return res
-    # def save_model(self, request, obj, form, change):
-    #     import random
-    #     obj.rating = random.randint(0, 5)
-    #     super().save_model(request, obj, form, change)
+
     def save(self, *args, **kwargs):
         import random
         self.rating = random.randint(0, 5)
@@ -174,7 +173,7 @@ class User(models.Model):
     @classmethod
     def get_user_and_created(cls, update, context) -> Tuple["User", bool]:
         """ python-telegram-bot's Update, Context --> User instance """
-        data = utils.extract_user_data_from_update(update)
+        data = extract_user_data_from_update(update)
         u, created = cls.objects.update_or_create(user_id=data["user_id"], defaults=data)
  
         if created:
@@ -241,47 +240,48 @@ class User(models.Model):
         return users
 
     def short_profile(self)->str:
-        res = "<b>Пользователь:</b> \n"
-        res += str(self)
-        res += "\n<b>Компания:</b> \n"
-        res += utils.mystr(self.company)
-        res += "\n<b>Должность:</b> \n"
-        res += utils.mystr(self.job)
-        res += "\n<b>Отрасль:</b> \n"
-        res += utils.mystr(self.branch)
-        res += "\n<b>Город:</b> \n"
-        res += utils.mystr(self.citi)
-        res += "\n<b>Регион:</b> \n"
-        res += utils.mystr(self.job_region)
-        res += "\n<b>О себе:</b> \n"
-        res += utils.mystr(self.about)
-   
+        res = ""
+        res += f"<b>Логин телеграм:</b> @{mystr(self.username)}\n"
+        res += f"<b>Имя:</b> {mystr(self.last_name)} {mystr(self.first_name)} {mystr(self.sur_name)}\n"
+        res += f"<b>Статус:</b> {mystr(self.status)}\n"
+        res += f"<b>Отрасль:</b> {mystr(self.branch)}\n"
+        res += f"<b>Компания:</b> {mystr(self.company)}\n"
+        res += f"<b>Должность:</b> {mystr(self.job)}\n"
+        res += f"<b>Сайт:</b> {mystr(self.site)}\n"
+        res += f"<b>ИНН:</b> {mystr(self.inn)}\n"
+        res += f"<b>Регион работы:</b> {mystr(self.job_region)}\n"
+        res += f"<b>Теги:</b> {mystr(self.tags)}\n"
+        res += f"<b>Потребности:</b> {mystr(self.needs)}\n"
+        offers = get_model_text(Offers,["NN","offer"], self)
+        res += f"<b>Предложения:</b> \n{offers}"
+        referers = get_model_text(UserReferrers,["NN","referrer"], self)
+        res += f"<b>Рекомендатели:</b>\n{referers}"
         return res
 
     def full_profile(self)->str:
         res = "<b>Пользователь:</b> \n"
         res += str(self)        
         res += "\n<b>Личная информация:</b> "
-        res += "\n  <b>e-mail:</b> " + utils.mystr(self.email)
-        res += "\n  <b>Телефон:</b> " + utils.mystr(self.telefon)
-        res += "\n  <b>Дата рождения:</b> " + utils.mystr(self.date_of_birth)
-        res += "\n  <b>Статус:</b> " + utils.mystr(self.status)
+        res += "\n  <b>e-mail:</b> " + mystr(self.email)
+        res += "\n  <b>Телефон:</b> " + mystr(self.telefon)
+        res += "\n  <b>Дата рождения:</b> " + mystr(self.date_of_birth)
+        res += "\n  <b>Статус:</b> " + mystr(self.status)
         res += "\n  <b>Группы:</b>\n    " + get_model_text(UsertgGroups,["group"], self).replace("\n", "\n    ")
         res += "\n<b>Бизнес информация:</b> "
-        res += "\n  <b>Компания:</b> " + utils.mystr(self.company)
-        res += "\n  <b>Должность:</b> " + utils.mystr(self.job)
-        res += "\n  <b>Отрасль:</b> " + utils.mystr(self.branch)
-        res += "\n  <b>Город:</b> " + utils.mystr(self.citi)
-        res += "\n  <b>Регион:</b> " + utils.mystr(self.job_region)
-        res += "\n  <b>Сайт:</b> " + utils.mystr(self.site) + "\n"
+        res += "\n  <b>Компания:</b> " + mystr(self.company)
+        res += "\n  <b>Должность:</b> " + mystr(self.job)
+        res += "\n  <b>Отрасль:</b> " + mystr(self.branch)
+        res += "\n  <b>Город:</b> " + mystr(self.citi)
+        res += "\n  <b>Регион:</b> " + mystr(self.job_region)
+        res += "\n  <b>Сайт:</b> " + mystr(self.site) + "\n"
         res += "\n<b>Информация о себе:</b> "
-        res += "\n  <b>О себе:</b> " + utils.mystr(self.about)
-        res += "\n  <b>Спорт:</b> " + utils.mystr(self.sport)
-        res += "\n  <b>Хобби:</b> " + utils.mystr(self.hobby)
+        res += "\n  <b>О себе:</b> " + mystr(self.about)
+        res += "\n  <b>Спорт:</b> " + mystr(self.sport)
+        res += "\n  <b>Хобби:</b> " + mystr(self.hobby)
         res += "\n  <b>Соцсети:</b>\n    " + get_model_text(SocialNets,["soc_net_site","link"], self).replace("\n", "\n    ")
-        res += "  <b>Тэги:</b> " + utils.mystr(self.tags)
+        res += "  <b>Тэги:</b> " + mystr(self.tags)
         res += "\n<b>Предложения:</b>\n" + get_model_text(Offers,["NN","offer"], self)
-        res += "<b>Потребности:</b>\n" + utils.mystr(self.needs)
+        res += "<b>Потребности:</b>\n" + mystr(self.needs)
         res += "\n<b>Рекомендатели:</b>\n" + get_model_text(UserReferrers,["NN","referrer"], self)  
         return res
 

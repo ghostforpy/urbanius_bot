@@ -1,4 +1,6 @@
-from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, Update
+from telegram import (
+    InlineQueryResultArticle, InlineQueryResultPhoto, InlineQueryResultCachedPhoto,
+    ParseMode, InputTextMessageContent, Update)
 from telegram.ext import (
     Dispatcher, CommandHandler,
     MessageHandler, CallbackQueryHandler,
@@ -12,7 +14,7 @@ from .answers import *
 import tgbot.models as mymodels
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
-from tgbot.handlers.utils import send_message
+from tgbot.handlers.utils import send_message, get_no_foto_id
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
 
@@ -43,18 +45,13 @@ def start_conversation(update: Update, context: CallbackContext):
     user_id = query.from_user.id
     query.answer()
     query.edit_message_text(text=HELLO_MESS_2, reply_markup=make_keyboard(FIND,"inline",1,None,BACK))
-    #send_message(user_id=user_id, text=HELLO_MESS, reply_markup=make_keyboard(BACK,"usual",1))
-    #send_message(user_id=user_id,text=HELLO_MESS_2, reply_markup=make_keyboard(FIND,"inline",1))
 
     return "working"
 
 # Обработчик поиска
 def manage_find(update: Update, context: CallbackContext):
     query = update.inline_query.query.strip()
-    # if not context.user_data.get("search_started"):
-    #     user_id = update.inline_query.from_user.id
-    #     send_message(user_id=user_id, text=HELLO_MESS, reply_markup=make_keyboard(BACK,"usual",1))
-    #     context.user_data["search_started"] = True
+
     if len(query) < 3:
         return
     users_set = mymodels.User.find_users_by_keywords(query)

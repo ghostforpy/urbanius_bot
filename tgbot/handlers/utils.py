@@ -1,13 +1,13 @@
 import logging
 import telegram
-from typing import Optional
 from functools import wraps
 from dtb.settings import ENABLE_DECORATOR_LOGGING, TELEGRAM_TOKEN
 from django.utils import timezone
-from tgbot.models import UserActionLog, User, tgGroups
+from tgbot.models import UserActionLog, User, Config, tgGroups
 from tgbot.utils import extract_user_data_from_update
 from telegram import MessageEntity
-
+from django.conf import settings
+from tgbot.handlers.files import _get_file_id
 
 logger = logging.getLogger('default')
 
@@ -145,3 +145,21 @@ def send_document(user_id, document, filename=None, caption=None, disable_notifi
         success = True
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
     return success
+
+def get_no_foto_id():
+    config_set = Config.objects.filter(param_name = "no_foto_id")
+    if len(config_set) == 0:
+        group = tgGroups.get_group_by_name("Администраторы")
+        if (group == None) or (group.chat_id == 0):
+            return None            
+        else:
+
+            bot = telegram.Bot(TELEGRAM_TOKEN)
+            photo = settings.BASE_DIR / 'media/no_foto.jpg'
+            message = bot.send_photo(group.chat_id, open(photo, 'rb'), caption="no_foto")
+            foto_id, filename_orig = _get_file_id(message)
+            config_no_foto_id = Config(param_name = "no_foto_id", param_val = foto_id)
+            config_no_foto_id.save()
+    else:
+        config_no_foto_id = config_set[0]
+    return config_no_foto_id.param_val

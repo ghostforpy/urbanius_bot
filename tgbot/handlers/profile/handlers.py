@@ -207,6 +207,7 @@ def manage_main_photo_action(update: Update, context: CallbackContext):
     filename = get_uniq_file_name(settings.BASE_DIR / "media/user_fotos",filename_lst[0],filename_lst[1])
     newFile.download(settings.BASE_DIR / ("media/user_fotos/"+filename))
     user.main_photo = "user_fotos/"+filename
+    user.main_photo_id = foto_id
     user.save()
     text = "Фото изменено"
     update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
@@ -351,6 +352,24 @@ def manage_site_action(update: Update, context: CallbackContext):
         text = "Сайт изменен"
     else:
         text = "Сайт не изменен"
+    update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
+    return "working_busines_info"
+#-------------------------------------------  
+# Обработчик ИНН
+def manage_inn(update: Update, context: CallbackContext):
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+    update.message.reply_text(ASK_INN.format(user.inn), reply_markup=make_keyboard(SKIP,"usual",1))
+    return "choose_action_inn"
+
+def manage_inn_action(update: Update, context: CallbackContext):
+    text = ""
+    if update.message.text != SKIP["skip"]:        
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+        user.inn = update.message.text[:12]
+        user.save()
+        text = "ИНН изменен"
+    else:
+        text = "ИНН не изменен"
     update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
     return "working_busines_info"
 
@@ -821,6 +840,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
                     MessageHandler(Filters.text([BUSINES_MENU["citi"]]) & FilterPrivateNoCommand, manage_citi, run_async=True),
                     MessageHandler(Filters.text([BUSINES_MENU["job_region"]]) & FilterPrivateNoCommand, manage_job_region, run_async=True),
                     MessageHandler(Filters.text([BUSINES_MENU["site"]]) & FilterPrivateNoCommand, manage_site, run_async=True),
+                    MessageHandler(Filters.text([BUSINES_MENU["inn"]]) & FilterPrivateNoCommand, manage_inn, run_async=True),
                     MessageHandler(Filters.text([BACK_PROF["back"]]) & FilterPrivateNoCommand, go_start_conversation, run_async=True),
                     ],
             
@@ -840,6 +860,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
             "choose_action_company":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_company_action, run_async=True)],
             "choose_action_job":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_job_action, run_async=True)],
             "choose_action_site":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_site_action, run_async=True)],
+            "choose_action_inn":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_inn_action, run_async=True)],
             "choose_action_date_of_birth":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_date_of_birth_action, run_async=True)],
             "choose_action_email":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_email_action, run_async=True)],
             "choose_action_tags":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_tags_action, run_async=True)],

@@ -45,7 +45,7 @@ class UserAdmin(admin.ModelAdmin):
               ('status', 'rating'),
               ('is_blocked_bot', 'is_banned', 'is_admin', 'is_moderator'),
               ("verified_by_security", "random_coffe_on"),
-              ('company', 'job', 'branch'),
+              ('company', 'job', 'branch', 'inn'),
               ('citi', 'job_region', 'site'), 
                'about',
                'sport',
