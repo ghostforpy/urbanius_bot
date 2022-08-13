@@ -1,10 +1,11 @@
+import os
 from telegram import (
-    InlineQueryResultArticle, InlineQueryResultPhoto, InlineQueryResultCachedPhoto,
+    InlineQueryResultArticle,  
     ParseMode, InputTextMessageContent, Update)
 from telegram.ext import (
     Dispatcher, CommandHandler,
     MessageHandler, CallbackQueryHandler,
-    Filters,
+    Filters, ChosenInlineResultHandler,
     InlineQueryHandler, CallbackContext
 )
 from tgbot.my_telegram import ConversationHandler
@@ -14,7 +15,7 @@ from .answers import *
 import tgbot.models as mymodels
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
-from tgbot.handlers.utils import send_message, get_no_foto_id
+from tgbot.handlers.utils import send_message, send_photo
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
 
@@ -24,7 +25,11 @@ def stop_conversation(update: Update, context: CallbackContext):
     if update.message:
         user_id = update.message.from_user.id
     else:
-        user_id = update.callback_query.from_user.id
+        query = update.callback_query
+        query.answer()
+        user_id = query.from_user.id
+        query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+
     user = User.get_user_by_username_or_user_id(user_id)
     context.user_data["search_started"] = False
     send_message(user_id=user_id, text=FIND_FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
@@ -42,7 +47,6 @@ def bad_callback_enter(update: Update, context: CallbackContext):
 # Начало разговора
 def start_conversation(update: Update, context: CallbackContext):
     query = update.callback_query
-    user_id = query.from_user.id
     query.answer()
     query.edit_message_text(text=HELLO_MESS_2, reply_markup=make_keyboard(FIND,"inline",1,None,BACK))
 
@@ -57,19 +61,40 @@ def manage_find(update: Update, context: CallbackContext):
     users_set = mymodels.User.find_users_by_keywords(query)
     results = []
     for user in users_set:
+        foto_url = settings.MEDIA_DOMAIN + user.main_photo.url
         set_rating_btn = {"setrating_"+ str(user.user_id):"Поставить оценку"}
         user_res_str = InlineQueryResultArticle(
             id=str(user.user_id),
             title=str(user),
-            input_message_content=InputTextMessageContent(user.short_profile()),
+            #input_message_content=InputTextMessageContent(user.short_profile()),
+            input_message_content = InputTextMessageContent("Выбран пользователь"),
             description = user.about,
-
-            reply_markup=make_keyboard(set_rating_btn,"inline",1,None,BACK),
+            thumb_url = foto_url,
+            thumb_width = 50,
+            thumb_height = 50,
+            #reply_markup=make_keyboard(set_rating_btn,"inline",1,None,BACK),
         )
         results.append(user_res_str)
     update.inline_query.answer(results)
     return "working"
 
+def manage_chosen_user(update: Update, context: CallbackContext):
+    chosen_user_id = update.chosen_inline_result.result_id
+    chosen_user = User.get_user_by_username_or_user_id(chosen_user_id)
+    user_id = update.chosen_inline_result.from_user.id
+    if not(chosen_user.main_photo):
+        photo = settings.BASE_DIR / 'media/no_foto.jpg'
+    else:
+        photo = chosen_user.main_photo.path
+    
+    set_rating_btn = {"setrating_"+ str(chosen_user_id):"Поставить оценку"}
+    reply_markup=make_keyboard(set_rating_btn,"inline",1,None,BACK)
+    text = chosen_user.short_profile()    
+    
+    if os.path.exists(photo):
+        send_photo(user_id, open(photo, 'rb'), caption = text, reply_markup=reply_markup, parse_mode = ParseMode.HTML)
+    else:
+        send_message(user_id=user_id, text = text, reply_markup=reply_markup, parse_mode = ParseMode.HTML)
 
 # Установка оценки
 def set_rating(update: Update, context: CallbackContext):
@@ -81,8 +106,9 @@ def set_rating(update: Update, context: CallbackContext):
     rated_user_id = data[1]
     rated_user = User.get_user_by_username_or_user_id(rated_user_id)
     context.user_data["rated_user"] = rated_user
-    text = rated_user.short_profile()
-    query.edit_message_text(text)
+    #text = rated_user.short_profile()
+    #query.edit_message_text(text)
+    query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
     set_rating_btn = {
                       1:"1",
                       2:"2",
@@ -99,7 +125,6 @@ def set_rating_comment(update: Update, context: CallbackContext):
     # Запрашиваем комментарий к оценке.
     query = update.callback_query
     user_id = query.from_user.id
-    user = User.get_user_by_username_or_user_id(user_id)
     rating = query.data
     rated_user = context.user_data["rated_user"]
     context.user_data["rating"] = rating 
@@ -126,13 +151,13 @@ def store_rating (update: Update, context: CallbackContext):
 def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
     conv_handler = ConversationHandler( 
-        # точка входа в разговор
-        #entry_points=[InlineQueryHandler(manage_find)],      
+        # точка входа в разговор      
         entry_points=[CallbackQueryHandler(start_conversation, pattern="^find_members$")],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
             "working":[
-                       InlineQueryHandler(manage_find),                
+                       InlineQueryHandler(manage_find),   
+                       ChosenInlineResultHandler(manage_chosen_user),             
                        MessageHandler(Filters.text([BACK["back"]]) & FilterPrivateNoCommand, stop_conversation),
                        CallbackQueryHandler(stop_conversation, pattern="^back$"),
                        CallbackQueryHandler(set_rating, pattern="^setrating_"),

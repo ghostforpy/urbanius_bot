@@ -15,10 +15,9 @@ TO_ADMINS = {"to_admins":"Сообщение администраторам"}
 
 START_MENU_FULL = {
         "random_coffe":"Random coffe",
-        #"find_members":{"label":"Найти участников","type":"switch_inline"},
         "find_members":"Найти участников",
         "profile":"Профиль пользователя",
-        "to_admins":"Сообщение администраторам",
+        "messages":"Сообщения",
         "payment":"Оплатить"
     }
 
