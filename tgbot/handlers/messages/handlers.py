@@ -1,11 +1,9 @@
-from telegram import (
-    InlineQueryResultArticle, InlineQueryResultPhoto, InlineQueryResultCachedPhoto,
-    ParseMode, InputTextMessageContent, Update, ParseMode)
+from csv import unregister_dialect
+from telegram import (Update, ParseMode)
 from telegram.ext import (
     Dispatcher, CommandHandler,
     MessageHandler, CallbackQueryHandler,
-    Filters,
-    InlineQueryHandler, CallbackContext
+    Filters, CallbackContext
 )
 from tgbot.my_telegram import ConversationHandler
 from django.conf import settings
@@ -13,7 +11,7 @@ from .messages import *
 from .answers import *
 from tgbot.models import tgGroups
 from tgbot.handlers.keyboard import make_keyboard
-from tgbot.handlers.filters import FilterPrivateNoCommand
+from tgbot.handlers.filters import FilterPrivateNoCommand, FilterGroupNoCommand
 from tgbot.handlers.utils import send_message
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
@@ -29,6 +27,9 @@ def stop_conversation(update: Update, context: CallbackContext):
     send_message(user_id=user_id, text=CONV_FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
     send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
     return ConversationHandler.END
+def stop_conversation_group(update: Update, context: CallbackContext):
+    update.message.reply_text(SENDING_CANCELED, reply_markup=make_keyboard(EMPTY,"usual",1))
+    return ConversationHandler.END
 
 # Временная заглушка
 def blank(update: Update, context: CallbackContext):
@@ -40,7 +41,11 @@ def bad_callback_enter(update: Update, context: CallbackContext):
 
 # Начало разговора
 def start_conversation(update: Update, context: CallbackContext):
-    user = User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+    user = User.get_user_by_username_or_user_id(user_id)
     reply_markup = make_keyboard(MESS_MENU,"usual",1,None,BACK)
     send_message(user_id = user.user_id, text = HELLO_MESS, reply_markup = reply_markup)
 
@@ -95,11 +100,36 @@ def sending_mess_in_group(update: Update, context: CallbackContext):
         group_menu = {f"anonmess_{user.user_id}":"Ответить"}
         reply_markup_group = make_keyboard(group_menu,"inlain",1)
         text = f"Анонимное сообщение от пользователя:\n{update.message.text}"
+        #text += f"||user.user_id||"
+        #, parse_mode = ParseMode.MARKDOWN
         send_message(group_id, text = text, reply_markup = reply_markup_group)
         update.message.reply_text(MESS_SENDED, reply_markup = reply_markup)
     else:
         update.message.reply_text(SENDING_CANCELED, reply_markup = reply_markup)
     return "working" 
+
+def proc_anon_mess_answer(update: Update, context: CallbackContext):
+    chat_id = update._effective_message.chat_id
+    data = update.callback_query.data.split("_")
+    asker_id = data[1]
+    context.user_data["asker_id"] = asker_id
+    reply_markup = make_keyboard(CANCEL,"usual",1)
+    #update._effective_message.reply_text(ASK_ANON_ANSWER, reply_markup = reply_markup)
+    #, reply_markup = reply_markup
+    send_message(user_id = chat_id, text = ASK_ANON_ANSWER)
+    return "wait_anon_answer"
+
+def resend_mess_answer(update: Update, context: CallbackContext):
+    chat_id = update._effective_message.chat_id
+    answer_id = update._effective_user.id
+    answer = User.get_user_by_username_or_user_id(answer_id)
+    asker_id = context.user_data["asker_id"]
+    text = f"Пользователь {str(answer)} ответил Вам: \n"
+    text += update._effective_message.text
+    send_message(user_id = asker_id, text = text)
+    reply_markup = make_keyboard(EMPTY,"usual",1)
+    send_message(user_id = chat_id, text = MESS_SENDED, reply_markup = reply_markup)
+    return ConversationHandler.END
 
 def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
@@ -129,4 +159,20 @@ def setup_dispatcher_conv(dp: Dispatcher):
         fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
                    CommandHandler('start', stop_conversation, Filters.chat_type.private)]        
     )
-    dp.add_handler(conv_handler)   
+    dp.add_handler(conv_handler)  
+    #Обработка ответов в группе на анонимное сообщение 
+    conv_handler_group = ConversationHandler( 
+        # точка входа в разговор      
+        entry_points=[CallbackQueryHandler(proc_anon_mess_answer, pattern="^anonmess_")],      
+        # этапы разговора, каждый со своим списком обработчиков сообщений    
+        states={            
+            "wait_anon_answer":[              
+                       MessageHandler(Filters.text(CANCEL["cancel"]) & FilterGroupNoCommand, stop_conversation_group),
+                       MessageHandler(Filters.text & FilterGroupNoCommand, resend_mess_answer)
+                      ],
+        },
+        fallbacks=[CommandHandler('cancel', stop_conversation_group, Filters.chat_type.private),
+                   CommandHandler('start', stop_conversation_group, Filters.chat_type.private)]        
+    )
+    
+    dp.add_handler(conv_handler_group)
