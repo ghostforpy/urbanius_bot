@@ -16,11 +16,15 @@ WELCOME = "Добрый день! Вы находитесь в Telegram боте
 
 def get_start_mess(user: User):
     if user.is_banned:
-        return ACCOUNT_BANNED.format(user.comment)
+        res = ACCOUNT_BANNED.format(user.comment)
     elif user.is_blocked_bot:
-        return  ACCOUNT_BLOCKED.format(user.comment)      
+        res =  ACCOUNT_BLOCKED.format(user.comment)      
     else:
-        return  WELCOME    
+        res =  WELCOME
+    if not user.username:
+        res += "\n<b>У Вас в Телеграм не введено имя пользователя. " \
+               "Это может затруднить общение с вами. Введите его в настройках Телеграм</b>" 
+    return res 
 
 # Отправка сообщения админам
 SENDING_WELCOME = "Вы в режиме отправки сообщения администраторам"

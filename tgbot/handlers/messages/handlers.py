@@ -25,8 +25,10 @@ def stop_conversation(update: Update, context: CallbackContext):
         user_id = update.callback_query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
     send_message(user_id=user_id, text=CONV_FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
-    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
+    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user),
+                 parse_mode = ParseMode.HTML)
     return ConversationHandler.END
+#Заканчиваем общение в группе
 def stop_conversation_group(update: Update, context: CallbackContext):
     update.message.reply_text(SENDING_CANCELED, reply_markup=make_keyboard(EMPTY,"usual",1))
     return ConversationHandler.END
@@ -52,13 +54,21 @@ def start_conversation(update: Update, context: CallbackContext):
     return "working"
 # Обработка отправки сообщений админам
 def ask_admin_mess(update: Update, context: CallbackContext):
-    user = User.get_user_by_username_or_user_id(update.message.from_user.id)
+    if update.message:
+        user = User.get_user_by_username_or_user_id(update.message.from_user.id)
+    else:
+        user = User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
+        update.callback_query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
     send_message(user_id=user.user_id, text=ASK_MESS, reply_markup=make_keyboard(CANCEL,"usual",1))
     return "sending_to_admins"
 
 def sending_mess_to_admins(update: Update, context: CallbackContext):
     user = User.get_user_by_username_or_user_id(update.message.from_user.id)
-    reply_markup = make_keyboard(MESS_MENU,"usual",1,None,BACK)
+    if user.is_blocked_bot or user.is_banned:
+        reply_markup = make_keyboard(EMPTY,"usual",1)
+    else:
+        reply_markup = make_keyboard(MESS_MENU,"usual",1,None,BACK)
+    
     if update.message.text != CANCEL["cancel"]:
         group = tgGroups.get_group_by_name("Администраторы")
         if (group == None) or (group.chat_id == 0):
@@ -69,7 +79,12 @@ def sending_mess_to_admins(update: Update, context: CallbackContext):
             update.message.reply_text(MESS_SENDED, reply_markup = reply_markup)
     else:
         update.message.reply_text(SENDING_CANCELED, reply_markup = reply_markup)
-    return "working"
+    if user.is_blocked_bot or user.is_banned:
+        send_message(user_id=user.user_id, text=get_start_mess(user), reply_markup=get_start_menu(user),
+                 parse_mode = ParseMode.HTML)
+        return ConversationHandler.END
+    else:
+        return "working"
 # Обработка отправки сообщений в группу
 def ask_anon_mess_group(update: Update, context: CallbackContext):
     user = User.get_user_by_username_or_user_id(update.message.from_user.id)
@@ -109,14 +124,16 @@ def sending_mess_in_group(update: Update, context: CallbackContext):
     return "working" 
 
 def proc_anon_mess_answer(update: Update, context: CallbackContext):
+    username = update.callback_query.from_user.username
     chat_id = update._effective_message.chat_id
     data = update.callback_query.data.split("_")
     asker_id = data[1]
     context.user_data["asker_id"] = asker_id
     reply_markup = make_keyboard(CANCEL,"usual",1)
+    reply_markup.selective = True
     #update._effective_message.reply_text(ASK_ANON_ANSWER, reply_markup = reply_markup)
-    #, reply_markup = reply_markup
-    send_message(user_id = chat_id, text = ASK_ANON_ANSWER)
+    text = f"@{username}\n"+ASK_ANON_ANSWER
+    send_message(user_id = chat_id, text = text, reply_markup = reply_markup)
     return "wait_anon_answer"
 
 def resend_mess_answer(update: Update, context: CallbackContext):
@@ -135,7 +152,8 @@ def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
     conv_handler = ConversationHandler( 
         # точка входа в разговор      
-        entry_points=[CallbackQueryHandler(start_conversation, pattern="^messages$")],      
+        entry_points=[CallbackQueryHandler(start_conversation, pattern="^messages$"),
+                      CallbackQueryHandler(ask_admin_mess, pattern="^to_admins$")],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
             "working":[              
@@ -148,6 +166,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
                         MessageHandler(Filters.text & FilterPrivateNoCommand, sending_mess_to_admins),
                          ],
             "select_group":[
+                           CallbackQueryHandler(stop_conversation, pattern="^cancel$"),
                            CallbackQueryHandler(ask_anon_mess),
                            MessageHandler(Filters.text & FilterPrivateNoCommand, bad_callback_enter)
                          ],

@@ -28,7 +28,7 @@ def build_menu(keys: dict, columns: int):
     return tg_keys
 
 def make_usual_keyboard(keys: dict, columns: int, header_buttons=None, footer_buttons=None):
-    if len(keys) == 0:
+    if (len(keys) == 0)and(header_buttons == None)and(footer_buttons == None):
         keyboard=ReplyKeyboardRemove()
     else:
         tg_keys = build_menu(keys, columns)
@@ -67,7 +67,7 @@ def build_menu_inline(keys: dict, columns: int):
     return tg_keys
 
 def make_inline_keyboard(keys: dict, columns: int, header_buttons=None, footer_buttons=None):
-    if len(keys) == 0:
+    if (len(keys) == 0)and(header_buttons == None)and(footer_buttons == None):
         keyboard=InlineKeyboardMarkup([])
     else:
         tg_keys = build_menu_inline(keys, columns)

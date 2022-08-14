@@ -28,13 +28,15 @@ def command_start(update: Update, context: CallbackContext):
     user_id = userdata['user_id']
     user = User.get_user_by_username_or_user_id(user_id)
     if user != None:
-        user.username = userdata.get("username")
-        user.save()
+        if user.username != userdata.get("username"):
+            user.username = userdata.get("username")
+            user.save()
     if user == None:
         update.message.reply_text(REGISTRATION_START_MESSS, reply_markup=make_keyboard(REGISTRATION_START_BTN,"usual",2))
     else:
         reply_markup=get_start_menu(user)
-        update.message.reply_text(get_start_mess(user), reply_markup=reply_markup)
+        update.message.reply_text(get_start_mess(user), reply_markup=reply_markup, 
+                                  parse_mode=telegram.ParseMode.HTML)
     return ConversationHandler.END
 
 @handler_logging()

@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'sheduler.apps.ShedulerConfig',
     'tgbot.apps.TgbotConfig',
     'statistic.apps.StatisticConfig',
+    'events.apps.EventsConfig',
 
 ]
 
