@@ -116,7 +116,7 @@ class User(models.Model):
     date_of_birth = models.DateField("Дата рождения", null=True, default=timezone.now)    
     main_photo = models.ImageField("Основное фото", upload_to='user_fotos', null=True, blank=True)
     main_photo_id = models.CharField("id основного фото", max_length=150, null=True, blank=True)
-    status = models.ForeignKey(Status, on_delete=models.DO_NOTHING, verbose_name="Статус",null=True, blank=True)
+    status = models.ForeignKey(Status, on_delete=models.PROTECT, verbose_name="Статус",null=True, blank=True)
     rating = models.IntegerField("Итоговый ретинг", default=3, null=True, blank=True)
 
     is_blocked_bot = models.BooleanField("Заблокирован", default=False)
@@ -145,7 +145,7 @@ class User(models.Model):
     created_at = models.DateTimeField("Создан", auto_now_add=True)
     updated_at = models.DateTimeField("Изменен", auto_now=True)
     language_code = models.CharField(max_length=8, null=True, blank=True, help_text="Telegram client's lang")
-    deep_link = models.CharField("Ссылка", max_length=64, null=True, blank=True)
+    deep_link = models.CharField("Рекомендательная сылка", max_length=64, null=True, blank=True)
 
     
     def __str__(self):
@@ -264,7 +264,7 @@ class User(models.Model):
         res += "\n<b>Личная информация:</b> "
         res += "\n  <b>e-mail:</b> " + mystr(self.email)
         res += "\n  <b>Телефон:</b> " + mystr(self.telefon)
-        res += "\n  <b>Дата рождения:</b> " + mystr(self.date_of_birth)
+        res += "\n  <b>Дата рождения:</b> " + self.date_of_birth.strftime("%d.%m.%Y")
         res += "\n  <b>Статус:</b> " + mystr(self.status)
         res += "\n  <b>Группы:</b>\n    " + get_model_text(UsertgGroups,["group"], self).replace("\n", "\n    ")
         res += "\n<b>Бизнес информация:</b> "
@@ -279,7 +279,7 @@ class User(models.Model):
         res += "\n  <b>Спорт:</b> " + mystr(self.sport)
         res += "\n  <b>Хобби:</b> " + mystr(self.hobby)
         res += "\n  <b>Соцсети:</b>\n    " + get_model_text(SocialNets,["soc_net_site","link"], self).replace("\n", "\n    ")
-        res += "  <b>Тэги:</b> " + mystr(self.tags)
+        res += "<b>Тэги:</b> " + mystr(self.tags)
         res += "\n<b>Предложения:</b>\n" + get_model_text(Offers,["NN","offer"], self)
         res += "<b>Потребности:</b>\n" + mystr(self.needs)
         res += "\n<b>Рекомендатели:</b>\n" + get_model_text(UserReferrers,["NN","referrer"], self)  
@@ -292,14 +292,13 @@ class User(models.Model):
         else:
             res = None
         return res
-        
-    def get_users_mess_count(self):
-        mess_count_set = self.messagestatistic_set.aggregate(mess_count = Sum("messages"))
-        if mess_count_set["mess_count"]:
-            res = int(mess_count_set["mess_count"])
-        else:
-            res = None
-        return res
+    # Получает число опубликованных в группах сообщений    
+    def get_user_mess_count(self):
+        return self.messagestatistic_set.count()
+
+    # Получает число приглашенных пользователей
+    def get_user_refferents_count(self):
+        return self.referrer.count()
 
     def invited_users(self):  # --> User queryset 
         return User.objects.filter(deep_link=str(self.user_id), created_at__gt=self.created_at)

@@ -166,7 +166,7 @@ def manage_phone_action(update: Update, context: CallbackContext):
 # Обработчик День рождения
 def manage_date_of_birth(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-    update.message.reply_text(ASK_BIRHDAY.format(user.date_of_birth), reply_markup=make_keyboard(SKIP,"usual",1))
+    update.message.reply_text(ASK_BIRHDAY.format(user.date_of_birth.strftime("%d.%m.%Y")), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_date_of_birth"
 
 def manage_date_of_birth_action(update: Update, context: CallbackContext):
@@ -793,11 +793,10 @@ def view_rating(update: Update, context: CallbackContext):
     if not users_rating:
         users_rating = "Нет пользовательских оценок"   
     text += f"Ваш рейтинг, рассчитанный по оценкам пользователей: {users_rating}\n"
-    user_messages = user.get_users_mess_count()
-    if not user_messages:
-        user_messages = "Нет сообщений в группах"   
+    user_messages = user.get_user_mess_count()  
     text += f"Число сообщений отправленных в группы: {user_messages}\n"
-
+    user_referents = user.get_user_refferents_count()  
+    text += f"Число рекомендованных пользователей: {user_referents}\n"
     update.message.reply_text(text, reply_markup=make_keyboard_start_menu())
     return "working"
 

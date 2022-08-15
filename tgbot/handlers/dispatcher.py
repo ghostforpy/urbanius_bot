@@ -21,6 +21,7 @@ from tgbot.handlers.profile.handlers import setup_dispatcher_conv as setup_dispa
 from tgbot.handlers.payments.handlers import setup_dispatcher_conv as setup_dispatcher_pay
 from tgbot.handlers.find_members.handlers import setup_dispatcher_conv as setup_dispatcher_find
 from tgbot.handlers.messages.handlers import setup_dispatcher_conv as setup_dispatcher_mess
+from events.handlers import setup_dispatcher_conv as setup_dispatcher_events
 from statistic.handlers import setup_dispatcher_group
 
 from sheduler.tasks import restarts_tasks
@@ -39,6 +40,7 @@ def setup_dispatcher(dp: Dispatcher):
     setup_dispatcher_pay(dp) #заполнение обработчиков работы с платежами
     setup_dispatcher_find(dp) #заполнение обработчиков работы с поиском
     setup_dispatcher_mess(dp) #заполнение обработчиков работы с поиском
+    setup_dispatcher_events(dp) #заполнение обработчиков работы с мероприятиями
 
     setup_dispatcher_group(dp) #заполнение обработчиков сообщений в группах
 

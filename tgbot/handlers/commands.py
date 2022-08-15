@@ -25,7 +25,14 @@ logger.info("Command handlers check!")
 def command_start(update: Update, context: CallbackContext):
     context.user_data.clear()
     userdata = extract_user_data_from_update(update)
+    context.user_data.update(userdata)
     user_id = userdata['user_id']
+    # Определение рекомендателя
+    if context is not None and context.args is not None and len(context.args) > 0:
+        payload = context.args[0]
+        if str(payload).strip() != str(user_id).strip():  # you can't invite yourself
+            context.user_data["deep_link"] = payload
+ 
     user = User.get_user_by_username_or_user_id(user_id)
     if user != None:
         if user.username != userdata.get("username"):

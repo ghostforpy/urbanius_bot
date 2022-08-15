@@ -14,11 +14,12 @@ ON_OFF_CANCEL = {"on":"Включить Random coffe","off":"Выключить 
 TO_ADMINS = {"to_admins":"Сообщение администраторам"}
 
 START_MENU_FULL = {
-        "random_coffe":"Random coffe",
+        "random_coffe":"Random Coffee",
         "events":"Мероприятия",
         "find_members":"Найти участников",
         "profile":"Профиль пользователя",
         "messages":"Сообщения",
+        "affiliate":"Партнерская программа",
         "payment":"Оплатить"
     }
 
@@ -34,3 +35,5 @@ def get_start_menu(user: User):
         return  make_keyboard(START_MENU_SHORT,"inline",1)       
     else:
         return  make_keyboard(START_MENU_FULL,"inline",1)
+
+

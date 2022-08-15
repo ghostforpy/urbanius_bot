@@ -7,4 +7,10 @@ CANCEL = {"cancel":"Отмена"}
 CANCEL_SKIP = {"cancel":"Отмена","skip":"Пропустить"}
 OK = {"ok":"OK"}
 YES_NO = {"yes":"Да", "no":"Нет"}
+BACK = {"back":"Вернуться в основное меню"} #
+
+EVENTS_MENU = {
+                "calendar":"Календарь мероприятий",
+                "visited":"Посещенные мероприятия"
+              }
 

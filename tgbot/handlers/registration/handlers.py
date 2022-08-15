@@ -11,7 +11,7 @@ from telegram import KeyboardButton, ReplyKeyboardMarkup
 from .messages import *
 from .answers import *
 from tgbot.handlers.main.messages import NO_ADMIN_GROUP
-from tgbot.models import User, tgGroups
+from tgbot.models import User, tgGroups, UserReferrers
 
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot import utils
@@ -30,9 +30,6 @@ def stop_conversation(update: Update, context: CallbackContext):
     return ConversationHandler.END
 
 def start_conversation(update: Update, context: CallbackContext):
-    context.user_data.clear()
-    userdata = utils.extract_user_data_from_update(update)
-    context.user_data.update(userdata)
     context.user_data["created_at"] = datetime.datetime.now()
     context.user_data["is_blocked_bot"] = True
     context.user_data["comment"] = "Ожидает подтверждения регистрации"
@@ -198,7 +195,11 @@ def processing_site(update: Update, context: CallbackContext):
     context.user_data["site"] = site
 
     user, created = User.objects.update_or_create(user_id=context.user_data["user_id"], defaults=context.user_data)
- 
+    referrer = User.get_user_by_username_or_user_id(context.user_data["deep_link"])
+    if referrer:
+        user_referer = UserReferrers(referrer = referrer, user = user)
+        user_referer.save()
+
     keyboard = make_keyboard(START,"usual",1)
     update.message.reply_text(FIN_MESS, reply_markup=keyboard)
  
