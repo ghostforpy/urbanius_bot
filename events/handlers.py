@@ -1,4 +1,4 @@
-import os
+import datetime
 from telegram import (
     InlineQueryResultArticle,  
     ParseMode, InputTextMessageContent, Update)
@@ -12,7 +12,8 @@ from tgbot.my_telegram import ConversationHandler
 from django.conf import settings
 from .messages import *
 from .answers import *
-import tgbot.models as mymodels
+from .models import *
+
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
 from tgbot.handlers.utils import send_message, send_photo
@@ -51,6 +52,27 @@ def start_conversation(update: Update, context: CallbackContext):
 
     return "working"
 
+def show_event_calendar(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+
+    evens_set = Events.objects.filter(date__gte = datetime.datetime.now(),
+                                      date__lte = datetime.datetime.now() + datetime.timedelta(days=30))
+    btn_events = {}
+    for event in evens_set:
+        str_date = event.date.strftime("%d.%m.%Y")
+        if event.time:
+            str_time = event.time.strftime("%H:%M")
+        else:
+            str_time = ""
+        btn_events[event.pk] = f"{str_date}, {str_time} - {event.name}"
+
+    query.edit_message_text(text="Ближайшие события", reply_markup=make_keyboard(btn_events,"inline",1,None,BACK_EV_MNU))
+    return "select_event"
+
+def show_event(update: Update, context: CallbackContext):
+    pass
+    
 
 def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
@@ -59,9 +81,12 @@ def setup_dispatcher_conv(dp: Dispatcher):
         entry_points=[CallbackQueryHandler(start_conversation, pattern="^events$")],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
-            "working":[CallbackQueryHandler(stop_conversation, pattern="^back$")
-                       
+            "working":[CallbackQueryHandler(show_event_calendar, pattern="^calendar$"),
+                       CallbackQueryHandler(stop_conversation, pattern="^back$")
                       ],
+            "select_event":[CallbackQueryHandler(start_conversation, pattern="^back_ev$"),
+                            CallbackQueryHandler(show_event)
+                           ],
         },
         # точка выхода из разговора
         fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
