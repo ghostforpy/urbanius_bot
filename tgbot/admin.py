@@ -15,7 +15,6 @@ from tgbot.handlers import utils
 class OffersInline(admin.TabularInline):
     model = Offers
     formfield_overrides = {
-        #models.CharField: {'widget': TextInput(attrs={'size':'20'})},
         models.TextField: {'widget': Textarea(attrs={'rows':2, 'cols':100})},
     }
     
@@ -125,7 +124,7 @@ class SocialNetSitesAdmin(admin.ModelAdmin) :
 
 @admin.register(Status)
 class StatusAdmin(admin.ModelAdmin) :
-    list_display = ("stat_id", "name",) 
+    list_display = ("code", "name",) 
     list_display_links = ("name", ) 
     search_fields = ("name",)
 

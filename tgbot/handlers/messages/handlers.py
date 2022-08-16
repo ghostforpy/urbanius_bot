@@ -3,9 +3,8 @@ from telegram import (Update, ParseMode)
 from telegram.ext import (
     Dispatcher, CommandHandler,
     MessageHandler, CallbackQueryHandler,
-    Filters, CallbackContext
+    Filters, CallbackContext, ConversationHandler
 )
-from tgbot.my_telegram import ConversationHandler
 from django.conf import settings
 from .messages import *
 from .answers import *

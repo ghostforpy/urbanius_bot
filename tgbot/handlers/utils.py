@@ -144,6 +144,45 @@ def send_document(user_id, document, filename=None, caption=None, disable_notifi
         success = False
     else:
         success = True
+    return success
+
+def send_video(user_id, video, duration=None, caption=None, disable_notification=None, 
+               reply_to_message_id=None, reply_markup=None, timeout=20, width=None, height=None, 
+               parse_mode=None, supports_streaming=None, thumb=None, api_kwargs=None, 
+               allow_sending_without_reply=None, caption_entities=None, filename=None, 
+               protect_content=None, tg_token=TELEGRAM_TOKEN):
+
+    bot = telegram.Bot(tg_token)
+    try:
+        m = bot.send_video(
+            chat_id=user_id,
+            video=video, 
+            duration=duration, 
+            caption=caption, 
+            disable_notification=disable_notification, 
+            reply_to_message_id=reply_to_message_id, 
+            reply_markup=reply_markup, 
+            timeout=timeout, 
+            width=width, 
+            height=height, 
+            parse_mode=parse_mode, 
+            supports_streaming=supports_streaming, 
+            thumb=thumb, 
+            api_kwargs=api_kwargs, 
+            allow_sending_without_reply=allow_sending_without_reply, 
+            caption_entities=caption_entities, 
+            filename=filename, 
+            protect_content=protect_content
+        )
+    except telegram.error.Unauthorized:
+        print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
+        #User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
+        success = False
+    except Exception as e:
+        print(f"Can't send message to {user_id}. Reason: {e}")
+        success = False
+    else:
+        success = True
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
     return success
 

@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from random import random
-from django.db.models import Q, Avg, Sum
+from django.db.models import Q, Avg
 
-from datetime import timedelta
 from typing import Dict, Tuple
 
 from django.db import models
@@ -46,7 +45,7 @@ class SocialNets(models.Model):
         ordering = ['user']
 
 class Status(models.Model):
-    stat_id = models.IntegerField("ИД статуса", null=True)
+    code = models.CharField("Код", max_length=50, blank=True)
     name = models.CharField("Статус пользователя", unique=True, max_length=150, blank=False)
     def __str__(self):
         return self.name
