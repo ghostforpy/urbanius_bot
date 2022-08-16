@@ -2,7 +2,7 @@
 
 # Apply database migrations
 echo "Applying database migrations ..."
-python manage.py migrate
+#python manage.py migrate
 
 # Create superuser
 #echo "Creating superuser ..."
