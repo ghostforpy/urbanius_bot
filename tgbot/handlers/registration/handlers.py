@@ -11,7 +11,7 @@ from telegram import KeyboardButton, ReplyKeyboardMarkup
 from .messages import *
 from .answers import *
 from tgbot.handlers.main.messages import NO_ADMIN_GROUP
-from tgbot.models import User, tgGroups, UserReferrers
+from tgbot.models import Status, User, tgGroups, UserReferrers
 
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot import utils
@@ -193,8 +193,9 @@ def processing_site(update: Update, context: CallbackContext):
         site = update.message.text
     
     context.user_data["site"] = site
-
+    context.user_data["status"] = Status.objects.get(code = "group_member")
     user, created = User.objects.update_or_create(user_id=context.user_data["user_id"], defaults=context.user_data)
+
     referrer = User.get_user_by_username_or_user_id(context.user_data["deep_link"])
     if referrer:
         user_referer = UserReferrers(referrer = referrer, user = user)

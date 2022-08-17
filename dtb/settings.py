@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'tgbot.apps.TgbotConfig',
     'statistic.apps.StatisticConfig',
     'events.apps.EventsConfig',
+    'payments.apps.PaymentsConfig',
 
 ]
 
@@ -154,6 +155,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # -----> TELEGRAM
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 PAYMENT_PROVIDER_TOKEN = os.getenv("PAYMENT_TOKEN")
+TRASH_GROUP =  os.getenv("TRASH_GROUP")
 
 # -----> LOGGING
 ENABLE_DECORATOR_LOGGING = os.getenv('ENABLE_DECORATOR_LOGGING', True)

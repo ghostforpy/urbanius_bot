@@ -6,7 +6,7 @@ from telegram.ext import JobQueue, CallbackContext
 import telegram
 from .models import *
 from tgbot.models import User, MessagesToSend, MessageTemplates
-from tgbot.handlers.utils import send_message, send_photo, send_document
+from tgbot.handlers.utils import send_message, send_photo, send_document, fill_file_id, get_no_foto_id
 from dtb import settings
 
 def remove_job_if_exists(name: str, jq: JobQueue):
@@ -64,15 +64,17 @@ def send_sheduled_message(context: CallbackContext):
         if (not mess.file)and(mess.recommended_friend is None):
             success = send_message(user_id = mess.receiver.user_id, text = mess.text, parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True)
         elif mess.file:
+            if not mess.file_id:
+                fill_file_id(mess, "file")
             if mess.file.name[-3:] in ["jpg","bmp","png"]:# в сообщении картинка
                 if os.path.exists(mess.file.path):
-                    success = send_photo(mess.receiver.user_id, open(mess.file.path, 'rb'), caption = mess.text, parse_mode = telegram.ParseMode.HTML)
+                    success = send_photo(mess.receiver.user_id, mess.file_id, caption = mess.text, parse_mode = telegram.ParseMode.HTML)
                 else:
                     success = send_message(user_id = mess.receiver.user_id, text = mess.text + "\nПриложенный файл потерялся", 
                                         parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True)
             else:
                 if os.path.exists(mess.file.path):
-                    success = send_document(mess.receiver.user_id, open(mess.file.path, 'rb'), caption = mess.text, parse_mode = telegram.ParseMode.HTML)
+                    success = send_document(mess.receiver.user_id, mess.file_id, caption = mess.text, parse_mode = telegram.ParseMode.HTML)
                 else:
                     success = send_message(user_id = mess.receiver.user_id, text = mess.text + "\nПриложенный файл потерялся",
                                         parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True)
@@ -80,10 +82,14 @@ def send_sheduled_message(context: CallbackContext):
             user = mess.recommended_friend
             if not(user.main_photo):
                 photo = settings.BASE_DIR / 'media/no_foto.jpg'
+                photo_id = get_no_foto_id()
             else:
+                if not user.main_photo_id:
+                    fill_file_id(user, "main_photo")
                 photo = user.main_photo.path
+                photo_id = user.main_photo_id
             if os.path.exists(photo):
-                send_photo(mess.receiver.user_id, open(photo, 'rb'), caption = user.short_profile(), parse_mode = telegram.ParseMode.HTML)
+                send_photo(mess.receiver.user_id, photo_id, caption = user.short_profile(), parse_mode = telegram.ParseMode.HTML)
             else:
                 send_message(user_id = mess.receiver.user_id,text = user.short_profile() + "\nФайл фото потерялся", parse_mode = telegram.ParseMode.HTML)
             success = send_message(user_id = mess.receiver.user_id, text = mess.text, parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True)    

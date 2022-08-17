@@ -15,7 +15,7 @@ from .answers import *
 import tgbot.models as mymodels
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
-from tgbot.handlers.utils import send_message, send_photo
+from tgbot.handlers.utils import send_message, send_photo, get_no_foto_id, fill_file_id
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
 
@@ -82,17 +82,25 @@ def manage_chosen_user(update: Update, context: CallbackContext):
     chosen_user_id = update.chosen_inline_result.result_id
     chosen_user = User.get_user_by_username_or_user_id(chosen_user_id)
     user_id = update.chosen_inline_result.from_user.id
+
     if not(chosen_user.main_photo):
         photo = settings.BASE_DIR / 'media/no_foto.jpg'
+        photo_id = get_no_foto_id()
     else:
+        if not chosen_user.main_photo_id:
+            fill_file_id(chosen_user, "main_photo")
         photo = chosen_user.main_photo.path
-    
+        photo_id = chosen_user.main_photo_id
+
+
+
     set_rating_btn = {"setrating_"+ str(chosen_user_id):"Поставить оценку"}
     reply_markup=make_keyboard(set_rating_btn,"inline",1,None,BACK)
     text = chosen_user.short_profile()    
     
+
     if os.path.exists(photo):
-        send_photo(user_id, open(photo, 'rb'), caption = text, reply_markup=reply_markup, parse_mode = ParseMode.HTML)
+        send_photo(user_id, photo_id, caption = text, reply_markup=reply_markup, parse_mode = ParseMode.HTML)
     else:
         send_message(user_id=user_id, text = text, reply_markup=reply_markup, parse_mode = ParseMode.HTML)
 

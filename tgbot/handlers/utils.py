@@ -1,5 +1,6 @@
 import logging
 import telegram
+import os
 from functools import wraps
 from dtb.settings import ENABLE_DECORATOR_LOGGING, TELEGRAM_TOKEN
 from django.utils import timezone
@@ -106,7 +107,7 @@ def send_photo(user_id, photo, caption=None, disable_notification=None, reply_to
         print(f"Can't send message to {user_id}. Reason: {e}")
         success = False
     else:
-        success = True
+        success = m
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
     return success
 
@@ -143,7 +144,7 @@ def send_document(user_id, document, filename=None, caption=None, disable_notifi
         print(f"Can't send message to {user_id}. Reason: {e}")
         success = False
     else:
-        success = True
+        success = m
     return success
 
 def send_video(user_id, video, duration=None, caption=None, disable_notification=None, 
@@ -182,24 +183,50 @@ def send_video(user_id, video, duration=None, caption=None, disable_notification
         print(f"Can't send message to {user_id}. Reason: {e}")
         success = False
     else:
-        success = True
+        success = m
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
     return success
 
 def get_no_foto_id():
     config_set = Config.objects.filter(param_name = "no_foto_id")
     if len(config_set) == 0:
-        group = tgGroups.get_group_by_name("Администраторы")
-        if (group == None) or (group.chat_id == 0):
-            return None            
-        else:
-
-            bot = telegram.Bot(TELEGRAM_TOKEN)
-            photo = settings.BASE_DIR / 'media/no_foto.jpg'
-            message = bot.send_photo(group.chat_id, open(photo, 'rb'), caption="no_foto")
-            foto_id, filename_orig = _get_file_id(message)
-            config_no_foto_id = Config(param_name = "no_foto_id", param_val = foto_id)
-            config_no_foto_id.save()
+        bot = telegram.Bot(TELEGRAM_TOKEN)
+        photo = settings.BASE_DIR / 'media/no_foto.jpg'
+        message = bot.send_photo(settings.TRASH_GROUP, open(photo, 'rb'), caption="no_foto")
+        foto_id, _ = _get_file_id(message)
+        config_no_foto_id = Config(param_name = "no_foto_id", param_val = foto_id)
+        config_no_foto_id.save()
     else:
         config_no_foto_id = config_set[0]
     return config_no_foto_id.param_val
+
+def fill_file_id(obj, file_field: str):
+    """
+    заполняет у объекта поле с телеграм ид файоа
+    obj - оъект, file_field - имя поля с файлом
+    имя поля с ид ложно быть file_field + '_id'
+    """
+
+    file = getattr(obj, file_field)
+    if os.path.exists(file.path):
+        file_ext = file.name.split(".")[-1]
+
+        if file_ext in ["jpg","jpeg","png","gif","tif","tiff","bmp"]:
+            mess = send_photo(settings.TRASH_GROUP, open(file.path, 'rb'))
+                    
+        elif file_ext in ["mp4","avi","mov","mpeg"]:
+            mess = send_video(settings.TRASH_GROUP, open(file.path, 'rb'))
+        else:
+            mess = send_document(settings.TRASH_GROUP, open(file.path, 'rb'))
+
+        file_id, _ = _get_file_id(mess)
+        setattr(obj, file_field + "_id", file_id)
+        obj.save() 
+
+def wrong_file_id(file_id: str, tg_token=TELEGRAM_TOKEN):
+    bot = telegram.Bot(tg_token)
+    try:
+        file = bot.get_file(file_id)
+        return False
+    except:
+        return True

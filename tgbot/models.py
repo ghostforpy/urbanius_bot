@@ -315,6 +315,7 @@ class MessagesToSend(models.Model):
     sended = models.BooleanField("Отослано", default=False)
     recommended_friend = models.ForeignKey("User", on_delete=models.SET_NULL, related_name="recommended_friend", verbose_name="Рекомендованный друг по Random coffe", blank=True, null=True)
     file = models.FileField("Файл", blank=True, null=True, upload_to="messages")
+    file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
     #photo = models.ImageField("Фото", blank=True, null=True, upload_to="messages")
 
     def __str__(self):

@@ -53,7 +53,7 @@ def _get_file_id(m):
 
 
 def show_file_id(update, context):
-    """ Returns file_id of the attached file/media """
+    """ Returns file_id of the attached file/media  """
     u = User.get_user(update, context)
 
     if u.is_admin:

@@ -18,8 +18,8 @@ import tgbot.models as mymodels
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
 from tgbot.handlers.commands import command_start
-from tgbot.handlers.utils import send_message, send_photo
-from tgbot.utils import extract_user_data_from_update, mystr, is_date, is_email, get_uniq_file_name
+from tgbot.handlers.utils import send_message, send_photo, fill_file_id, get_no_foto_id
+from tgbot.utils import mystr, is_date, is_email, get_uniq_file_name
 from tgbot.handlers.files import _get_file_id
 
 # Возврат к главному меню в исключительных ситуациях
@@ -46,10 +46,15 @@ def start_conversation(update: Update, context: CallbackContext):
 
     if not(user.main_photo):
         photo = settings.BASE_DIR / 'media/no_foto.jpg'
+        photo_id = get_no_foto_id()
     else:
+        if not user.main_photo_id:
+            fill_file_id(user, "main_photo")
         photo = user.main_photo.path
+        photo_id = user.main_photo_id
+
     if os.path.exists(photo):
-        send_photo(user.user_id, open(photo, 'rb'))
+        send_photo(user.user_id, photo_id)
     else:
         send_message(user_id = user.user_id,text = NOT_FOTO)
 
@@ -770,8 +775,18 @@ def view_profile(update: Update, context: CallbackContext):
         photo = settings.BASE_DIR / 'media/no_foto.jpg'
     else:
         photo = user.main_photo.path
+
+    if not(user.main_photo):
+        photo = settings.BASE_DIR / 'media/no_foto.jpg'
+        photo_id = get_no_foto_id()
+    else:
+        if not user.main_photo_id:
+            fill_file_id(user, "main_photo")
+        photo = user.main_photo.path
+        photo_id = user.main_photo_id
+
     if os.path.exists(photo):
-        send_photo(user.user_id, open(photo, 'rb'))
+        send_photo(user.user_id, photo_id)
     else:
         send_message(user_id = user.user_id,text = NOT_FOTO)
     profile_txt = user.full_profile()

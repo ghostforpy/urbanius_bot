@@ -18,7 +18,7 @@ from tgbot.handlers import commands
 from tgbot.handlers.registration.handlers import setup_dispatcher_conv as setup_dispatcher_reg
 from tgbot.handlers.main.handlers import setup_dispatcher_conv as setup_dispatcher_main
 from tgbot.handlers.profile.handlers import setup_dispatcher_conv as setup_dispatcher_prof
-from tgbot.handlers.payments.handlers import setup_dispatcher_conv as setup_dispatcher_pay
+from payments.handlers import setup_dispatcher_conv as setup_dispatcher_pay
 from tgbot.handlers.find_members.handlers import setup_dispatcher_conv as setup_dispatcher_find
 from tgbot.handlers.messages.handlers import setup_dispatcher_conv as setup_dispatcher_mess
 from events.handlers import setup_dispatcher_conv as setup_dispatcher_events
