@@ -8,8 +8,8 @@ CANCEL_SKIP = {"cancel":"Отмена","skip":"Пропустить"}
 OK = {"ok":"OK"}
 YES_NO = {"yes":"Да", "no":"Нет"}
 BACK = {"back":"Вернуться в основное меню"} #
-BACK_EV_MNU = {"back_ev":"Вернуться в меню события"} 
-BACK_EV_CLNDR = {"back_clndr":"Вернуться к списку событий"} 
+BACK_EV_MNU = {"back_ev":"Вернуться в меню мероприятия"} 
+BACK_EV_CLNDR = {"back_clndr":"Вернуться к списку мероприятий"} 
 
 EVENTS_MENU = {
                 "calendar":"Календарь мероприятий",

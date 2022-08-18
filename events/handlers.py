@@ -1,5 +1,6 @@
 import datetime
 import os
+from io import BytesIO
 from telegram import ParseMode,  Update, LabeledPrice
 from telegram.ext import (
     Dispatcher, CommandHandler,PreCheckoutQueryHandler,
@@ -68,7 +69,7 @@ def show_event_calendar(update: Update, context: CallbackContext):
     evens_set = Events.objects.filter(date__gte = datetime.datetime.now(),
                                     date__lte = datetime.datetime.now() + datetime.timedelta(days=30))
     if (user.status != status_club_resident):
-        # если пользователь не резидент, исключаем клубные события
+        # если пользователь не резидент, исключаем клубные мероприятия
         evens_set = evens_set.exclude(type = event_type_club)
 
     btn_events = {}
@@ -76,10 +77,10 @@ def show_event_calendar(update: Update, context: CallbackContext):
         
         btn_events[event.pk] = str(event)
     if query.message.text:
-        query.edit_message_text(text="Ближайшие события", reply_markup=make_keyboard(btn_events,"inline",1,None,BACK_EV_MNU))
+        query.edit_message_text(text="Ближайшие мероприятия", reply_markup=make_keyboard(btn_events,"inline",1,None,BACK_EV_MNU))
     else:
         query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
-        send_message(user_id=user_id, text="Ближайшие события", reply_markup=make_keyboard(btn_events,"inline",1,None,BACK_EV_MNU))
+        send_message(user_id=user_id, text="Ближайшие мероприятия", reply_markup=make_keyboard(btn_events,"inline",1,None,BACK_EV_MNU))
     return "select_event"
 
 def show_event(update: Update, context: CallbackContext):
@@ -95,10 +96,12 @@ def show_event(update: Update, context: CallbackContext):
     if request:
         manage_event_mnu = {}
         if not request.payed:
-            manage_event_mnu[f"pay_request_event-{event.pk}"] = "Оплатить заявку на событие" 
-            manage_event_mnu[f"del_request-{event.pk}"] = "Удалить заявку на событие"            
+            manage_event_mnu[f"pay_request_event-{event.pk}"] = "Оплатить заявку на мероприятие" 
+            manage_event_mnu[f"del_request-{event.pk}"] = "Удалить заявку на мероприятие" 
+        if request.confirmed:
+            manage_event_mnu[f"qr_request-{event.pk}"] = "Показать код подтверждения"           
     else:
-        manage_event_mnu = {f"reg_to_event-{event.pk}":"Зарегистрироваться на событие"} 
+        manage_event_mnu = {f"reg_to_event-{event.pk}":"Зарегистрироваться на мероприятие"} 
     reply_markup = make_keyboard(manage_event_mnu,"inline",1,None,BACK_EV_CLNDR)
 
     if event.file:
@@ -165,6 +168,25 @@ def delete_request(update: Update, context: CallbackContext):
     update_event_mess(query,event,user,request)
     return "manage_event"
 
+
+def show_qr_code(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    query_data = query.data.split("-")
+    event = Events.objects.get(pk = int(query_data[1]))
+    request = event.get_user_request(user)
+    if request:
+        img, text = request.get_qr_code()
+        bio = BytesIO()
+        bio.name = 'image.jpeg'
+        img.save(bio, 'JPEG')
+        bio.seek(0)
+        query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+        reply_markup = make_keyboard(EMPTY,"inline",1,None,BACK_EV_CLNDR)
+        send_photo(user_id, photo = bio, caption = text, parse_mode = ParseMode.HTML, reply_markup = reply_markup)        
+    return "manage_event"
 
 def make_invoice(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -263,15 +285,15 @@ def show_requested_events(update: Update, context: CallbackContext):
     user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
     requests_set = EventRequests.objects.filter(event__date__gte = datetime.datetime.now() - datetime.timedelta(days=40),
-                                    event__date__lte = datetime.datetime.now() + datetime.timedelta(days=30), user = user, confirmed = True)
+                                    event__date__lte = datetime.datetime.now() + datetime.timedelta(days=1), user = user, confirmed = True)
     btn_events = {}
     for request in requests_set:        
         btn_events[request.event.pk] = str(request.event)
     if query.message.text:
-        query.edit_message_text(text="Прошедшие события", reply_markup=make_keyboard(btn_events,"inline",1,None,BACK_EV_MNU))
+        query.edit_message_text(text="Прошедшие мероприятия", reply_markup=make_keyboard(btn_events,"inline",1,None,BACK_EV_MNU))
     else:
         query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
-        send_message(user_id=user_id, text="Прошедшие события", reply_markup=make_keyboard(btn_events,"inline",1,None,BACK_EV_MNU))
+        send_message(user_id=user_id, text="Прошедшие мероприятия", reply_markup=make_keyboard(btn_events,"inline",1,None,BACK_EV_MNU))
     return "select_req_event"
 
 def show_reqw_event(update: Update, context: CallbackContext):
@@ -348,7 +370,7 @@ def set_rating_comment (update: Update, context: CallbackContext):
         btn_events[request.event.pk] = str(request.event)
     
     update.message.reply_text("Мероприятию установлена оценка")     
-    update.message.reply_text("Прошедшие события", reply_markup=make_keyboard(btn_events,"inline",1,None,BACK_EV_MNU))
+    update.message.reply_text("Прошедшие мероприятия", reply_markup=make_keyboard(btn_events,"inline",1,None,BACK_EV_MNU))
   
     return "select_req_event"
 
@@ -375,6 +397,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
                             CallbackQueryHandler(create_request_to_event, pattern="^reg_to_event-"),
                             CallbackQueryHandler(delete_request, pattern="^del_request-"),
                             CallbackQueryHandler(make_invoice, pattern="^pay_request_event-"),
+                            CallbackQueryHandler(show_qr_code, pattern="^qr_request-"),
                             CallbackQueryHandler(blank),
                             MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
                            ],
@@ -411,10 +434,12 @@ def send_event_desc(event: Events, user: User):
     if request:
         manage_event_mnu = {}       
         if not request.payed:
-            manage_event_mnu[f"pay_request_event-{event.pk}"] = "Оплатить заявку на событие" 
-            manage_event_mnu[f"del_request-{event.pk}"] = "Удалить заявку на событие"            
+            manage_event_mnu[f"pay_request_event-{event.pk}"] = "Оплатить заявку на мероприятие" 
+            manage_event_mnu[f"del_request-{event.pk}"] = "Удалить заявку на мероприятие"            
+        if request.confirmed:
+            manage_event_mnu[f"qr_request-{event.pk}"] = "Показать код подтверждения"  
     else:
-        manage_event_mnu = {f"reg_to_event-{event.pk}":"Зарегистрироваться на событие"} 
+        manage_event_mnu = {f"reg_to_event-{event.pk}":"Зарегистрироваться на мероприятие"} 
     reply_markup = make_keyboard(manage_event_mnu,"inline",1,None,BACK_EV_CLNDR)
 
     if event.file:      
@@ -442,15 +467,14 @@ def update_event_mess(query,event,user,request):
     text = event.get_description()
     text += event.get_user_info(user)
     manage_event_mnu = {}
-    manage_event_mnu[f"del_request-{event.pk}"] = "Удалить заявку на событие"
-
-    if request:
-        manage_event_mnu = {}
-        manage_event_mnu[f"del_request-{event.pk}"] = "Удалить заявку на событие"
+    if request:    
         if not request.payed:
-            manage_event_mnu[f"pay_request_event-{event.pk}"] = "Оплатить заявку на событие"             
+            manage_event_mnu[f"pay_request_event-{event.pk}"] = "Оплатить заявку на мероприятие"
+            manage_event_mnu[f"del_request-{event.pk}"] = "Удалить заявку на мероприятие"             
+        if request.confirmed:
+            manage_event_mnu[f"qr_request-{event.pk}"] = "Показать код подтверждения"  
     else:
-        manage_event_mnu = {f"reg_to_event-{event.pk}":"Зарегистрироваться на событие"} 
+        manage_event_mnu = {f"reg_to_event-{event.pk}":"Зарегистрироваться на мероприятие"} 
 
     if query.message.text:
         query.edit_message_text(text=text, reply_markup=make_keyboard(manage_event_mnu,"inline",1,None,BACK_EV_CLNDR))

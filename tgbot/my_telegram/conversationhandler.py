@@ -285,19 +285,19 @@ class ConversationHandler(Handler[Update, CCT]):
         else:
             for handler in all_handlers:
                 if isinstance(handler, CallbackQueryHandler):
-                    warnings.warn(
-                        "If 'per_message=False', 'CallbackQueryHandler' will not be "
-                        "tracked for every message."
-                    )
+                    # warnings.warn(
+                    #     "If 'per_message=False', 'CallbackQueryHandler' will not be "
+                    #     "tracked for every message."
+                    # )
                     break
 
         if self.per_chat:
             for handler in all_handlers:
                 if isinstance(handler, (InlineQueryHandler, ChosenInlineResultHandler)):
-                    warnings.warn(
-                        "If 'per_chat=True', 'InlineQueryHandler' can not be used, "
-                        "since inline queries have no chat context."
-                    )
+                    # warnings.warn(
+                    #     "If 'per_chat=True', 'InlineQueryHandler' can not be used, "
+                    #     "since inline queries have no chat context."
+                    # )
                     break
 
         if self.conversation_timeout:

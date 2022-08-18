@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=150, verbose_name='Название мероприятия')),
                 ('description', models.TextField(blank=True, null=True, verbose_name='Описание')),
                 ('place', models.CharField(blank=True, max_length=150, null=True, verbose_name='Место проведения')),
-                ('event_link', models.URLField(blank=True, null=True, verbose_name='Страница события')),
+                ('event_link', models.URLField(blank=True, null=True, verbose_name='Страница мероприятия')),
                 ('regisration_link', models.URLField(blank=True, null=True, verbose_name='Страница формы регистрации')),
                 ('file', models.FileField(blank=True, null=True, upload_to='events', verbose_name='Фото/Видео')),
             ],

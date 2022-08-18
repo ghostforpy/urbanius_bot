@@ -24,7 +24,7 @@ def stop_conversation(update: Update, context: CallbackContext):
     return ConversationHandler.END
 
 
-# Обработка статуса Random coffe
+# Обработка статуса Random coffee
 def stop_conversation_coffe(update: Update, context: CallbackContext):
     # Заканчиваем разговор.
     userdata = extract_user_data_from_update(update)
@@ -83,7 +83,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
     conv_handler_send_mess = ConversationHandler( # здесь строится логика разговора
         # точка входа в разговор
-        entry_points=[CallbackQueryHandler(start_conversation_coffe, pattern="^random_coffe$"),
+        entry_points=[CallbackQueryHandler(start_conversation_coffe, pattern="^random_coffee$"),
                       CallbackQueryHandler(start_conversation_affiliate, pattern="^affiliate$")],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={

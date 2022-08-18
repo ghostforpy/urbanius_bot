@@ -1,20 +1,8 @@
 from django.db import models
 
-# Create your models here.
-class TaskTypes(models.Model):
-    code = models.CharField("Код типа задания", unique=True, max_length=150, blank=False)
-    name = models.CharField("Тип задания", max_length=150, blank=False)
-    def __str__(self):
-        return self.name
-    class Meta:
-        verbose_name_plural = 'Типы заданий' 
-        verbose_name = 'Тип задания' 
-        ordering = ['name']
-
 class Tasks(models.Model):
     code = models.CharField("Код задания", unique=True, max_length=150, blank=False)
     name = models.CharField("Имя задания", unique=True, max_length=150, blank=False)
-    task_type = models.ForeignKey(TaskTypes,on_delete=models.PROTECT, verbose_name="Тип задания", null=True)
     date = models.DateField("Дата запуска", blank=True, null=True)
     time = models.TimeField("Время запуска", blank=True, null=True)
     # Ежедневный запуск

@@ -122,7 +122,7 @@ class User(models.Model):
     is_banned = models.BooleanField("Забанен", default=False)
     is_admin = models.BooleanField("Администратор",default=False)
     is_moderator = models.BooleanField("Модератор",default=False)
-    random_coffe_on = models.BooleanField("Подключено Random coffe",default=False)
+    random_coffe_on = models.BooleanField("Подключено Random coffee",default=False)
     verified_by_security = models.BooleanField("Проверен службой безопасности",default=False)
     # Бизнес инфо:
     company = models.CharField("Компания", max_length=150, null=True, blank=True)
@@ -313,7 +313,6 @@ class MessagesToSend(models.Model):
     created_at = models.DateTimeField("Создано в", auto_now_add=True)
     sended_at = models.DateTimeField("Отослано в", blank=True, null=True)
     sended = models.BooleanField("Отослано", default=False)
-    recommended_friend = models.ForeignKey("User", on_delete=models.SET_NULL, related_name="recommended_friend", verbose_name="Рекомендованный друг по Random coffe", blank=True, null=True)
     file = models.FileField("Файл", blank=True, null=True, upload_to="messages")
     file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
     #photo = models.ImageField("Фото", blank=True, null=True, upload_to="messages")
@@ -331,6 +330,7 @@ class MessageTemplates(models.Model):
     name = models.CharField("Название", max_length=256, null=False, blank=False)
     text = models.TextField("Текст сообщения", blank=False)
     file = models.FileField("Файл", blank=True, null=True, upload_to="templates")
+    file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
 
     def __str__(self):
         return self.text

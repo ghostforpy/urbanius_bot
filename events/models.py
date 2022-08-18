@@ -1,3 +1,4 @@
+import qrcode
 from django.db import models
 from payments.models import Payments
 from tgbot.models import User, tgGroups,Status
@@ -29,7 +30,7 @@ class Events(models.Model):
     name = models.CharField("Название мероприятия", max_length=150, blank=False)
     description = models.TextField("Описание", null=True, blank=True)
     place = models.CharField("Место проведения", unique=False, max_length=150, blank=True, null = True)
-    event_link = models.URLField("Страница события", blank=True, null = True)
+    event_link = models.URLField("Страница мероприятия", blank=True, null = True)
     regisration_link = models.URLField("Страница формы регистрации", blank=True, null = True)
     file = models.FileField("Фото/Видео", blank=True, null=True, upload_to="events")
     file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
@@ -105,12 +106,24 @@ class EventRequests(models.Model):
     price = models.DecimalField("Стоимость мероприятия", max_digits=11, decimal_places=2)
     payed = models.BooleanField("Оплачена", default=False)
     confirmed = models.BooleanField("Подтверждена", default=False)
+    qr_code_sended = models.BooleanField("QR код подтверждения отослан", default=False)
     rating = models.IntegerField("Оценка мероприятия", default=0, null=True, blank=True)
     rating_comment = models.TextField("Комментарий к оценке", null=True, blank=True)
     created_at = models.DateTimeField("Создан", auto_now_add=True)
     payment = models.ForeignKey(Payments, on_delete=models.PROTECT, verbose_name="Документ платежа",null=True, blank=True)
     def __str__(self):
         return f"{self.number} на {self.event} от пользователя {self.user} цена {self.price} руб."
+    def get_qr_code(self):
+        text = ""
+        text += f"<b>{self.event}</b>\n"
+        text += f"<b>Ф.И.О. гостя:</b>\n{self.user.last_name} {self.user.first_name} {self.user.sur_name}\n"
+        text += f"<b>Статус:</b> {self.for_status}\n"
+        text += f"<b>Организация:</b> {self.user.company}\n"
+        text += f"<b>Должность:</b> {self.user.job}\n"
+        qr_txt = text.replace("<b>", "").replace("</b>", "")
+        img = qrcode.make(qr_txt)
+        return img, text
+    
     class Meta:
         verbose_name_plural = 'Заявки на мероприятия' 
         verbose_name = 'Заявка на мероприятие' 

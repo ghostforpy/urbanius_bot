@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='random_coffe_on',
-            field=models.BooleanField(default=False, verbose_name='Подключено Random coffe'),
+            field=models.BooleanField(default=False, verbose_name='Подключено Random coffee'),
         ),
     ]

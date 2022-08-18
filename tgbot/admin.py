@@ -123,7 +123,8 @@ class SocialNetSitesAdmin(admin.ModelAdmin) :
     search_fields = ("name", "link")
 
 @admin.register(Status)
-class StatusAdmin(admin.ModelAdmin) :
+class StatusAdmin(admin.ModelAdmin):
+    readonly_fields = ["code"]
     list_display = ("code", "name",) 
     list_display_links = ("name", ) 
     search_fields = ("name",)
@@ -139,12 +140,15 @@ class MessagesToSendAdmin(admin.ModelAdmin) :
     list_display = ("receiver","text", "created_at", "sended_at") 
     list_display_links = ("receiver","text" ) 
     search_fields = ("receiver",)
+    readonly_fields = ["file_id"] 
 
 @admin.register(MessageTemplates)
 class MessageTemplatesAdmin(admin.ModelAdmin) :
+    readonly_fields = ["code","file_id"]
     list_display = ("code","name") 
     list_display_links = ("code","name" ) 
     search_fields = ("code","name")
+
 
 @admin.register(UsersRatings)
 class UsersRatingsAdmin(admin.ModelAdmin) :

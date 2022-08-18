@@ -40,10 +40,10 @@ SENDING_CANCELED = "Отправка сообщения отменена"
 NO_ADMIN_GROUP = 'Группа "Администраторы" не найдена или не указан ее чат. Сообщите об ошибке'
 ASK_MESS = "Введите текст сообщения"
 MESS_SENDED = "Сообщение отослано"
-# Обработка Random coffe 
-COFFE_WELCOME = "Вы в режиме переключения Random coffe"
-COFFE_CANCELED = "Переключение Random coffe завершено"
-ASK_OFF_COFFE = "В данный момент услуга Random coffe подключена"
-ASK_ON_COFFE = "В данный момент услуга Random coffe отключена"
-COFFE_ON = "Переключение Random coffe завершено. Услуга Random coffe подключена"
-COFFE_OFF = "Переключение Random coffe завершено. Услуга Random coffe отключена"
+# Обработка Random coffee 
+COFFE_WELCOME = "Вы в режиме переключения Random coffee"
+COFFE_CANCELED = "Переключение Random coffee завершено"
+ASK_OFF_COFFE = "В данный момент услуга Random coffee подключена"
+ASK_ON_COFFE = "В данный момент услуга Random coffee отключена"
+COFFE_ON = "Переключение Random coffee завершено. Услуга Random coffee подключена"
+COFFE_OFF = "Переключение Random coffee завершено. Услуга Random coffee отключена"

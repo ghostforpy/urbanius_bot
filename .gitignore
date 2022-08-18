@@ -1,7 +1,6 @@
 staticfiles/*
 !staticfiles/.keep
 
-media/*
 !media/.keep
 
 logs/*
@@ -147,6 +146,12 @@ dmypy.json
 .Dockerfile.swp
 
 #My
-.keys/
-settings_dep.py
 /test
+media/events/*
+media/messages/*
+media/offers/*
+media/qr_codes/*
+media/user_fotos/*
+
+
+

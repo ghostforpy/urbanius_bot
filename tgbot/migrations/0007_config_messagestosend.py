@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
                 ('sended', models.BooleanField(default=False, verbose_name='Отослано')),
                 ('file', models.FileField(blank=True, upload_to='messages', verbose_name='Файл')),
                 ('receiver', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='receiver', to='tgbot.user', verbose_name='Получатель')),
-                ('recommended_friend', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='recommended_friend', to='tgbot.user', verbose_name='Рекомендованный друг по Random coffe')),
+                ('recommended_friend', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='recommended_friend', to='tgbot.user', verbose_name='Рекомендованный друг по Random coffee')),
             ],
             options={
                 'verbose_name': 'Сообщение к отсылке',
