@@ -60,8 +60,8 @@ def restarts_tasks(jq: JobQueue) -> JobQueue:
     if curr_task.is_active:
         days = curr_task.getdays()
         time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
-        #jq.run_daily(send_rating_reminder, time, days = days, name="rating_reminder")
-        jq.run_repeating(send_rating_reminder, 10, name="rating_reminder")
+        jq.run_daily(send_rating_reminder, time, days = days, name="rating_reminder")
+        #jq.run_repeating(send_rating_reminder, 10, name="rating_reminder")
 
     jq.start()         
     return jq

@@ -11,7 +11,7 @@ from telegram import KeyboardButton, ReplyKeyboardMarkup
 from .messages import *
 from .answers import *
 from tgbot.handlers.main.messages import NO_ADMIN_GROUP
-from tgbot.models import Status, User, tgGroups, UserReferrers
+from tgbot.models import Status, User, tgGroups, UserReferrers, NewUser
 
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot import utils
@@ -30,9 +30,7 @@ def stop_conversation(update: Update, context: CallbackContext):
     return ConversationHandler.END
 
 def start_conversation(update: Update, context: CallbackContext):
-    context.user_data["created_at"] = datetime.datetime.now()
-    context.user_data["is_blocked_bot"] = True
-    context.user_data["comment"] = "Ожидает подтверждения регистрации"
+
     update.message.reply_text(WELCOME, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
     return APROVAL  
 
@@ -47,12 +45,14 @@ def processing_aproval(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
 
 def processing_phone(update: Update, context: CallbackContext):
-    fullname = " ".join([utils.mystr(context.user_data.get("first_name")), utils.mystr(context.user_data.get("last_name"))])
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+    fullname = " ".join([new_user.first_name, utils.mystr(new_user.last_name), utils.mystr(new_user.sur_name)])
     if update.message.contact != None: # Был прислан контакт        
         # Запоминаем телефон
-        context.user_data["telefon"] = update.message.contact.phone_number
+        new_user.telefon = update.message.contact.phone_number
+        new_user.save()
         # Если пользователь новый проверяем есть ли у него в Телеграмм имя пользователя
-        if update.message.from_user.username == None:
+        if new_user.username == None:
              update.message.reply_text(USERNAME_NEEDED)
         keyboard = make_keyboard(CANCEL_SKIP,"usual",1)
         update.message.reply_text(ASK_FIO.format(fullname), reply_markup=keyboard)
@@ -68,42 +68,49 @@ def processing_phone(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(CANCEL_SKIP,"usual",2,REQUEST_PHONE))
 
 def processing_fio(update: Update, context: CallbackContext):
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
     if update.message.text == CANCEL["cancel"]:
         stop_conversation(update, context)
         return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
-        keyboard = make_keyboard(CANCEL,"usual",1)
-        update.message.reply_text(ASK_ABOUT, reply_markup=keyboard)
+        keyboard = make_keyboard(CANCEL_SKIP,"usual",1)
+        update.message.reply_text(ASK_ABOUT + f"\n Уже введено: '{utils.mystr(utils.mystr(new_user.about))}'", reply_markup=keyboard)
         return ABOUT
     else:
         fio = update.message.text.split()
         len_fio = len(fio)
         if len_fio == 1:
-            context.user_data["first_name"] = fio[0] # Имя
+            new_user.first_name = fio[0] # Имя
         elif len_fio == 2:
-            context.user_data["first_name"] = fio[0] # Имя
-            context.user_data["last_name"] = fio[1]  # Фамилия
+            new_user.first_name = fio[0] # Имя
+            new_user.last_name = fio[1]  # Фамилия
         elif len_fio > 2:
-            context.user_data["last_name"] = fio[0]  # Фамилия
-            context.user_data["first_name"] = fio[1] # Имя
-            context.user_data["sur_name"] = fio[2]   # Отчество
-        
-        keyboard = make_keyboard(CANCEL,"usual",2)
-        update.message.reply_text(ASK_ABOUT, reply_markup=keyboard)
+            new_user.last_name = fio[0]  # Фамилия
+            new_user.first_name = fio[1] # Имя
+            new_user.sur_name = fio[2]   # Отчество
+        new_user.save()
+        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        update.message.reply_text(ASK_ABOUT + f"\n Уже введено: '{utils.mystr(new_user.about)}'", reply_markup=keyboard)
         return ABOUT
 
 def processing_about(update: Update, context: CallbackContext):
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
     if update.message.text == CANCEL["cancel"]:
         stop_conversation(update, context)
         return ConversationHandler.END
-
+    elif update.message.text == CANCEL_SKIP["skip"]:
+        keyboard = make_keyboard(CANCEL_SKIP,"usual",1)
+        update.message.reply_text(ASK_BIRHDAY + f"\n Уже введено: '{utils.mystr(new_user.date_of_birth)}'", reply_markup=keyboard)
+        return BIRHDAY    
     else:
-        context.user_data["about"] = update.message.text        
+        new_user.about = update.message.text 
+        new_user.save()       
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        update.message.reply_text(ASK_BIRHDAY, reply_markup=keyboard)
+        update.message.reply_text(ASK_BIRHDAY + f"\n Уже введено: '{utils.mystr(new_user.date_of_birth)}'", reply_markup=keyboard)
         return BIRHDAY
 
 def processing_birhday(update: Update, context: CallbackContext):
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
     date = utils.is_date(update.message.text)
 
     if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
@@ -111,18 +118,20 @@ def processing_birhday(update: Update, context: CallbackContext):
        return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        update.message.reply_text(ASK_EMAIL, reply_markup=keyboard)
+        update.message.reply_text(ASK_EMAIL + f"\n Уже введено: '{utils.mystr(new_user.email)}'", reply_markup=keyboard)
         return EMAIL
     elif not(date): # ввели неверную дату
         update.message.reply_text(BAD_DATE, make_keyboard(CANCEL_SKIP,"usual",2))
         return    
     else: # ввели верный дату
-        context.user_data["date_of_birth"] = date
+        new_user.date_of_birth = date
+        new_user.save()
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        update.message.reply_text(ASK_EMAIL, reply_markup=keyboard)
+        update.message.reply_text(ASK_EMAIL + f"\n Уже введено: '{utils.mystr(new_user.email)}'", reply_markup=keyboard)
         return EMAIL
 
 def processing_email(update: Update, context: CallbackContext):
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
     email = utils.is_email(update.message.text)
 
     if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
@@ -130,60 +139,68 @@ def processing_email(update: Update, context: CallbackContext):
        return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        update.message.reply_text(ASK_CITI, reply_markup=keyboard)
+        update.message.reply_text(ASK_CITI + f"\n Уже введено: '{utils.mystr(new_user.citi)}'", reply_markup=keyboard)
         return CITI
     elif not(email): # ввели неверную email
         update.message.reply_text(BAD_EMAIL,make_keyboard(CANCEL_SKIP,"usual",2))
         return    
     else: 
-        context.user_data["email"] = email
+        new_user.email = email
+        new_user.save()
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        update.message.reply_text(ASK_CITI, reply_markup=keyboard)
+        update.message.reply_text(ASK_CITI + f"\n Уже введено: '{utils.mystr(new_user.citi)}'", reply_markup=keyboard)
         return CITI
 
 def processing_citi(update: Update, context: CallbackContext):
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
     if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
        stop_conversation(update, context)
        return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        update.message.reply_text(ASK_COMPANY, reply_markup=keyboard)
+        update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
         return COMPANY   
     else: 
-        context.user_data["citi"] = update.message.text
+        new_user.citi = update.message.text
+        new_user.save()
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        update.message.reply_text(ASK_COMPANY, reply_markup=keyboard)
+        update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
         return COMPANY
 
 def processing_company(update: Update, context: CallbackContext):
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
     if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
        stop_conversation(update, context)
        return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        update.message.reply_text(ASK_JOB, reply_markup=keyboard)
+        update.message.reply_text(ASK_JOB + f"\n Уже введено: '{utils.mystr(new_user.job)}'", reply_markup=keyboard)
         return JOB   
     else: 
-        context.user_data["company"] = update.message.text
+        new_user.company = update.message.text
+        new_user.save()
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        update.message.reply_text(ASK_JOB, reply_markup=keyboard)
+        update.message.reply_text(ASK_JOB + f"\n Уже введено: '{utils.mystr(new_user.job)}'", reply_markup=keyboard)
         return JOB
 
 def processing_job(update: Update, context: CallbackContext):
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
     if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
        stop_conversation(update, context)
        return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        update.message.reply_text(ASK_SITE, reply_markup=keyboard)
+        update.message.reply_text(ASK_SITE + f"\n Уже введено: '{utils.mystr(new_user.site)}'", reply_markup=keyboard)
         return SITE   
     else: 
-        context.user_data["job"] = update.message.text
+        new_user.job = update.message.text
+        new_user.save()
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        update.message.reply_text(ASK_SITE, reply_markup=keyboard)
+        update.message.reply_text(ASK_SITE + f"\n Уже введено: '{utils.mystr(new_user.site)}'", reply_markup=keyboard)
         return SITE
 
 def processing_site(update: Update, context: CallbackContext):
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
     if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
        stop_conversation(update, context)
        return ConversationHandler.END
@@ -192,11 +209,35 @@ def processing_site(update: Update, context: CallbackContext):
     else:
         site = update.message.text
     
-    context.user_data["site"] = site
-    context.user_data["status"] = Status.objects.get(code = "group_member")
-    user, created = User.objects.update_or_create(user_id=context.user_data["user_id"], defaults=context.user_data)
+    new_user.site = site
+    new_user.created_at = datetime.datetime.now()
+    new_user.registered = True
+    new_user.save()
 
-    referrer = User.get_user_by_username_or_user_id(context.user_data["deep_link"])
+    user = User(user_id=new_user.user_id)
+    user.username = new_user.username
+    user.last_name = new_user.last_name
+    user.first_name = new_user.first_name
+    user.email = new_user.email
+    user.telefon = new_user.telefon
+    user.sur_name = new_user.sur_name
+    user.date_of_birth = new_user.date_of_birth
+    user.company = new_user.company
+    user.job = new_user.job
+    user.branch = new_user.branch
+    user.citi = new_user.citi
+    user.job_region = new_user.job_region
+    user.site = new_user.site
+    user.about = new_user.about
+    user.created_at = new_user.created_at
+    user.language_code = new_user.language_code
+    user.deep_link = new_user.deep_link
+    user.status = Status.objects.get(code = "group_member")
+    user.is_blocked_bot = True
+    user.comment = "Ожидает подтверждения регистрации"
+    user.save()
+    
+    referrer = User.get_user_by_username_or_user_id(user.deep_link)
     if referrer:
         user_referer = UserReferrers(referrer = referrer, user = user)
         user_referer.save()
@@ -208,8 +249,8 @@ def processing_site(update: Update, context: CallbackContext):
     if (group == None) or (group.chat_id == 0):
         update.message.reply_text(NO_ADMIN_GROUP)
     else:
-        text = " ".join(["Зарегистрирован новый пользователь", "@"+utils.mystr(context.user_data.get("username")),
-                        context.user_data.get("first_name"), utils.mystr(context.user_data.get("last_name"))])
+        text = " ".join(["Зарегистрирован новый пользователь", "@"+utils.mystr(user.username),
+                        user.first_name, utils.mystr(user.last_name)])
         send_message(group.chat_id, text)
     context.user_data.clear()   
     return ConversationHandler.END

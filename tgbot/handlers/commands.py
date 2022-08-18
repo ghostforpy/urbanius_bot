@@ -8,7 +8,7 @@ from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext import ConversationHandler
 from django.utils import timezone
-from tgbot.models import User
+from tgbot.models import User, NewUser
 from tgbot.utils import extract_user_data_from_update
 from tgbot.handlers.utils import handler_logging
 from tgbot.handlers.keyboard import make_keyboard
@@ -27,19 +27,32 @@ def command_start(update: Update, context: CallbackContext):
     userdata = extract_user_data_from_update(update)
     context.user_data.update(userdata)
     user_id = userdata['user_id']
-    # Определение рекомендателя
-    context.user_data["deep_link"] = "00000000"
-    if context is not None and context.args is not None and len(context.args) > 0:
-        payload = context.args[0]
-        if str(payload).strip() != str(user_id).strip():  # you can't invite yourself
-            context.user_data["deep_link"] = payload
- 
+
     user = User.get_user_by_username_or_user_id(user_id)
     if user != None:
         if user.username != userdata.get("username"):
             user.username = userdata.get("username")
             user.save()
+    
     if user == None:
+        new_users_set = NewUser.objects.filter(user_id = user_id)
+        if new_users_set.count() == 0:
+            new_user = NewUser(user_id = user_id)
+        else:
+            new_user = new_users_set[0]
+        new_user.username = userdata.get("username")
+        new_user.first_name = userdata.get("first_name")
+        new_user.last_name = userdata.get("last_name")
+        new_user.language_code = userdata.get("language_code")
+
+        # Определение рекомендателя
+        if not new_user.deep_link:
+            new_user.deep_link = "00000000"
+            if context is not None and context.args is not None and len(context.args) > 0:
+                payload = context.args[0]
+                if str(payload).strip() != str(user_id).strip():  # нельзя быть рекомендателем самому себе
+                    new_user.deep_link = payload    
+        new_user.save()
         update.message.reply_text(REGISTRATION_START_MESSS, reply_markup=make_keyboard(REGISTRATION_START_BTN,"usual",2))
     else:
         reply_markup=get_start_menu(user)

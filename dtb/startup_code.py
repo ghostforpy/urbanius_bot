@@ -2,8 +2,23 @@ from tgbot.models import Status, MessageTemplates
 from sheduler.models import Tasks
 from events.models import EventTypes
 import datetime
+import os
+from dtb import settings
 
 try:
+    if not os.path.isdir(settings.BASE_DIR / "media/events"):
+        os.mkdir(settings.BASE_DIR / "media/events")
+    if not os.path.isdir(settings.BASE_DIR / "media/messages"):
+        os.mkdir(settings.BASE_DIR / "media/messages")
+    if not os.path.isdir(settings.BASE_DIR / "media/offers"):
+        os.mkdir(settings.BASE_DIR / "media/offers")
+    if not os.path.isdir(settings.BASE_DIR / "media/qr_codes"):
+        os.mkdir(settings.BASE_DIR / "media/qr_codes")
+    if not os.path.isdir(settings.BASE_DIR / "media/user_fotos"):
+        os.mkdir(settings.BASE_DIR / "media/user_fotos")
+
+
+    
     # create statuses
     status_set = Status.objects.filter(code = "admin")
     if status_set.count() == 0:

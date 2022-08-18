@@ -103,6 +103,41 @@ class UsersRatings(models.Model):
         verbose_name = 'Оценка пользователя' 
         ordering = ['user', 'rating'] 
 
+
+class NewUser(models.Model):
+    # Личная инфо:
+    user_id = models.BigIntegerField(primary_key=True)
+    username = models.CharField("Телеграм логин",max_length=32, null=True, blank=True)
+    last_name = models.CharField("Фамилия", max_length=256, null=True, blank=True)
+    first_name = models.CharField("Имя", max_length=256)
+    email = models.EmailField("E-mail", max_length=100, null=True, blank=True)
+    telefon = models.CharField("Телефон", max_length=13, null=True, blank=True)
+    sur_name = models.CharField("Отчество", max_length=150, null=True, blank=True)
+    date_of_birth = models.DateField("Дата рождения", null=True)    
+    # Бизнес инфо:
+    company = models.CharField("Компания", max_length=150, null=True, blank=True)
+    job = models.CharField("Должность", max_length=150, null=True, blank=True)
+    branch = models.CharField("Отрасль", max_length=150, null=True, blank=True)
+    citi = models.CharField("Город", max_length=150, null=True, blank=True)
+    job_region = models.CharField("Регион присутствия", max_length=150, null=True, blank=True)
+    site = models.CharField("Сайт", max_length=150, null=True, blank=True)
+    about = models.TextField("О себе", null=True, blank=True)
+
+    # Дополнительные поля
+    created_at = models.DateTimeField("Создан", auto_now_add=True)
+    language_code = models.CharField(max_length=8, null=True, blank=True, help_text="Telegram client's lang")
+    deep_link = models.CharField("Рекомендательная сылка", max_length=64, null=True, blank=True)
+    registered = models.BooleanField("Зарегистрирован", default=False)
+    
+    def __str__(self):
+        res = f'@{self.username}' if self.username is not None else f'{self.user_id}'
+        res = " ".join([res, str(self.first_name), str(self.last_name)])
+        return res
+
+    class Meta:
+        verbose_name = 'Новый пользователь'
+        verbose_name_plural = 'Новые пользователи'
+
 class User(models.Model):
     # Личная инфо:
     user_id = models.BigIntegerField(primary_key=True)
@@ -112,7 +147,7 @@ class User(models.Model):
     email = models.EmailField("E-mail", max_length=100, null=True, blank=True)
     telefon = models.CharField("Телефон", max_length=13, null=True, blank=True)
     sur_name = models.CharField("Отчество", max_length=150, null=True, blank=True)
-    date_of_birth = models.DateField("Дата рождения", null=True, default=timezone.now)    
+    date_of_birth = models.DateField("Дата рождения", null=True)    
     main_photo = models.ImageField("Основное фото", upload_to='user_fotos', null=True, blank=True)
     main_photo_id = models.CharField("id основного фото", max_length=150, null=True, blank=True)
     status = models.ForeignKey(Status, on_delete=models.PROTECT, verbose_name="Статус",null=True, blank=True)
@@ -278,7 +313,7 @@ class User(models.Model):
         res += "\n  <b>Спорт:</b> " + mystr(self.sport)
         res += "\n  <b>Хобби:</b> " + mystr(self.hobby)
         res += "\n  <b>Соцсети:</b>\n    " + get_model_text(SocialNets,["soc_net_site","link"], self).replace("\n", "\n    ")
-        res += "<b>Тэги:</b> " + mystr(self.tags)
+        res = res[:-2] + "<b>Тэги:</b> " + mystr(self.tags)
         res += "\n<b>Предложения:</b>\n" + get_model_text(Offers,["NN","offer"], self)
         res += "<b>Потребности:</b>\n" + mystr(self.needs)
         res += "\n<b>Рекомендатели:</b>\n" + get_model_text(UserReferrers,["NN","referrer"], self)  
