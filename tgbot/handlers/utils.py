@@ -43,7 +43,7 @@ def handler_logging(action_name=None):
     return decor
 
 
-def send_message(user_id, text, parse_mode=None, reply_markup=None, reply_to_message_id=None,
+def send_message(user_id, text, parse_mode=telegram.ParseMode.HTML, reply_markup=None, reply_to_message_id=None,
                  disable_web_page_preview=None, entities=None, api_kwargs = None, tg_token=TELEGRAM_TOKEN):
     bot = telegram.Bot(tg_token)
     try:
@@ -79,7 +79,7 @@ def send_message(user_id, text, parse_mode=None, reply_markup=None, reply_to_mes
     return success
 
 def send_photo(user_id, photo, caption=None, disable_notification=None, reply_to_message_id=None, 
-               reply_markup=None, timeout=20, parse_mode=None, api_kwargs=None, allow_sending_without_reply=None, 
+               reply_markup=None, timeout=20, parse_mode=telegram.ParseMode.HTML, api_kwargs=None, allow_sending_without_reply=None, 
                caption_entities=None, filename=None, protect_content=None, tg_token=TELEGRAM_TOKEN):
 
     bot = telegram.Bot(tg_token)
@@ -112,7 +112,7 @@ def send_photo(user_id, photo, caption=None, disable_notification=None, reply_to
     return success
 
 def send_document(user_id, document, filename=None, caption=None, disable_notification=None, reply_to_message_id=None, 
-            reply_markup=None, timeout=20, parse_mode=None, thumb=None, api_kwargs=None, 
+            reply_markup=None, timeout=20, parse_mode=telegram.ParseMode.HTML, thumb=None, api_kwargs=None, 
             disable_content_type_detection=None, allow_sending_without_reply=None, caption_entities=None, 
             protect_content=None, tg_token=TELEGRAM_TOKEN):
 
@@ -149,7 +149,7 @@ def send_document(user_id, document, filename=None, caption=None, disable_notifi
 
 def send_video(user_id, video, duration=None, caption=None, disable_notification=None, 
                reply_to_message_id=None, reply_markup=None, timeout=20, width=None, height=None, 
-               parse_mode=None, supports_streaming=None, thumb=None, api_kwargs=None, 
+               parse_mode=telegram.ParseMode.HTML, supports_streaming=None, thumb=None, api_kwargs=None, 
                allow_sending_without_reply=None, caption_entities=None, filename=None, 
                protect_content=None, tg_token=TELEGRAM_TOKEN):
 
@@ -200,24 +200,26 @@ def get_no_foto_id():
         config_no_foto_id = config_set[0]
     return config_no_foto_id.param_val
 
-def fill_file_id(obj, file_field: str):
+def fill_file_id(obj, file_field: str, text: str = ""):
     """
     заполняет у объекта поле с телеграм ид файоа
     obj - оъект, file_field - имя поля с файлом
-    имя поля с ид ложно быть file_field + '_id'
+    имя поля с ид должно быть file_field + '_id'
     """
 
     file = getattr(obj, file_field)
+    if not file:
+        return
     if os.path.exists(file.path):
         file_ext = file.name.split(".")[-1]
 
         if file_ext in ["jpg","jpeg","png","gif","tif","tiff","bmp"]:
-            mess = send_photo(settings.TRASH_GROUP, open(file.path, 'rb'))
+            mess = send_photo(settings.TRASH_GROUP, open(file.path, 'rb'), caption = text)
                     
         elif file_ext in ["mp4","avi","mov","mpeg"]:
-            mess = send_video(settings.TRASH_GROUP, open(file.path, 'rb'))
+            mess = send_video(settings.TRASH_GROUP, open(file.path, 'rb'), caption = text)
         else:
-            mess = send_document(settings.TRASH_GROUP, open(file.path, 'rb'))
+            mess = send_document(settings.TRASH_GROUP, open(file.path, 'rb'), caption = text)
 
         file_id, _ = _get_file_id(mess)
         setattr(obj, file_field + "_id", file_id)
@@ -231,13 +233,17 @@ def wrong_file_id(file_id: str, tg_token=TELEGRAM_TOKEN):
     except:
         return True
 
-def  send_mess_by_tmplr(user_id, mess_template, reply_markup):
+def  send_mess_by_tmplt(user_id, mess_template, reply_markup):
+    """
+    Отправка сообщения по шаблону. Шаблоном может быть любой объект с полями text, file, file_id
+    файл и текст пересылаются пользователь/группе с номером user_id и прикрепляется клавиатура
+    """
     success = False
     if not mess_template.file:
         success = send_message(user_id = user_id, text = mess_template.text, parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True, reply_markup = reply_markup)
     elif mess_template.file:
         if not mess_template.file_id:
-            fill_file_id(mess_template, "file")
+            fill_file_id(mess_template, "file", text = "send_mess_by_tmplt")
         if mess_template.file.name[-3:] in ["jpg","bmp","png"]:# в сообщении картинка
             if os.path.exists(mess_template.file.path):
                 success = send_photo(user_id, mess_template.file_id, caption = mess_template.text, parse_mode = telegram.ParseMode.HTML, reply_markup = reply_markup)

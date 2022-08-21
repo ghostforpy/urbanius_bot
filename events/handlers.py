@@ -92,6 +92,9 @@ def show_event_calendar(update: Update, context: CallbackContext):
     return "select_event"
 
 def show_event(update: Update, context: CallbackContext):
+    """
+    Показывает выбранное мероприятие
+    """
     query = update.callback_query
     query.answer()
     user_id = query.from_user.id
@@ -118,7 +121,7 @@ def show_event(update: Update, context: CallbackContext):
         file_path = event.file.path
         if os.path.exists(file_path):
             if (not event.file_id) or wrong_file_id(event.file_id):
-                fill_file_id(event, "file")
+                fill_file_id(event, "file", text = "show_event")
             if file_ext in ["jpg","jpeg","png","gif","tif","tiff","bmp"]:
                 send_photo(user_id, event.file_id, caption = text, 
                            reply_markup = reply_markup, parse_mode = ParseMode.HTML)
@@ -301,6 +304,9 @@ def show_requested_events(update: Update, context: CallbackContext):
     return "select_req_event"
 
 def show_reqw_event(update: Update, context: CallbackContext):
+    """
+    Показывает посещенное мероприятие
+    """
     query = update.callback_query
     query.answer()
     user_id = query.from_user.id
@@ -324,7 +330,7 @@ def show_reqw_event(update: Update, context: CallbackContext):
         file_path = event.file.path
         if os.path.exists(file_path):
             if (not event.file_id) or wrong_file_id(event.file_id):
-                fill_file_id(event, "file")
+                fill_file_id(event, "file", text = "show_reqw_event")
             if file_ext in ["jpg","jpeg","png","gif","tif","tiff","bmp"]:
                 send_photo(user_id, event.file_id, caption = text, 
                            reply_markup = reply_markup, parse_mode = ParseMode.HTML)
@@ -395,7 +401,9 @@ def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог
     conv_handler = ConversationHandlerMy( 
         # точка входа в разговор      
-        entry_points=[CallbackQueryHandler(start_conversation, pattern="^events$")],      
+        entry_points=[CallbackQueryHandler(start_conversation, pattern="^events$"),
+                      CallbackQueryHandler(set_rating_to_event, pattern="^remindrateevent_"),
+                      ],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
             states={
              "working":[CallbackQueryHandler(show_event_calendar, pattern="^calendar$"),
@@ -436,20 +444,21 @@ def setup_dispatcher_conv(dp: Dispatcher):
                         CommandHandler('start', stop_conversation, Filters.chat_type.private)]        
     )
 
-
-    conv_handler_rate = ConversationHandlerMy( 
-        # точка входа в разговор      
-        entry_points=[CallbackQueryHandler(set_rating_to_event, pattern="^rateevent_"),],      
-        # этапы разговора, каждый со своим списком обработчиков сообщений
-            states={
-                   "set_rating_comment":[MessageHandler(Filters.text & FilterPrivateNoCommand, set_rating_comment_reminder)],
-        },
-            # точка выхода из разговора
-            fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
-                       CommandHandler('start', stop_conversation, Filters.chat_type.private)]        
-    )
     dp.add_handler(conv_handler)
-    dp.add_handler(conv_handler_rate)      
+
+    # conv_handler_rate = ConversationHandlerMy( 
+    #     # точка входа в разговор      
+    #     entry_points=[CallbackQueryHandler(set_rating_to_event, pattern="^rateevent_"),],      
+    #     # этапы разговора, каждый со своим списком обработчиков сообщений
+    #         states={
+    #                "set_rating_comment":[MessageHandler(Filters.text & FilterPrivateNoCommand, set_rating_comment_reminder)],
+    #     },
+    #         # точка выхода из разговора
+    #         fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
+    #                    CommandHandler('start', stop_conversation, Filters.chat_type.private)]        
+    # )
+
+    # dp.add_handler(conv_handler_rate)      
 
 
 def send_event_desc(event: Events, user: User):
@@ -472,19 +481,19 @@ def send_event_desc(event: Events, user: User):
         file_path = event.file.path
         if os.path.exists(file_path):
             if not event.file_id:
-                fill_file_id(event, "file")
+                fill_file_id(event, "file", text = "send_event_desc")
             if file_ext in ["jpg","jpeg","png","gif","tif","tiff","bmp"]:
                 send_photo(user.user_id, event.file_id, caption = text, 
-                           reply_markup = reply_markup, parse_mode = ParseMode.HTML)
+                           reply_markup = reply_markup)
             elif file_ext in ["mp4","avi","mov","mpeg"]:
                 send_video(user.user_id, event.file_id, caption = text, 
-                                      reply_markup = reply_markup, parse_mode = ParseMode.HTML)
+                                      reply_markup = reply_markup)
             else:
-                send_message(user.user_id, text = text, reply_markup = reply_markup, parse_mode = ParseMode.HTML)
+                send_message(user.user_id, text = text, reply_markup = reply_markup)
         else:
-            send_message(user.user_id, text = text, reply_markup = reply_markup, parse_mode = ParseMode.HTML)
+            send_message(user.user_id, text = text, reply_markup = reply_markup)
     else:
-        send_message(user.user_id, text = text, reply_markup = reply_markup, parse_mode = ParseMode.HTML)
+        send_message(user.user_id, text = text, reply_markup = reply_markup)
     return "manage_event"
 
 

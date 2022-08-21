@@ -24,8 +24,7 @@ def stop_conversation(update: Update, context: CallbackContext):
         user_id = update.callback_query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
     send_message(user_id=user_id, text=CONV_FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
-    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user),
-                 parse_mode = ParseMode.HTML)
+    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
     return ConversationHandler.END
 #Заканчиваем общение в группе
 def stop_conversation_group(update: Update, context: CallbackContext):

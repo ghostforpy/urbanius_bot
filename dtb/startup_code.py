@@ -128,6 +128,23 @@ try:
         task.is_active = True # активно 
         task.save()
 
+
+    task_set = Tasks.objects.filter(code = "send_anonses")
+    if task_set.count() == 0:
+        task = Tasks()
+        task.code = "send_anonses"
+        task.name =  "Рассылка анонсов мероприятий"
+        task.time = datetime.time(10, 50, 00) # время запуска
+        task.mon = True # каждый день
+        task.tue = True
+        task.wed = True
+        task.thu = True
+        task.fri = True
+        task.sat = True
+        task.san = True
+        task.is_active = True # активно 
+        task.save()
+
     # create message templates
     template_set = MessageTemplates.objects.filter(code = "reg_reminder")
     if template_set.count() == 0:

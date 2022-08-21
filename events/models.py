@@ -126,3 +126,31 @@ class EventRequests(models.Model):
         verbose_name_plural = 'Заявки на мероприятия' 
         verbose_name = 'Заявка на мероприятие' 
         ordering = ['event','user']
+
+class Anonses(models.Model):
+    event = models.ForeignKey('Events', on_delete=models.PROTECT, verbose_name="Мероприятие",null=False, blank=False)
+    text = models.TextField("Текст анонса", null=True, blank=True)
+    sending_groups = models.ManyToManyField(tgGroups, verbose_name="Группы для рассылки")
+    file = models.FileField("Фото/Видео", blank=True, null=True, upload_to="events")
+    file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
+    def __str__(self):
+        res = f"{self.event} в "       
+        res += ", ".join([group.name for group in self.sending_groups.all()])
+        return res
+    def show_groups(self)->str:
+        res = ", ".join([group.name for group in self.sending_groups.all()])
+        return res    
+    show_groups.short_description = 'Отсылается в группы'
+    class Meta:
+        verbose_name_plural = 'Анонсы мероприятий' 
+        verbose_name = 'Анонс мероприятия' 
+        ordering = ["event"]
+
+class AnonsesDates(models.Model):
+    anons = models.ForeignKey(Anonses, on_delete=models.CASCADE, verbose_name="Анонс",null=False, blank=False)
+    anons_date = models.DateField("Дата отправки", blank=False, null=False)
+    sended = models.BooleanField("Отослан", default=False)
+    class Meta:
+        verbose_name_plural = 'Даты отправки анонсов' 
+        verbose_name = 'Дата отправки анонса' 
+        ordering = ["anons", "anons_date"]

@@ -7,8 +7,8 @@ import telegram
 from django.db.models import Q
 from .models import *
 from tgbot.models import User, NewUser
-from events.models import EventRequests
-from tgbot.handlers.utils import send_message, send_photo, send_document, fill_file_id, get_no_foto_id,send_mess_by_tmplr
+from events.models import EventRequests, AnonsesDates
+from tgbot.handlers.utils import send_message, send_photo, send_document, fill_file_id, get_no_foto_id,send_mess_by_tmplt
 from tgbot.utils import get_uniq_file_name
 from tgbot.handlers.keyboard import make_keyboard
 from dtb import settings
@@ -61,8 +61,17 @@ def restarts_tasks(jq: JobQueue) -> JobQueue:
     if curr_task.is_active:
         days = curr_task.getdays()
         time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
-        #jq.run_daily(send_rating_reminder, time, days = days, name="rating_reminder")
-        jq.run_repeating(send_rating_reminder, 10, name="rating_reminder")
+        jq.run_daily(send_rating_reminder, time, days = days, name="rating_reminder")
+        #jq.run_repeating(send_rating_reminder, 10, name="rating_reminder")
+
+    # Создаем/обновляем задание "рассылка анонсов мероприятия"
+    curr_task = Tasks.objects.get(code = "send_anonses")
+    remove_job_if_exists("send_anonses", jq)
+    if curr_task.is_active:
+        days = curr_task.getdays()
+        time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
+        jq.run_daily(send_anonses, time, days = days, name="rating_reminder")
+        #jq.run_repeating(send_anonses, 10, name="send_anonses")
 
     # Создаем/обновляем задание "напоминание о продолжении регистрации"
     curr_task = Tasks.objects.get(code = "reg_reminder")
@@ -70,8 +79,9 @@ def restarts_tasks(jq: JobQueue) -> JobQueue:
     if curr_task.is_active:
         days = curr_task.getdays()
         time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
-        #jq.run_daily(send_reg_reminder, time, days = days, name="reg_reminder")
-        jq.run_repeating(send_rating_reminder, 10, name="rating_reminder")
+        jq.run_daily(send_reg_reminder, time, days = days, name="reg_reminder")
+        #jq.run_repeating(send_reg_reminder, 10, name="reg_reminder")
+
     jq.start()         
     return jq
 
@@ -97,11 +107,11 @@ def send_rating_reminder(context: CallbackContext):
         new_mess.file = request.event.file
         new_mess.file_id = request.event.file_id
         set_rating_btn = {
-                        "rateevent_1_" + str(request.event.pk):"1",
-                        "rateevent_2_" + str(request.event.pk):"2",
-                        "rateevent_3_" + str(request.event.pk):"3",
-                        "rateevent_4_" + str(request.event.pk):"4",
-                        "rateevent_5_" + str(request.event.pk):"5",
+                        "remindrateevent_1_" + str(request.event.pk):"1",
+                        "remindrateevent_2_" + str(request.event.pk):"2",
+                        "remindrateevent_3_" + str(request.event.pk):"3",
+                        "remindrateevent_4_" + str(request.event.pk):"4",
+                        "remindrateevent_5_" + str(request.event.pk):"5",
                         } 
         keyboard = {}
         keyboard["buttons"] = set_rating_btn  
@@ -112,6 +122,26 @@ def send_rating_reminder(context: CallbackContext):
         new_mess.reply_markup = keyboard        
         new_mess.save()
 
+def send_anonses(context: CallbackContext):
+    """
+     Это задание send_anonses. Оно создает запланированные анонсы мероприятий
+     отсылается в группы и даты указанные в анонсе    
+    """
+    requests_set = AnonsesDates.objects.filter(anons_date = datetime.datetime.today(), sended = False)
+    for anons_day in requests_set:
+        if not anons_day.anons.event.file_id:
+            fill_file_id(anons_day.anons.event, "file", text = "send_anonses_event")
+        if not anons_day.anons.file_id:
+            fill_file_id(anons_day.anons, "file", text = "send_anonses_anons")
+        for group in anons_day.anons.sending_groups.all():
+            new_mess = MessagesToSend()
+            new_mess.receiver_user_id = group.chat_id  
+            new_mess.text = anons_day.anons.text
+            new_mess.file = anons_day.anons.event.file
+            new_mess.file_id = anons_day.anons.event.file_id
+            new_mess.save()
+        anons_day.sended = True
+        anons_day.save()
 
 def send_reg_reminder(context: CallbackContext):
     """
@@ -180,7 +210,7 @@ def send_random_coffe(context: CallbackContext):
             new_mess.file_id = get_no_foto_id()
         else:
             if not recomended_user.main_photo_id:
-                fill_file_id(user, "main_photo")
+                fill_file_id(user, "main_photo", text = "send_random_coffe")
             new_mess.file = user.main_photo
             new_mess.file_id = user.main_photo_id
         new_mess.save()
@@ -229,7 +259,7 @@ def send_sheduled_message(context: CallbackContext):
             reply_markup = make_keyboard(buttons,type,btn_in_row,first_btn,last_btn)
         user_id = mess.receiver.user_id if mess.receiver else mess.receiver_user_id 
 
-        success = send_mess_by_tmplr(user_id, mess, reply_markup)         
+        success = send_mess_by_tmplt(user_id, mess, reply_markup)         
 
         if success:
             mess.sended_at = datetime.datetime.now(tz=pytz.timezone('Europe/Moscow'))

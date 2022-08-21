@@ -137,7 +137,7 @@ class tgGroupsAdmin(admin.ModelAdmin) :
 @admin.register(UsersRatings)
 class UsersRatingsAdmin(admin.ModelAdmin) :
     list_display = ("user","rating","comment","created_at") 
-    list_display_links = ("rating","comment") 
+    list_display_links = ("user","rating","comment") 
     search_fields = ("user","rating")
 
 # @admin.register(UserActionLog)
@@ -145,6 +145,6 @@ class UsersRatingsAdmin(admin.ModelAdmin) :
 #     list_display = ['user', 'action', 'created_at']
 
 
-@admin.register(Config)
-class ConfigAdmin(admin.ModelAdmin):
-    list_display = ['param_name', 'param_val']
+# @admin.register(Config)
+# class ConfigAdmin(admin.ModelAdmin):
+#     list_display = ['param_name', 'param_val']

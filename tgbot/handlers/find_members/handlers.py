@@ -61,7 +61,9 @@ def manage_find(update: Update, context: CallbackContext):
     users_set = mymodels.User.find_users_by_keywords(query)
     results = []
     for user in users_set:
-        foto_url = settings.MEDIA_DOMAIN + user.main_photo.url
+        foto_url = None
+        if user.main_photo:
+            foto_url = settings.MEDIA_DOMAIN + user.main_photo.url
         set_rating_btn = {"setrating_"+ str(user.user_id):"Поставить оценку"}
         user_res_str = InlineQueryResultArticle(
             id=str(user.user_id),
@@ -111,7 +113,13 @@ def set_rating(update: Update, context: CallbackContext):
     user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
     data = query.data.split("_")
-    rated_user_id = data[1]
+    rated_user_id = int(data[1])
+    if rated_user_id == user_id:
+        context.user_data["search_started"] = False
+        send_message(user_id=user_id, text=NO_SELF_RATING, reply_markup=make_keyboard(EMPTY,"usual",1))
+        send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
+        return ConversationHandler.END    
+
     rated_user = User.get_user_by_username_or_user_id(rated_user_id)
     context.user_data["rated_user"] = rated_user
     #text = rated_user.short_profile()

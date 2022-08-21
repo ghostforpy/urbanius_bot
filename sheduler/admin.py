@@ -22,7 +22,7 @@ class MessagesToSendAdmin(admin.ModelAdmin) :
     list_display = ("receiver","text", "created_at", "sended_at") 
     list_display_links = ("receiver","text" ) 
     search_fields = ("receiver",)
-    readonly_fields = ["file_id"] 
+    readonly_fields = ["file_id","reply_markup"] 
 
 @admin.register(MessageTemplates)
 class MessageTemplatesAdmin(admin.ModelAdmin) :

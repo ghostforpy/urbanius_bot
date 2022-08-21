@@ -61,7 +61,7 @@ def start_conversation(update: Update, context: CallbackContext):
     profile_txt = user.full_profile()
     reply_markup = make_keyboard_start_menu()
     send_message(user_id = user.user_id, text = profile_txt, reply_markup = reply_markup, 
-                 parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True)
+                 disable_web_page_preview=True)
 
     return "working"
 

@@ -16,7 +16,7 @@ from tgbot.handlers.main.messages import NO_ADMIN_GROUP
 from tgbot.models import Status, User, tgGroups, UserReferrers, NewUser
 from sheduler.models import MessageTemplates
 
-from tgbot.handlers.utils import send_message, send_mess_by_tmplr
+from tgbot.handlers.utils import send_message, send_mess_by_tmplt
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot import utils
 from tgbot.handlers.filters import FilterPrivateNoCommand
@@ -248,7 +248,7 @@ def processing_site(update: Update, context: CallbackContext):
     reply_markup = make_keyboard(START,"usual",1)
     mess_template = MessageTemplates.objects.get(code = "welcome_newuser_message")
 
-    send_mess_by_tmplr(user.user_id, mess_template, reply_markup) 
+    send_mess_by_tmplt(user.user_id, mess_template, reply_markup) 
 
     group = tgGroups.get_group_by_name("Администраторы")
     if (group == None) or (group.chat_id == 0):

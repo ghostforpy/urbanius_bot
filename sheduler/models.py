@@ -46,7 +46,7 @@ class MessagesToSend(models.Model):
     sended = models.BooleanField("Отослано", default=False)
     file = models.FileField("Файл", blank=True, null=True, upload_to="messages")
     file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
-    reply_markup = models.JSONField(blank=True, null = True)
+    reply_markup = models.JSONField(blank=True, null = True) # здесь хранится словарь с описанием клавиатуры прикрепляемой к сообщению
 
     def __str__(self):
         return self.text

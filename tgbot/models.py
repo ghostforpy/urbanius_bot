@@ -206,7 +206,7 @@ class User(models.Model):
     def avatar_tag(self):
         return mark_safe('<img src="%s" height="150" />' % self.get_avatar())
  
-    avatar_tag.short_description = 'Avatar'
+    avatar_tag.short_description = 'Основное фото preview'
 
     @classmethod
     def get_user_and_created(cls, update, context) -> Tuple["User", bool]:
