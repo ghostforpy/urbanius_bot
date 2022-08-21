@@ -23,8 +23,11 @@ from tgbot.handlers.main.messages import get_start_mess
 from tgbot.utils import extract_user_data_from_update
 
 
-# Возврат к главному меню
+
 def stop_conversation(update: Update, context: CallbackContext):
+    """ 
+       Возврат к главному меню    
+    """
     # Заканчиваем разговор.
     if update.message:
         user_id = update.message.from_user.id
@@ -39,8 +42,10 @@ def stop_conversation(update: Update, context: CallbackContext):
     send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
     return ConversationHandler.END
 
-# Временная заглушка
 def blank(update: Update, context: CallbackContext):
+    """
+    Временная заглушка
+    """
     pass
 
 def bad_callback_enter(update: Update, context: CallbackContext):
@@ -50,8 +55,11 @@ def bad_input(update: Update, context: CallbackContext):
     update.message.reply_text(ASK_REENTER)
 
 
-# Начало разговора
+
 def start_conversation(update: Update, context: CallbackContext):
+    """
+    Начало разговора
+    """
     query = update.callback_query
     query.answer()
     query.edit_message_text(text=HELLO_MESS, reply_markup=make_keyboard(EVENTS_MENU,"inline",1,None,BACK))
@@ -144,11 +152,7 @@ def create_request_to_event(update: Update, context: CallbackContext):
         request.price = event.get_price(user)
         if request.price == 0:
             request.payed = True
-        if event.type == EventTypes.objects.get(code = "open"):
-            request.confirmed = True
         request.save()
-        # text = f"Зарегистрирована заявка № {request}"
-        # send_message(user_id=user_id, text=text)
     update_event_mess(query,event,user,request)
     return "manage_event"
 
@@ -306,11 +310,11 @@ def show_reqw_event(update: Update, context: CallbackContext):
     text = event.get_description()
     text += event.get_user_info(user)
     set_rating_btn = {
-                      "1_" + str(event.pk):"1",
-                      "2_" + str(event.pk):"2",
-                      "3_" + str(event.pk):"3",
-                      "4_" + str(event.pk):"4",
-                      "5_" + str(event.pk):"5",
+                      "rateevent_1_" + str(event.pk):"1",
+                      "rateevent_2_" + str(event.pk):"2",
+                      "rateevent_3_" + str(event.pk):"3",
+                      "rateevent_4_" + str(event.pk):"4",
+                      "rateevent_5_" + str(event.pk):"5",
                       }   
     reply_markup = make_keyboard(set_rating_btn,"inline",5,None,BACK_EV_CLNDR)
 
@@ -341,8 +345,8 @@ def set_rating_to_event(update: Update, context: CallbackContext):
     user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
     query_data = query.data.split("_")
-    rating = query_data[0]
-    event = Events.objects.get(pk = int(query_data[1]))
+    rating = query_data[1]
+    event = Events.objects.get(pk = int(query_data[2]))
     request = event.get_user_request(user)
     context.user_data["request_to_event"] = request
     if request:
@@ -374,7 +378,17 @@ def set_rating_comment (update: Update, context: CallbackContext):
   
     return "select_req_event"
 
-
+def set_rating_comment_reminder (update: Update, context: CallbackContext):
+    """
+     Вызывается когда запрос оценки происходит сообщением напоминанием
+    """
+    # Сохраняем оценку
+    request = context.user_data["request_to_event"]      
+    request.rating_comment = update.message.text
+    request.save()
+    update.message.reply_text("Мероприятию установлена оценка")     
+  
+    return ConversationHandler.END
 
 def setup_dispatcher_conv(dp: Dispatcher):
 
@@ -383,48 +397,59 @@ def setup_dispatcher_conv(dp: Dispatcher):
         # точка входа в разговор      
         entry_points=[CallbackQueryHandler(start_conversation, pattern="^events$")],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
-        states={
-            "working":[CallbackQueryHandler(show_event_calendar, pattern="^calendar$"),
-                       CallbackQueryHandler(show_requested_events, pattern="^requested$"),
-                       CallbackQueryHandler(stop_conversation, pattern="^back$"),
-                       MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
-                      ],
-            "select_event":[CallbackQueryHandler(start_conversation, pattern="^back_ev$"),
-                            CallbackQueryHandler(show_event),
-                            MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
-                           ],
-            "manage_event":[CallbackQueryHandler(show_event_calendar, pattern="^back_clndr$"),
-                            CallbackQueryHandler(create_request_to_event, pattern="^reg_to_event-"),
-                            CallbackQueryHandler(delete_request, pattern="^del_request-"),
-                            CallbackQueryHandler(make_invoice, pattern="^pay_request_event-"),
-                            CallbackQueryHandler(show_qr_code, pattern="^qr_request-"),
-                            CallbackQueryHandler(blank),
-                            MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
-                           ],
-            "select_req_event":[CallbackQueryHandler(start_conversation, pattern="^back_ev$"),
-                            CallbackQueryHandler(show_reqw_event),
-                            MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
-                           ],
-        "manage_req_event":[CallbackQueryHandler(show_requested_events, pattern="^back_clndr$"),
-                            CallbackQueryHandler(set_rating_to_event),
-                            MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
-                           ],
-    "set_rating_comment":[
-                          MessageHandler(Filters.text & FilterPrivateNoCommand, set_rating_comment),
-                         ],
+            states={
+             "working":[CallbackQueryHandler(show_event_calendar, pattern="^calendar$"),
+                        CallbackQueryHandler(show_requested_events, pattern="^requested$"),
+                        CallbackQueryHandler(stop_conversation, pattern="^back$"),
+                        MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
+                        ],
+        "select_event":[CallbackQueryHandler(start_conversation, pattern="^back_ev$"),
+                        CallbackQueryHandler(show_event),
+                        MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
+                        ],
+        "manage_event":[CallbackQueryHandler(show_event_calendar, pattern="^back_clndr$"),
+                        CallbackQueryHandler(create_request_to_event, pattern="^reg_to_event-"),
+                        CallbackQueryHandler(delete_request, pattern="^del_request-"),
+                        CallbackQueryHandler(make_invoice, pattern="^pay_request_event-"),
+                        CallbackQueryHandler(show_qr_code, pattern="^qr_request-"),
+                        CallbackQueryHandler(blank),
+                        MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
+                        ],
+    "select_req_event":[CallbackQueryHandler(start_conversation, pattern="^back_ev$"),
+                        CallbackQueryHandler(show_reqw_event),
+                        MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
+                        ],
+    "manage_req_event":[CallbackQueryHandler(show_requested_events, pattern="^back_clndr$"),
+                        CallbackQueryHandler(set_rating_to_event),
+                        MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
+                        ],
+  "set_rating_comment":[MessageHandler(Filters.text & FilterPrivateNoCommand, set_rating_comment)],
 
-            "invois_sended":[
-                       PreCheckoutQueryHandler(precheckout_callback),                    
-                       MessageHandler(Filters.text([CANCEL["cancel"]]) & FilterPrivateNoCommand, stop_conversation),# Не делать асинхронным
-                       MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
-                      ],
+       "invois_sended":[PreCheckoutQueryHandler(precheckout_callback),                    
+                        MessageHandler(Filters.text([CANCEL["cancel"]]) & FilterPrivateNoCommand, stop_conversation),# Не делать асинхронным
+                        MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
+                         ],
             "checkout":[MessageHandler(Filters.successful_payment, successful_payment_callback)]  # Не делать асинхронным       
         },
-        # точка выхода из разговора
-        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
-                   CommandHandler('start', stop_conversation, Filters.chat_type.private)]        
+            # точка выхода из разговора
+             fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
+                        CommandHandler('start', stop_conversation, Filters.chat_type.private)]        
     )
-    dp.add_handler(conv_handler)  
+
+
+    conv_handler_rate = ConversationHandlerMy( 
+        # точка входа в разговор      
+        entry_points=[CallbackQueryHandler(set_rating_to_event, pattern="^rateevent_"),],      
+        # этапы разговора, каждый со своим списком обработчиков сообщений
+            states={
+                   "set_rating_comment":[MessageHandler(Filters.text & FilterPrivateNoCommand, set_rating_comment_reminder)],
+        },
+            # точка выхода из разговора
+            fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
+                       CommandHandler('start', stop_conversation, Filters.chat_type.private)]        
+    )
+    dp.add_handler(conv_handler)
+    dp.add_handler(conv_handler_rate)      
 
 
 def send_event_desc(event: Events, user: User):

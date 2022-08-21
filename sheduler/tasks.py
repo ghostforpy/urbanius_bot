@@ -6,10 +6,11 @@ from telegram.ext import JobQueue, CallbackContext
 import telegram
 from django.db.models import Q
 from .models import *
-from tgbot.models import User, MessagesToSend, MessageTemplates
+from tgbot.models import User, NewUser
 from events.models import EventRequests
-from tgbot.handlers.utils import send_message, send_photo, send_document, fill_file_id, get_no_foto_id
+from tgbot.handlers.utils import send_message, send_photo, send_document, fill_file_id, get_no_foto_id,send_mess_by_tmplr
 from tgbot.utils import get_uniq_file_name
+from tgbot.handlers.keyboard import make_keyboard
 from dtb import settings
 
 def remove_job_if_exists(name: str, jq: JobQueue):
@@ -60,24 +61,82 @@ def restarts_tasks(jq: JobQueue) -> JobQueue:
     if curr_task.is_active:
         days = curr_task.getdays()
         time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
-        jq.run_daily(send_rating_reminder, time, days = days, name="rating_reminder")
-        #jq.run_repeating(send_rating_reminder, 10, name="rating_reminder")
+        #jq.run_daily(send_rating_reminder, time, days = days, name="rating_reminder")
+        jq.run_repeating(send_rating_reminder, 10, name="rating_reminder")
 
+    # Создаем/обновляем задание "напоминание о продолжении регистрации"
+    curr_task = Tasks.objects.get(code = "reg_reminder")
+    remove_job_if_exists("reg_reminder", jq)
+    if curr_task.is_active:
+        days = curr_task.getdays()
+        time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
+        #jq.run_daily(send_reg_reminder, time, days = days, name="reg_reminder")
+        jq.run_repeating(send_rating_reminder, 10, name="rating_reminder")
     jq.start()         
     return jq
 
-# Это задание создает запланированные к отсылке напоминания об установке оценки мероприятия
+
 def send_rating_reminder(context: CallbackContext):
+    """
+    Это задание создает запланированные к отсылке напоминания об установке оценки мероприятия
+    напоминание делается 1 раз на следующий день   
+    """
     mess_template = MessageTemplates.objects.get(code = "rating_reminder")
     requests_set = EventRequests.objects.filter(confirmed = True, event__date = datetime.date.today() - datetime.timedelta(days=1))
     for request in requests_set:
         new_mess = MessagesToSend()
         new_mess.receiver = request.user  
-        new_mess.text = mess_template.text + f"\n<b>{request.event}</b>"
+        new_mess.text = mess_template.text
         new_mess.save()
 
-# Это задание send_payment_reminder. Оно создает запланированные к отсылке напоминания об оплате
+        new_mess = MessagesToSend()
+        new_mess.receiver = request.user
+        text = request.event.get_description()
+        text += request.event.get_user_info(request.user)
+        new_mess.text = text
+        new_mess.file = request.event.file
+        new_mess.file_id = request.event.file_id
+        set_rating_btn = {
+                        "rateevent_1_" + str(request.event.pk):"1",
+                        "rateevent_2_" + str(request.event.pk):"2",
+                        "rateevent_3_" + str(request.event.pk):"3",
+                        "rateevent_4_" + str(request.event.pk):"4",
+                        "rateevent_5_" + str(request.event.pk):"5",
+                        } 
+        keyboard = {}
+        keyboard["buttons"] = set_rating_btn  
+        keyboard["type"] = "inline" 
+        keyboard["btn_in_row"] = 5
+        keyboard["first_btn"] = None
+        keyboard["last_btn"] = None                     
+        new_mess.reply_markup = keyboard        
+        new_mess.save()
+
+
+def send_reg_reminder(context: CallbackContext):
+    """
+     Это задание send_reg_reminder. Оно создает запланированные к отсылке напоминания продолжении регистрации
+     напоминание делается 1 раз на следующий день    
+    """
+    mess_template = MessageTemplates.objects.get(code = "reg_reminder")
+    q = (
+            Q(registered = False)& 
+            Q(created_at__gte = datetime.date.today()-datetime.timedelta(days=1))& 
+            Q(created_at__lte=datetime.date.today())
+        )
+    requests_set = NewUser.objects.filter(q)
+    for new_user in requests_set:
+        new_mess = MessagesToSend()
+        new_mess.receiver_user_id = new_user.user_id  
+        new_mess.text = mess_template.text
+        new_mess.save()
+
+
 def send_payment_reminder(context: CallbackContext):
+    """
+     Это задание send_payment_reminder. Оно создает запланированные к отсылке напоминания об оплате
+     напоминание делается 2 раз на следующий день после создания заявки и за день до начала мероприятия    
+    """
     mess_template = MessageTemplates.objects.get(code = "payment_reminder")
     q = (
             Q(payed = False)& 
@@ -96,8 +155,12 @@ def send_payment_reminder(context: CallbackContext):
         new_mess.save()
 
 
-# Это задание random_coffee. Оно создает запланированные к отсылке сообщения
+
 def send_random_coffe(context: CallbackContext):
+    """
+     Это задание random_coffee. Оно создает запланированные к отсылке сообщения в рамках акции
+     делается 1 раз в неделю (зависит от настройки задания)    
+    """
     mess_template = MessageTemplates.objects.get(code = "random_coffee")
     user_set = User.objects.filter(random_coffe_on = True, is_blocked_bot = False, is_banned = False)
     for user in user_set:
@@ -122,8 +185,12 @@ def send_random_coffe(context: CallbackContext):
             new_mess.file_id = user.main_photo_id
         new_mess.save()
         
-# Это задание send_confirm_event. Оно создает запланированные к отсылке сообщения
+
 def send_confirm_event(context: CallbackContext):
+    """
+     Это задание send_confirm_event. Оно создает запланированные к отсылке сообщения
+     выполняется постоянно. Отправляет подтверждение, когда находит подтвержденную заявку    
+    """
     mess_template = MessageTemplates.objects.get(code = "send_confirm_event")
     requests_set = EventRequests.objects.filter(confirmed = True, qr_code_sended = False)
 
@@ -143,29 +210,27 @@ def send_confirm_event(context: CallbackContext):
         request.qr_code_sended = True
         request.save()
 
-# Это задание рассылки сообщений. Повторяется с периодичностью заданной в задаче с кодом send_messages (10 сек)
-# Сообщения беруться из таблицы MessagesToSend, куда добавляются другими заданиями или вручную
+
 def send_sheduled_message(context: CallbackContext):
+    """
+     Это задание рассылки сообщений. Повторяется с периодичностью заданной в задаче с кодом send_messages (10 сек)
+     Сообщения беруться из таблицы MessagesToSend, куда добавляются другими заданиями или вручную   
+    """
     mess_set = MessagesToSend.objects.filter(sended = False).order_by("created_at")[:20]
     for mess in mess_set:
-        success = False    
-        if not mess.file:
-            success = send_message(user_id = mess.receiver.user_id, text = mess.text, parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True)
-        elif mess.file:
-            if not mess.file_id:
-                fill_file_id(mess, "file")
-            if mess.file.name[-3:] in ["jpg","bmp","png"]:# в сообщении картинка
-                if os.path.exists(mess.file.path):
-                    success = send_photo(mess.receiver.user_id, mess.file_id, caption = mess.text, parse_mode = telegram.ParseMode.HTML)
-                else:
-                    success = send_message(user_id = mess.receiver.user_id, text = mess.text + "\nПриложенный файл потерялся", 
-                                        parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True)
-            else:
-                if os.path.exists(mess.file.path):
-                    success = send_document(mess.receiver.user_id, mess.file_id, caption = mess.text, parse_mode = telegram.ParseMode.HTML)
-                else:
-                    success = send_message(user_id = mess.receiver.user_id, text = mess.text + "\nПриложенный файл потерялся",
-                                        parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True)
+        success = False
+        reply_markup = None
+        if  mess.reply_markup:
+            buttons = mess.reply_markup.get("buttons")
+            type = mess.reply_markup.get("type")
+            btn_in_row = mess.reply_markup.get("btn_in_row")
+            first_btn = mess.reply_markup.get("first_btn")
+            last_btn = mess.reply_markup.get("last_btn")
+            reply_markup = make_keyboard(buttons,type,btn_in_row,first_btn,last_btn)
+        user_id = mess.receiver.user_id if mess.receiver else mess.receiver_user_id 
+
+        success = send_mess_by_tmplr(user_id, mess, reply_markup)         
+
         if success:
             mess.sended_at = datetime.datetime.now(tz=pytz.timezone('Europe/Moscow'))
             mess.sended = True

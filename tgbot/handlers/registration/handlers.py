@@ -1,4 +1,5 @@
-import datetime
+import telegram
+import os
 from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext import (
@@ -7,12 +8,15 @@ from telegram.ext import (
     Filters,
     ConversationHandler,
 )
-from telegram import KeyboardButton, ReplyKeyboardMarkup
+
+from tgbot import models
 from .messages import *
 from .answers import *
 from tgbot.handlers.main.messages import NO_ADMIN_GROUP
 from tgbot.models import Status, User, tgGroups, UserReferrers, NewUser
+from sheduler.models import MessageTemplates
 
+from tgbot.handlers.utils import send_message, send_mess_by_tmplr
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot import utils
 from tgbot.handlers.filters import FilterPrivateNoCommand
@@ -31,7 +35,7 @@ def stop_conversation(update: Update, context: CallbackContext):
 
 def start_conversation(update: Update, context: CallbackContext):
 
-    update.message.reply_text(WELCOME, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
+    update.message.reply_text(WELCOME_REG, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
     return APROVAL  
 
 def processing_aproval(update: Update, context: CallbackContext):
@@ -210,7 +214,6 @@ def processing_site(update: Update, context: CallbackContext):
         site = update.message.text
     
     new_user.site = site
-    new_user.created_at = datetime.datetime.now()
     new_user.registered = True
     new_user.save()
 
@@ -242,9 +245,11 @@ def processing_site(update: Update, context: CallbackContext):
         user_referer = UserReferrers(referrer = referrer, user = user)
         user_referer.save()
 
-    keyboard = make_keyboard(START,"usual",1)
-    update.message.reply_text(FIN_MESS, reply_markup=keyboard)
- 
+    reply_markup = make_keyboard(START,"usual",1)
+    mess_template = MessageTemplates.objects.get(code = "welcome_newuser_message")
+
+    send_mess_by_tmplr(user.user_id, mess_template, reply_markup) 
+
     group = tgGroups.get_group_by_name("Администраторы")
     if (group == None) or (group.chat_id == 0):
         update.message.reply_text(NO_ADMIN_GROUP)
@@ -259,23 +264,23 @@ def processing_site(update: Update, context: CallbackContext):
 def setup_dispatcher_conv(dp: Dispatcher):
     conv_handler_reg = ConversationHandler( # здесь строится логика разговора
         # точка входа в разговор
-        entry_points=[MessageHandler(Filters.text(REGISTRATION_START_BTN["reg_start"]) & FilterPrivateNoCommand, start_conversation)],      
+        entry_points=[MessageHandler(Filters.text(REGISTRATION_START_BTN["reg_start"]) & FilterPrivateNoCommand, start_conversation, run_async=True)],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
-            APROVAL:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_aproval)],
-            PHONE: [MessageHandler((Filters.contact | Filters.text) & FilterPrivateNoCommand, processing_phone)],
-            FIO: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_fio)],
-            ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about)],
-            BIRHDAY: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_birhday)],
-            EMAIL: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_email)],
-            CITI: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_citi)],
-            COMPANY: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company)],
-            JOB: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_job)],
-            SITE: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_site)],
+            APROVAL:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_aproval, run_async=True)],
+            PHONE: [MessageHandler((Filters.contact | Filters.text) & FilterPrivateNoCommand, processing_phone, run_async=True)],
+            FIO: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_fio, run_async=True)],
+            ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about, run_async=True)],
+            BIRHDAY: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_birhday, run_async=True)],
+            EMAIL: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_email, run_async=True)],
+            CITI: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_citi, run_async=True)],
+            COMPANY: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company, run_async=True)],
+            JOB: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_job, run_async=True)],
+            SITE: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_site, run_async=True)],
         },
         # точка выхода из разговора
-        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
-                   CommandHandler('start', stop_conversation, Filters.chat_type.private)]
+        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private, run_async=True),
+                   CommandHandler('start', stop_conversation, Filters.chat_type.private, run_async=True)]
     )
     dp.add_handler(conv_handler_reg)
     

@@ -230,3 +230,24 @@ def wrong_file_id(file_id: str, tg_token=TELEGRAM_TOKEN):
         return False
     except:
         return True
+
+def  send_mess_by_tmplr(user_id, mess_template, reply_markup):
+    success = False
+    if not mess_template.file:
+        success = send_message(user_id = user_id, text = mess_template.text, parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True, reply_markup = reply_markup)
+    elif mess_template.file:
+        if not mess_template.file_id:
+            fill_file_id(mess_template, "file")
+        if mess_template.file.name[-3:] in ["jpg","bmp","png"]:# в сообщении картинка
+            if os.path.exists(mess_template.file.path):
+                success = send_photo(user_id, mess_template.file_id, caption = mess_template.text, parse_mode = telegram.ParseMode.HTML, reply_markup = reply_markup)
+            else:
+                success = send_message(user_id = user_id, text = mess_template.text + "\nПриложенный файл потерялся", 
+                                    parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True, reply_markup = reply_markup)
+        else:
+            if os.path.exists(mess_template.file.path):
+                success = send_document(user_id, mess_template.file_id, caption = mess_template.text, parse_mode = telegram.ParseMode.HTML, reply_markup = reply_markup)
+            else:
+                success = send_message(user_id = user_id, text = mess_template.text + "\nПриложенный файл потерялся",
+                                    parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True, reply_markup = reply_markup)
+    return success

@@ -1,16 +1,10 @@
 
 from tgbot.models import User
+from sheduler.models import MessageTemplates
 
 ASK_REENTER = "Пожалуйста, используйте доступные пункты меню."  
 
 # Стартовый диалог
-ACCOUNT_BLOCKED = "К сожалению Ваша учетная запись все еще заблокирована по причине '{}'. " \
-                  "Ожидайте разблокировки записи или свяжитесь с администраторами. " \
-                  "Вы пока можете заполнить профиль" 
-
-ACCOUNT_BANNED = "К сожалению Вашу учетная запись забанили по причине '{}'. " \
-                  "Для выяснения причин свяжитесь с администраторами. "                  
-
 WELCOME = "Добрый день! Вы находитесь в Telegram боте URBANIUS CLUB. \n" \
           "Используйте кнопки меню для работы с ботом." 
 AFFILATE_MESS = "Если вы хотите видеть своего коллегу/партнера/друга в нашем сообществе "\
@@ -20,11 +14,15 @@ AFFILATE_MESS = "Если вы хотите видеть своего колле
 
 def get_start_mess(user: User):
     if user.is_banned:
-        res = ACCOUNT_BANNED.format(user.comment)
+        mess_template = MessageTemplates.objects.get(code = "welcome_banned_usr_message")
+        res = mess_template.text + user.comment
     elif user.is_blocked_bot:
-        res =  ACCOUNT_BLOCKED.format(user.comment)      
+        mess_template = MessageTemplates.objects.get(code = "welcome_blockerd_usr_message")
+        res =  mess_template.text + user.comment
     else:
-        res =  WELCOME
+        mess_template = MessageTemplates.objects.get(code = "welcome_message")
+        res =  mess_template.text
+
     if not user.username:
         res += "\n<b>У Вас в Телеграм не введено имя пользователя. " \
                "Это может затруднить общение с вами. Введите его в настройках Телеграм</b>" 

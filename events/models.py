@@ -35,8 +35,6 @@ class Events(models.Model):
     file = models.FileField("Фото/Видео", blank=True, null=True, upload_to="events")
     file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
     type = models.ForeignKey(EventTypes, on_delete=models.PROTECT, verbose_name="Тип мероприятия",null=True, blank=False)
-    invite = models.FileField("Файл с приглашением", blank=True, null=True, upload_to="events")
-    invite_file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
     
     def __str__(self):
         week   = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']

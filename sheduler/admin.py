@@ -16,3 +16,17 @@ class TasksAdmin(admin.ModelAdmin):
               ('interval'),
               ('is_active'),
             ]
+
+@admin.register(MessagesToSend)
+class MessagesToSendAdmin(admin.ModelAdmin) :
+    list_display = ("receiver","text", "created_at", "sended_at") 
+    list_display_links = ("receiver","text" ) 
+    search_fields = ("receiver",)
+    readonly_fields = ["file_id"] 
+
+@admin.register(MessageTemplates)
+class MessageTemplatesAdmin(admin.ModelAdmin) :
+    readonly_fields = ["code","file_id"]
+    list_display = ("code","name") 
+    list_display_links = ("code","name" ) 
+    search_fields = ("code","name")

@@ -123,6 +123,7 @@ class NewUser(models.Model):
     site = models.CharField("Сайт", max_length=150, null=True, blank=True)
     about = models.TextField("О себе", null=True, blank=True)
 
+
     # Дополнительные поля
     created_at = models.DateTimeField("Создан", auto_now_add=True)
     language_code = models.CharField(max_length=8, null=True, blank=True, help_text="Telegram client's lang")
@@ -167,6 +168,9 @@ class User(models.Model):
     job_region = models.CharField("Регион присутствия", max_length=150, null=True, blank=True)
     site = models.CharField("Сайт", max_length=150, null=True, blank=True)
     inn = models.CharField("ИНН", max_length=12, null=True, blank=True)
+    segment = models.CharField("Сегмент", max_length=150, null=True, blank=True)
+    turnover =  models.IntegerField("Оборот компании",default=0 , null=True, blank=True)
+    
     # О себе:
     about = models.TextField("О себе", null=True, blank=True)
     sport = models.TextField("Спорт", null=True, blank=True)
@@ -253,6 +257,7 @@ class User(models.Model):
             Q(company__icontains = keywords)| \
             Q(job__icontains = keywords)| \
             Q(site__icontains = keywords)| \
+            Q(segment__icontains = keywords)| \
             Q(tags__icontains = keywords)| \
             Q(needs__icontains = keywords)| \
             Q(about__icontains = keywords)| \
@@ -280,10 +285,13 @@ class User(models.Model):
         res += f"<b>Статус:</b> {mystr(self.status)}\n"
         res += f"<b>Отрасль:</b> {mystr(self.branch)}\n"
         res += f"<b>Компания:</b> {mystr(self.company)}\n"
+        res += f"<b>Сегмент:</b> {mystr(self.segment)}\n" 
+        res += f"<b>Оборот:</b> {mystr(self.turnover)}\n"
+        res += f"<b>Сегмент:</b> {mystr(self.segment)}\n" 
         res += f"<b>Должность:</b> {mystr(self.job)}\n"
         res += f"<b>Сайт:</b> {mystr(self.site)}\n"
         res += f"<b>ИНН:</b> {mystr(self.inn)}\n"
-        res += f"<b>Регион работы:</b> {mystr(self.job_region)}\n"
+        res += f"<b>Регион работы:</b> {mystr(self.job_region)}\n" 
         res += f"<b>Теги:</b> {mystr(self.tags)}\n"
         res += f"<b>Потребности:</b> {mystr(self.needs)}\n"
         offers = get_model_text(Offers,["NN","offer"], self)
@@ -303,6 +311,8 @@ class User(models.Model):
         res += "\n  <b>Группы:</b>\n    " + get_model_text(UsertgGroups,["group"], self).replace("\n", "\n    ")
         res += "\n<b>Бизнес информация:</b> "
         res += "\n  <b>Компания:</b> " + mystr(self.company)
+        res += "\n  <b>Сегмент:</b>  " + mystr(self.segment) 
+        res += "\n  <b>Оборот:</b>  " + mystr(self.turnover) 
         res += "\n  <b>Должность:</b> " + mystr(self.job)
         res += "\n  <b>Отрасль:</b> " + mystr(self.branch)
         res += "\n  <b>Город:</b> " + mystr(self.citi)
@@ -342,37 +352,7 @@ class User(models.Model):
         verbose_name_plural = 'Пользователи'
 
 
-class MessagesToSend(models.Model):
-    receiver = models.ForeignKey("User", on_delete=models.CASCADE, related_name="receiver", verbose_name="Получатель", blank=False, null=False)    
-    text = models.TextField("Текст сообщения",unique=False, blank=False)
-    created_at = models.DateTimeField("Создано в", auto_now_add=True)
-    sended_at = models.DateTimeField("Отослано в", blank=True, null=True)
-    sended = models.BooleanField("Отослано", default=False)
-    file = models.FileField("Файл", blank=True, null=True, upload_to="messages")
-    file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
-    #photo = models.ImageField("Фото", blank=True, null=True, upload_to="messages")
 
-    def __str__(self):
-        return self.text
-    class Meta:
-        verbose_name_plural = 'Сообщения к отсылке' 
-        verbose_name = 'Сообщение к отсылке' 
-        ordering = ['created_at']
-
-
-class MessageTemplates(models.Model):
-    code = models.CharField("Код", max_length=256, null=False, blank=False)
-    name = models.CharField("Название", max_length=256, null=False, blank=False)
-    text = models.TextField("Текст сообщения", blank=False)
-    file = models.FileField("Файл", blank=True, null=True, upload_to="templates")
-    file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
-
-    def __str__(self):
-        return self.text
-    class Meta:
-        verbose_name_plural = 'Шаблоны сообщений' 
-        verbose_name = 'Шаблон сообщения' 
-        ordering = ['code']
 
 class UserActionLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

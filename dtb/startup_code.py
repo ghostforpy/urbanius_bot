@@ -1,5 +1,5 @@
-from tgbot.models import Status, MessageTemplates
-from sheduler.models import Tasks
+from tgbot.models import Status
+from sheduler.models import Tasks, MessageTemplates
 from events.models import EventTypes
 import datetime
 import os
@@ -16,8 +16,6 @@ try:
         os.mkdir(settings.BASE_DIR / "media/qr_codes")
     if not os.path.isdir(settings.BASE_DIR / "media/user_fotos"):
         os.mkdir(settings.BASE_DIR / "media/user_fotos")
-
-
     
     # create statuses
     status_set = Status.objects.filter(code = "admin")
@@ -114,7 +112,31 @@ try:
         task.is_active = True # активно 
         task.save() 
 
+    task_set = Tasks.objects.filter(code = "reg_reminder")
+    if task_set.count() == 0:
+        task = Tasks()
+        task.code = "reg_reminder"
+        task.name =  "Напоминание о продолжении регистрации"
+        task.time = datetime.time(10, 40, 00) # время запуска
+        task.mon = True # каждый день
+        task.tue = True
+        task.wed = True
+        task.thu = True
+        task.fri = True
+        task.sat = True
+        task.san = True
+        task.is_active = True # активно 
+        task.save()
+
     # create message templates
+    template_set = MessageTemplates.objects.filter(code = "reg_reminder")
+    if template_set.count() == 0:
+        template = MessageTemplates()
+        template.code = "reg_reminder"
+        template.name = "Шаблон для напоминаний о продолжении регистрации"
+        template.text = "Вы не завершили регистрацию в боте Urbanius Club. Для завершения регистрации введите комманду /start."
+        template.save()
+
     template_set = MessageTemplates.objects.filter(code = "rating_reminder")
     if template_set.count() == 0:
         template = MessageTemplates()
@@ -156,6 +178,48 @@ try:
                         "Вам высылаем код подттверждения для прохода на мероприятие. "\
                         "Также его вы можете получить в меню 'Мероприятия'"
         template.save()
+
+    template_set = MessageTemplates.objects.filter(code = "welcome_newuser_message")
+    if template_set.count() == 0:
+        template = MessageTemplates()
+        template.code = "welcome_newuser_message"
+        template.name = "Шаблон для приветственного сообщения новому пользователю"
+        template.text = "Поздравляем! Вы успешно зарегистрировались в системе URBANIUS. " \
+                        "Информация передана администраторам." \
+                        "Для использования полного набора функций Вам необходимо дождаться подтвержденя регистрации. " \
+                        "О подтверждении регистрации мы вам сообщим. А пока можете в профиле пользователя исправить введенные и заполнить дополнительные данные"
+        template.save()
+
+
+    template_set = MessageTemplates.objects.filter(code = "welcome_message")
+    if template_set.count() == 0:
+        template = MessageTemplates()
+        template.code = "welcome_message"
+        template.name = "0."
+        template.text = "Добрый день! Вы находитесь в Telegram боте URBANIUS CLUB. \n" \
+                        "Используйте кнопки меню для работы с ботом."
+        template.save()
+
+    template_set = MessageTemplates.objects.filter(code = "welcome_blockerd_usr_message")
+    if template_set.count() == 0:
+        template = MessageTemplates()
+        template.code = "welcome_blockerd_usr_message"
+        template.name = "Шаблон сообщения при начале работы для неподдтвержденного(заблокированного) пользователя"
+        template.text = "К сожалению Ваша учетная запись все еще заблокирована. " \
+                        "Ожидайте разблокировки записи или свяжитесь с администраторами. " \
+                        "Вы пока можете заполнить профиль . Причина блокировки: \n" 
+        template.save()
+
+    template_set = MessageTemplates.objects.filter(code = "welcome_banned_usr_message")
+    if template_set.count() == 0:
+        template = MessageTemplates()
+        template.code = "welcome_banned_usr_message"
+        template.name = "Шаблон сообщения при начале работы для забаненого пользователя"
+        template.text = "К сожалению Вашу учетная запись забанили. " \
+                        "Для выяснения причин свяжитесь с администраторами. Причина бана: \n"   
+        template.save()
+
+
 
     # create EventTypes
     event_type_set = EventTypes.objects.filter(code = "close")

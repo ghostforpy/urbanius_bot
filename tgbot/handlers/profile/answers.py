@@ -37,6 +37,8 @@ PERSONAL_MENU ={
                 }
 BUSINES_MENU ={
                 "company":"Компания", #
+                "segment":"Сегмент", #
+                "turnover":"Оборот", #
                 "job":"Должность", #
                 "branch":"Отрасль", #
                 "inn":"ИНН", #

@@ -267,6 +267,42 @@ def manage_company_action(update: Update, context: CallbackContext):
         text = "Компания не изменена"
     update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
     return "working_busines_info"
+#-------------------------------------------  
+# Обработчик Сегмент
+def manage_segment(update: Update, context: CallbackContext):
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+    update.message.reply_text(ASK_SEGMENT.format(user.segment), reply_markup=make_keyboard(SKIP,"usual",1))
+    return "choose_action_segment"
+
+def manage_segment_action(update: Update, context: CallbackContext):
+    text = ""
+    if update.message.text != SKIP["skip"]:        
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+        user.segment = update.message.text
+        user.save()
+        text = "Сегмент изменен"
+    else:
+        text = "Сегмент не изменен"
+    update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
+    return "working_busines_info"
+#-------------------------------------------  
+# Обработчик Оборот
+def manage_turnover(update: Update, context: CallbackContext):
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+    update.message.reply_text(ASK_TURNOVER.format(user.turnover), reply_markup=make_keyboard(SKIP,"usual",1))
+    return "choose_action_turnover"
+
+def manage_turnover_action(update: Update, context: CallbackContext):
+    text = ""
+    if update.message.text != SKIP["skip"]:        
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+        user.turnover = update.message.text
+        user.save()
+        text = "Оборот изменен"
+    else:
+        text = "Оборот не изменен"
+    update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
+    return "working_busines_info"
 
 #-------------------------------------------  
 # Обработчик Должность
@@ -849,6 +885,8 @@ def setup_dispatcher_conv(dp: Dispatcher):
             
             "working_busines_info":[                    
                     MessageHandler(Filters.text([BUSINES_MENU["company"]]) & FilterPrivateNoCommand, manage_company, run_async=True),
+                    MessageHandler(Filters.text([BUSINES_MENU["segment"]]) & FilterPrivateNoCommand, manage_segment, run_async=True),
+                    MessageHandler(Filters.text([BUSINES_MENU["turnover"]]) & FilterPrivateNoCommand, manage_turnover, run_async=True),
                     MessageHandler(Filters.text([BUSINES_MENU["job"]]) & FilterPrivateNoCommand, manage_job, run_async=True),
                     MessageHandler(Filters.text([BUSINES_MENU["branch"]]) & FilterPrivateNoCommand, manage_branch, run_async=True),
                     MessageHandler(Filters.text([BUSINES_MENU["citi"]]) & FilterPrivateNoCommand, manage_citi, run_async=True),
@@ -872,6 +910,8 @@ def setup_dispatcher_conv(dp: Dispatcher):
             "choose_action_about":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_about_action, run_async=True)],
             "choose_action_citi":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_citi_action, run_async=True)],
             "choose_action_company":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_company_action, run_async=True)],
+            "choose_action_segment":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_segment_action, run_async=True)],
+            "choose_action_turnover":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_turnover_action, run_async=True)],
             "choose_action_job":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_job_action, run_async=True)],
             "choose_action_site":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_site_action, run_async=True)],
             "choose_action_inn":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_inn_action, run_async=True)],

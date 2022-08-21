@@ -1,4 +1,5 @@
 from django.db import models
+from tgbot.models import User
 
 class Tasks(models.Model):
     code = models.CharField("Код задания", unique=True, max_length=150, blank=False)
@@ -19,7 +20,7 @@ class Tasks(models.Model):
     interval = models.IntegerField("интервал выполнения, сек.", null = True, blank=True)
     is_active = models.BooleanField("Активно", default=False)
     def __str__(self):
-        return self.name + " " + str(self.task_type)
+        return self.name
     def getdays(self):
         res = []
         if self.mon: res.append(0)
@@ -35,3 +36,37 @@ class Tasks(models.Model):
         verbose_name_plural = 'Задания' 
         verbose_name = 'Задание' 
         ordering = ['name']
+
+class MessagesToSend(models.Model):
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="receiver", verbose_name="Получатель", blank=True, null=True)    
+    receiver_user_id = models.BigIntegerField("ID пользователя", blank=True, null=True)
+    text = models.TextField("Текст сообщения",unique=False, blank=False)
+    created_at = models.DateTimeField("Создано в", auto_now_add=True)
+    sended_at = models.DateTimeField("Отослано в", blank=True, null=True)
+    sended = models.BooleanField("Отослано", default=False)
+    file = models.FileField("Файл", blank=True, null=True, upload_to="messages")
+    file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
+    reply_markup = models.JSONField(blank=True, null = True)
+
+    def __str__(self):
+        return self.text
+    class Meta:
+        verbose_name_plural = 'Сообщения к отсылке' 
+        verbose_name = 'Сообщение к отсылке' 
+        ordering = ['created_at']
+
+
+class MessageTemplates(models.Model):
+    code = models.CharField("Код", max_length=256, null=False, blank=False)
+    name = models.CharField("Название", max_length=256, null=False, blank=False)
+    text = models.TextField("Текст сообщения", blank=False)
+    file = models.FileField("Файл", blank=True, null=True, upload_to="templates")
+    file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
+    
+
+    def __str__(self):
+        return self.text
+    class Meta:
+        verbose_name_plural = 'Шаблоны сообщений' 
+        verbose_name = 'Шаблон сообщения' 
+        ordering = ['code']

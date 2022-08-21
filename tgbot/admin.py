@@ -10,6 +10,7 @@ from dtb.settings import DEBUG
 from .models import *
 from tgbot.forms import BroadcastForm
 from tgbot.handlers import utils
+from sheduler.models import MessagesToSend
 
 
 class OffersInline(admin.TabularInline):
@@ -36,7 +37,7 @@ class UserAdmin(admin.ModelAdmin):
         'created_at',  'is_blocked_bot', "random_coffe_on", 'comment'
     ]
     list_display_links = ['user_id', 'username', 'first_name', 'last_name']
-    list_filter = ["is_blocked_bot", "is_banned", "random_coffe_on", "status",]
+    list_filter = ["is_blocked_bot", "is_banned", "random_coffe_on", "status",] 
     search_fields = ('username', 'user_id', 'last_name')
     fields = [('user_id', 'username', 'deep_link'), 
               ('last_name', 'first_name', 'sur_name', 'date_of_birth'), 
@@ -45,7 +46,8 @@ class UserAdmin(admin.ModelAdmin):
               ('is_blocked_bot', 'is_banned', 'is_admin', 'is_moderator'),
               ("verified_by_security", "random_coffe_on"),
               ('company', 'job', 'branch', 'inn'),
-              ('citi', 'job_region', 'site'), 
+              ('citi', 'job_region', 'site'),
+              ('segment', 'turnover'), 
                'about',
                'sport',
                'hobby',
@@ -69,16 +71,12 @@ class UserAdmin(admin.ModelAdmin):
         if 'apply' in request.POST:
             broadcast_message_text = request.POST["broadcast_text"]
 
-            # TODO: for all platforms?
-            if len(queryset) <= 3 or DEBUG:  # for test / debug purposes - run in same thread
-                for u in queryset:
-                    utils.send_message(user_id=u.user_id, text=broadcast_message_text, parse_mode=telegram.ParseMode.MARKDOWN)
-                self.message_user(request, "Just broadcasted to %d users" % len(queryset))
-            else:
-                user_ids = list(set(u.user_id for u in queryset))
-                random.shuffle(user_ids)
-                #broadcast_message.delay(message=broadcast_message_text, user_ids=user_ids)
-                self.message_user(request, "Broadcasting of %d messages has been started" % len(queryset))
+            for user in queryset:
+                new_mess = MessagesToSend()
+                new_mess.receiver = user  
+                new_mess.text = broadcast_message_text
+                new_mess.save()
+            self.message_user(request, "Broadcasting of %d messages has been started" % len(queryset))
 
             return HttpResponseRedirect(request.get_full_path())
 
@@ -97,16 +95,13 @@ class UserAdmin(admin.ModelAdmin):
                 u.is_blocked_bot = False
                 u.comment = "Регистрация подтверждена"
                 u.save()
+                for user in queryset:
+                    new_mess = MessagesToSend()
+                    new_mess.receiver = user  
+                    new_mess.text = broadcast_message_text
+                    new_mess.save()
             # TODO: for all platforms?
-            if len(queryset) <= 3 or DEBUG:  # for test / debug purposes - run in same thread
-                for u in queryset:
-                    utils.send_message(user_id=u.user_id, text=broadcast_message_text, parse_mode=telegram.ParseMode.MARKDOWN)
-                self.message_user(request, "Just broadcasted to %d users" % len(queryset))
-            else:
-                user_ids = list(set(u.user_id for u in queryset))
-                random.shuffle(user_ids)
-                #broadcast_message.delay(message=broadcast_message_text, user_ids=user_ids)
-                self.message_user(request, "Broadcasting of %d messages has been started" % len(queryset))
+            self.message_user(request, "Broadcasting of %d messages has been started" % len(queryset))
 
             return HttpResponseRedirect(request.get_full_path())
         text = "Ваша регистрация подтверждена. Наберите /start для обновления меню"
@@ -115,6 +110,10 @@ class UserAdmin(admin.ModelAdmin):
             request, "admin/confirm_registration.html", {'items': queryset,'form': form, 'title':u' '}
         )
 
+
+# @admin.register(NewUser)
+# class NewUserAdmin(admin.ModelAdmin) :
+#     pass
 
 @admin.register(SocialNetSites)
 class SocialNetSitesAdmin(admin.ModelAdmin) :
@@ -134,21 +133,6 @@ class tgGroupsAdmin(admin.ModelAdmin) :
     list_display = ("name", "chat_id", "link") 
     list_display_links = ("name", ) 
     search_fields = ("name",)
-
-@admin.register(MessagesToSend)
-class MessagesToSendAdmin(admin.ModelAdmin) :
-    list_display = ("receiver","text", "created_at", "sended_at") 
-    list_display_links = ("receiver","text" ) 
-    search_fields = ("receiver",)
-    readonly_fields = ["file_id"] 
-
-@admin.register(MessageTemplates)
-class MessageTemplatesAdmin(admin.ModelAdmin) :
-    readonly_fields = ["code","file_id"]
-    list_display = ("code","name") 
-    list_display_links = ("code","name" ) 
-    search_fields = ("code","name")
-
 
 @admin.register(UsersRatings)
 class UsersRatingsAdmin(admin.ModelAdmin) :
