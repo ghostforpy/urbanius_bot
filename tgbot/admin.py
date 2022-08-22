@@ -133,7 +133,8 @@ class tgGroupsAdmin(admin.ModelAdmin) :
     list_display = ("name", "chat_id", "link") 
     list_display_links = ("name", ) 
     search_fields = ("name",)
-
+    readonly_fields = ["file_id"]
+    
 @admin.register(UsersRatings)
 class UsersRatingsAdmin(admin.ModelAdmin) :
     list_display = ("user","rating","comment","created_at") 

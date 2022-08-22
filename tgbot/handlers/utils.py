@@ -215,17 +215,28 @@ def send_video(user_id, video, duration=None, caption=None, disable_notification
     return success
 
 def get_no_foto_id():
+    """
+    Получает ИД фотографии заглушки, для тех у кого нет фото
+    """
     config_set = Config.objects.filter(param_name = "no_foto_id")
+    bot = telegram.Bot(TELEGRAM_TOKEN)
+    photo = settings.BASE_DIR / 'media/no_foto.jpg'
     if len(config_set) == 0:
-        bot = telegram.Bot(TELEGRAM_TOKEN)
-        photo = settings.BASE_DIR / 'media/no_foto.jpg'
         message = bot.send_photo(settings.TRASH_GROUP, open(photo, 'rb'), caption="no_foto")
         foto_id, _ = _get_file_id(message)
         config_no_foto_id = Config(param_name = "no_foto_id", param_val = foto_id)
         config_no_foto_id.save()
     else:
         config_no_foto_id = config_set[0]
+
+    if wrong_file_id(config_no_foto_id.param_val):
+        message = bot.send_photo(settings.TRASH_GROUP, open(photo, 'rb'), caption="no_foto")
+        foto_id, _ = _get_file_id(message)
+        config_no_foto_id.param_val = foto_id
+        config_no_foto_id.save()
+    
     return config_no_foto_id.param_val
+
 
 def fill_file_id(obj, file_field: str, text: str = ""):
     """
@@ -260,27 +271,31 @@ def wrong_file_id(file_id: str, tg_token=TELEGRAM_TOKEN):
     except:
         return True
 
-def  send_mess_by_tmplt(user_id, mess_template, reply_markup):
+def  send_mess_by_tmplt(user_id, mess_template, reply_markup = None, add_text = None):
     """
     Отправка сообщения по шаблону. Шаблоном может быть любой объект с полями text, file, file_id
     файл и текст пересылаются пользователь/группе с номером user_id и прикрепляется клавиатура
     """
     success = False
+    mess_text = str(mess_template.text)
+    if add_text:
+        mess_text += add_text
+
     if not mess_template.file:
-        success = send_message(user_id = user_id, text = mess_template.text, parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True, reply_markup = reply_markup)
+        success = send_message(user_id = user_id, text = mess_text, disable_web_page_preview=True, reply_markup = reply_markup)
     elif mess_template.file:
         if not mess_template.file_id:
             fill_file_id(mess_template, "file", text = "send_mess_by_tmplt")
         if mess_template.file.name[-3:] in ["jpg","bmp","png"]:# в сообщении картинка
             if os.path.exists(mess_template.file.path):
-                success = send_photo(user_id, mess_template.file_id, caption = mess_template.text, parse_mode = telegram.ParseMode.HTML, reply_markup = reply_markup)
+                success = send_photo(user_id, mess_template.file_id, caption = mess_text, reply_markup = reply_markup)
             else:
-                success = send_message(user_id = user_id, text = mess_template.text + "\nПриложенный файл потерялся", 
+                success = send_message(user_id = user_id, text = mess_text + "\nПриложенный файл потерялся", 
                                     parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True, reply_markup = reply_markup)
         else:
             if os.path.exists(mess_template.file.path):
-                success = send_document(user_id, mess_template.file_id, caption = mess_template.text, parse_mode = telegram.ParseMode.HTML, reply_markup = reply_markup)
+                success = send_document(user_id, mess_template.file_id, caption = mess_text, reply_markup = reply_markup)
             else:
-                success = send_message(user_id = user_id, text = mess_template.text + "\nПриложенный файл потерялся",
-                                    parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True, reply_markup = reply_markup)
+                success = send_message(user_id = user_id, text = mess_text + "\nПриложенный файл потерялся",
+                                    disable_web_page_preview=True, reply_markup = reply_markup)
     return success

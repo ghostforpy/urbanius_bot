@@ -99,7 +99,6 @@ def show_event(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
-    event: Events
     event = Events.objects.get(pk = int(query.data))
     text = event.get_description()
     text += event.get_user_info(user)

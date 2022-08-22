@@ -18,7 +18,7 @@ import tgbot.models as mymodels
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
 from tgbot.handlers.commands import command_start
-from tgbot.handlers.utils import send_message, send_photo, fill_file_id, get_no_foto_id
+from tgbot.handlers.utils import send_message, send_photo, fill_file_id, get_no_foto_id, wrong_file_id
 from tgbot.utils import mystr, is_date, is_email, get_uniq_file_name
 from tgbot.handlers.files import _get_file_id
 
@@ -196,10 +196,14 @@ def manage_main_photo(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     if not(user.main_photo):
         photo = settings.BASE_DIR / 'media/no_foto.jpg'
+        photo_id = get_no_foto_id()
     else:
         photo = user.main_photo.path
+        if not user.main_photo_id or wrong_file_id(user.main_photo_id):
+            fill_file_id(user, "main_photo", text = "profile_manage_main_photo")
+        photo_id = user.main_photo_id
     if os.path.exists(photo):
-        update.message.reply_photo(open(photo, 'rb'), caption = ASK_FOTO, reply_markup=make_keyboard(SKIP,"usual",1))
+        update.message.reply_photo(photo_id, caption = ASK_FOTO, reply_markup=make_keyboard(SKIP,"usual",1))
     else:
         update.message.reply_text(NOT_FOTO, reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_main_photo"

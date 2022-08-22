@@ -1,10 +1,9 @@
 from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext import (
-    Dispatcher, CommandHandler,
-    MessageHandler, CallbackQueryHandler,
+    Dispatcher, 
+    MessageHandler, 
     Filters,
-    ConversationHandler,
 )
 from tgbot.models import User, tgGroups
 from .models import MessageStatistic
@@ -15,20 +14,16 @@ def proc_group_mess(update: Update, context: CallbackContext):
     user = User.get_user_by_username_or_user_id(update.message.from_user.id) 
     if not user:
         return
-    group_id = update._effective_message.chat_id
-    tggroup_set = tgGroups.objects.filter(chat_id = group_id)
-    if len(tggroup_set) == 0:
+    group_id = update._effective_message.chat_id.first()
+    tggroup = tgGroups.objects.filter(chat_id = group_id)
+    if not tggroup:
         tggroup = tgGroups(name = update._effective_chat.title, chat_id = group_id, link = update._effective_chat.link)
         tggroup.save()
-    else:
-        tggroup = tggroup_set[0]
 
-    mess_stat_set = MessageStatistic.objects.filter(group = tggroup, user = user)
-    if len(mess_stat_set) == 0:
+    mess_stat = MessageStatistic.objects.filter(group = tggroup, user = user).first()
+    if not mess_stat:
         mess_stat = MessageStatistic(group = tggroup, user = user)
         tggroup.save()
-    else:
-        mess_stat = mess_stat_set[0]
     mess_stat.messages += 1
     mess_stat.save()
 

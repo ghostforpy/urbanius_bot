@@ -20,7 +20,8 @@ START_MENU_FULL = {
         "profile":"Профиль пользователя",
         "messages":"Сообщения",
         "affiliate":"Партнерская программа",
-        "payment":"Оплатить"
+        "payment":"Оплатить",
+        "groups":"Группы"
     }
 
 START_MENU_SHORT = {

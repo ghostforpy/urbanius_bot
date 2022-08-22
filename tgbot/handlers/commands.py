@@ -35,11 +35,9 @@ def command_start(update: Update, context: CallbackContext):
             user.save()
     
     if user == None:
-        new_users_set = NewUser.objects.filter(user_id = user_id)
-        if new_users_set.count() == 0:
+        new_user = NewUser.objects.filter(user_id = user_id).first()
+        if not new_user:
             new_user = NewUser(user_id = user_id)
-        else:
-            new_user = new_users_set[0]
         new_user.username = userdata.get("username")
         new_user.first_name = userdata.get("first_name")
         new_user.last_name = userdata.get("last_name")
@@ -74,21 +72,4 @@ def command_restart_tasks(update: Update, context: CallbackContext):
 
     return ConversationHandler.END
 
-
-# def stats(update, context):
-#     """ Show help info about all secret admins commands """
-#     u = User.get_user(update, context)
-#     if not u.is_admin:
-#         return
-
-#     text = f"""
-# *Users*: {User.objects.count()}
-# *24h active*: {User.objects.filter(updated_at__gte=timezone.now() - datetime.timedelta(hours=24)).count()}
-#     """
-
-#     return update.message.reply_text(
-#         text, 
-#         parse_mode=telegram.ParseMode.MARKDOWN,
-#         disable_web_page_preview=True,
-#     )
 

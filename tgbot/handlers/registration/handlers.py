@@ -13,7 +13,7 @@ from tgbot import models
 from .messages import *
 from .answers import *
 from tgbot.handlers.main.messages import NO_ADMIN_GROUP
-from tgbot.models import Status, User, tgGroups, UserReferrers, NewUser
+from tgbot.models import Status, User, UsertgGroups, tgGroups, UserReferrers, NewUser
 from sheduler.models import MessageTemplates
 
 from tgbot.handlers.utils import send_message, send_mess_by_tmplt
@@ -239,12 +239,17 @@ def processing_site(update: Update, context: CallbackContext):
     user.is_blocked_bot = True
     user.comment = "Ожидает подтверждения регистрации"
     user.save()
-    
+    # Назначение пользователю рекомендателя, если он пришел по партнерской ссылке
     referrer = User.get_user_by_username_or_user_id(user.deep_link)
     if referrer:
         user_referer = UserReferrers(referrer = referrer, user = user)
         user_referer.save()
-
+    # Назначение пользователю групп по умолчанию
+    groups_set = tgGroups.objects.filter(for_all_users = True)
+    for group in groups_set:
+        user_group = UsertgGroups(group,user)
+        user_group.save()
+        
     reply_markup = make_keyboard(START,"usual",1)
     mess_template = MessageTemplates.objects.get(code = "welcome_newuser_message")
 

@@ -58,6 +58,11 @@ class tgGroups(models.Model):
     name = models.CharField("Группа пользователей",unique=False, max_length=150, blank=False)
     chat_id = models.BigIntegerField("ИД чата в Телеграм", null=True)
     link = models.CharField("Ссылка на группу",unique=False, max_length=150, blank=True, null=True)
+    text = models.TextField("Описание группыt", blank = True, null = True)
+    for_all_users = models.BooleanField("Для всех пользователей", default=False)
+    file = models.FileField("Фото/Видео", blank=True, null=True, upload_to="events")
+    file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
+
     def __str__(self):
         return self.name
 
