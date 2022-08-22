@@ -252,17 +252,19 @@ def send_sheduled_message(context: CallbackContext):
         reply_markup = None
         if  mess.reply_markup:
             buttons = mess.reply_markup.get("buttons")
-            type = mess.reply_markup.get("type")
+            kb_type = mess.reply_markup.get("type")
             btn_in_row = mess.reply_markup.get("btn_in_row")
             first_btn = mess.reply_markup.get("first_btn")
             last_btn = mess.reply_markup.get("last_btn")
-            reply_markup = make_keyboard(buttons,type,btn_in_row,first_btn,last_btn)
+            reply_markup = make_keyboard(buttons,kb_type,btn_in_row,first_btn,last_btn)
         user_id = mess.receiver.user_id if mess.receiver else mess.receiver_user_id 
 
         success = send_mess_by_tmplt(user_id, mess, reply_markup)         
 
-        if success:
+        if type(success) != telegram.message.Message:
+            mess.comment = str(success)
+        else:
             mess.sended_at = datetime.datetime.now(tz=pytz.timezone('Europe/Moscow'))
-            mess.sended = True
-            mess.save()
+        mess.sended = True
+        mess.save()
     return len(mess_set)

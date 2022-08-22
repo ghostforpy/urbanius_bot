@@ -1,6 +1,9 @@
 #!/bin/sh
+echo "Run virual env ..."
 source .venv/bin/activate
 
+echo "install requirements ..."
+pip3 install -r requirements.txt
 # Apply database migrations
 echo "Applying database migrations ..."
 python manage.py migrate

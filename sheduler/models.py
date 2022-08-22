@@ -40,14 +40,14 @@ class Tasks(models.Model):
 class MessagesToSend(models.Model):
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="receiver", verbose_name="Получатель", blank=True, null=True)    
     receiver_user_id = models.BigIntegerField("ID пользователя", blank=True, null=True)
-    text = models.TextField("Текст сообщения",unique=False, blank=False)
+    text = models.TextField("Текст сообщения", null=False, blank=False)
     created_at = models.DateTimeField("Создано в", auto_now_add=True)
     sended_at = models.DateTimeField("Отослано в", blank=True, null=True)
     sended = models.BooleanField("Отослано", default=False)
     file = models.FileField("Файл", blank=True, null=True, upload_to="messages")
     file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
     reply_markup = models.JSONField(blank=True, null = True) # здесь хранится словарь с описанием клавиатуры прикрепляемой к сообщению
-
+    comment = models.TextField("Комментарий", blank=True, null=True)
     def __str__(self):
         return self.text
     class Meta:

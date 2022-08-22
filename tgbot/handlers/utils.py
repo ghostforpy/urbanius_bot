@@ -69,12 +69,12 @@ def send_message(user_id, text, parse_mode=telegram.ParseMode.HTML, reply_markup
     except telegram.error.Unauthorized:
         print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
-        success = False
+        success = f"Can't send message to {user_id}. Reason: Bot was stopped."
     except Exception as e:
         print(f"Can't send message to {user_id}. Reason: {e}")
-        success = False
+        success = e
     else:
-        success = True
+        success = m
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
     return success
 
@@ -102,10 +102,10 @@ def send_photo(user_id, photo, caption=None, disable_notification=None, reply_to
     except telegram.error.Unauthorized:
         print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
-        success = False
+        success = f"Can't send message to {user_id}. Reason: Bot was stopped."
     except Exception as e:
         print(f"Can't send message to {user_id}. Reason: {e}")
-        success = False
+        success = e
     else:
         success = m
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
@@ -139,10 +139,10 @@ def send_document(user_id, document, filename=None, caption=None, disable_notifi
     except telegram.error.Unauthorized:
         print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
-        success = False
+        success = f"Can't send message to {user_id}. Reason: Bot was stopped."
     except Exception as e:
         print(f"Can't send message to {user_id}. Reason: {e}")
-        success = False
+        success = e
     else:
         success = m
     return success
@@ -178,10 +178,10 @@ def send_video(user_id, video, duration=None, caption=None, disable_notification
     except telegram.error.Unauthorized:
         print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
-        success = False
+        success = f"Can't send message to {user_id}. Reason: Bot was stopped."
     except Exception as e:
         print(f"Can't send message to {user_id}. Reason: {e}")
-        success = False
+        success = e
     else:
         success = m
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=False)

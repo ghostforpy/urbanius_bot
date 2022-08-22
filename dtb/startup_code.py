@@ -4,6 +4,7 @@ from events.models import EventTypes
 import datetime
 import os
 from dtb import settings
+import traceback 
 
 try:
     if not os.path.isdir(settings.BASE_DIR / "media/events"):
@@ -251,6 +252,8 @@ try:
     if event_type_set.count() == 0:
         event_type = EventTypes(code = "open", name = "Открытое") 
         event_type.save()
-except Exception:
+except Exception as exc:
     print("Can't load init data") 
-    print(Exception)   
+    print(exc) 
+    print(traceback.format_exc())
+
