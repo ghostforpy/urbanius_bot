@@ -82,6 +82,13 @@ def send_photo(user_id, photo, caption=None, disable_notification=None, reply_to
                reply_markup=None, timeout=20, parse_mode=telegram.ParseMode.HTML, api_kwargs=None, allow_sending_without_reply=None, 
                caption_entities=None, filename=None, protect_content=None, tg_token=TELEGRAM_TOKEN):
 
+    text = None
+    if caption and len(caption)>1023:
+        text = caption
+        reply_markup_txt = reply_markup
+        caption = None
+        reply_markup = None
+
     bot = telegram.Bot(tg_token)
     try:
         m = bot.send_photo(
@@ -99,6 +106,8 @@ def send_photo(user_id, photo, caption=None, disable_notification=None, reply_to
             filename=filename, 
             protect_content=protect_content
         )
+        if text:
+            send_message(user_id=user_id, text=text, reply_markup=reply_markup_txt)
     except telegram.error.Unauthorized:
         print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
@@ -116,9 +125,15 @@ def send_document(user_id, document, filename=None, caption=None, disable_notifi
             disable_content_type_detection=None, allow_sending_without_reply=None, caption_entities=None, 
             protect_content=None, tg_token=TELEGRAM_TOKEN):
 
-
+    text = None
+    if caption and len(caption)>1023:
+        text = caption
+        reply_markup_txt = reply_markup
+        caption = None
+        reply_markup = None
     bot = telegram.Bot(tg_token)
     try:
+
         m = bot.send_document(
             chat_id=user_id,
             document=document,
@@ -136,6 +151,8 @@ def send_document(user_id, document, filename=None, caption=None, disable_notifi
             caption_entities=caption_entities, 
             protect_content=protect_content
         )
+        if text:
+            send_message(user_id=user_id, text=text, reply_markup=reply_markup_txt)
     except telegram.error.Unauthorized:
         print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
@@ -152,6 +169,14 @@ def send_video(user_id, video, duration=None, caption=None, disable_notification
                parse_mode=telegram.ParseMode.HTML, supports_streaming=None, thumb=None, api_kwargs=None, 
                allow_sending_without_reply=None, caption_entities=None, filename=None, 
                protect_content=None, tg_token=TELEGRAM_TOKEN):
+
+    text = None
+    if caption and len(caption)>1023:
+        text = caption
+        reply_markup_txt = reply_markup
+        caption = None
+        reply_markup = None
+
 
     bot = telegram.Bot(tg_token)
     try:
@@ -175,6 +200,8 @@ def send_video(user_id, video, duration=None, caption=None, disable_notification
             filename=filename, 
             protect_content=protect_content
         )
+        if text:
+            send_message(user_id=user_id, text=text, reply_markup=reply_markup_txt)
     except telegram.error.Unauthorized:
         print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
