@@ -8,6 +8,5 @@ from . import views
 urlpatterns = [  
     # TODO: make webhook more secure
     path('', views.index, name="index"),
-    #path('', admin.site.urls),
     path('super_secter_webhook/', csrf_exempt(views.TelegramBotWebhookView.as_view())),
 ]

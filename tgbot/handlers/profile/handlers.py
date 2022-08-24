@@ -590,7 +590,8 @@ def manage_tags_action(update: Update, context: CallbackContext):
 def manage_offers(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     offers_set = user.offers_set.all()
-    if len(offers_set) == 0:
+    offers_count = offers_set.count()
+    if offers_count == 0:
         update.message.reply_text(NO_OFFERS, reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
     else:
         media_group = []
@@ -603,7 +604,18 @@ def manage_offers(update: Update, context: CallbackContext):
                 else:
                     file = settings.BASE_DIR / 'media/no_file'
             media_group.append(InputMediaDocument(open(file, 'rb'), caption=offer.offer))
-        update.message.reply_text(ASK_OFFERS, reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2))
+        reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2)
+        if ((user.status == mymodels.Status.objects.get(code = "group_member"))and
+            (offers_count >=1)):
+            reply_markup=make_keyboard(DEL_SKIP,"usual",2)
+        elif ((user.status == mymodels.Status.objects.get(code = "community_resident"))and
+            (offers_count >=2)):
+            reply_markup=make_keyboard(DEL_SKIP,"usual",2)
+        elif ((user.status == mymodels.Status.objects.get(code = "club_resident"))and
+            (offers_count >=3)):
+            reply_markup=make_keyboard(DEL_SKIP,"usual",2)
+        
+        update.message.reply_text(ASK_OFFERS, reply_markup=reply_markup)
         update.message.reply_media_group(media_group)
     
     return "choose_action_offers"
@@ -682,10 +694,25 @@ def add_offers(update: Update, context: CallbackContext):
     offer.image = image
     offer.offer = text
     offer.user = user
-    offer.save()   
+    offer.save() 
+    
+    offers_count =user.offers_set.count()
+    reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2)
+    if ((user.status == mymodels.Status.objects.get(code = "group_member"))and
+        (offers_count >=1)):
+        reply_markup=make_keyboard(DEL_SKIP,"usual",2)
+    elif ((user.status == mymodels.Status.objects.get(code = "community_resident"))and
+        (offers_count >=2)):
+        reply_markup=make_keyboard(DEL_SKIP,"usual",2)
+    elif ((user.status == mymodels.Status.objects.get(code = "club_resident"))and
+        (offers_count >=3)):
+        reply_markup=make_keyboard(DEL_SKIP,"usual",2)
+        
     all_offers_txt = mymodels.get_model_text(mymodels.Offers,["NN","offer","image"], user)
-    text = ADD_OFFERS+"\nВаши предложения \n" + all_offers_txt
-    update.message.reply_text(text, reply_markup=make_keyboard(FINISH,"usual",1))
+    text = "Ваши предложения \n" + all_offers_txt
+    update.message.reply_text(text, reply_markup = reply_markup)
+    
+    return "choose_action_offers"
 
 
 #-------------------------------------------  

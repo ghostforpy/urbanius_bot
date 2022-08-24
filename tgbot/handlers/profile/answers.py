@@ -11,6 +11,7 @@ START = {"start":"/start"}
 FINISH = {"finish":"Завершить"}
 YES_NO = {"yes":"Да", "no":"Нет"}
 CHANGE_SKIP = {"change":"Изменить", "skip":"Пропустить"}
+DEL_SKIP = {"del":"Удалить", "skip":"Пропустить"}
 ADD_DEL_SKIP = {"add":"Добавить", "del":"Удалить", "skip":"Пропустить"}
 BACK = {"back":"Вернуться в основное меню"} #
 BACK_PROF = {"back":"Вернуться в основное меню профиля"} #

@@ -2,6 +2,7 @@ import json
 import logging
 from django.views import View
 from django.http import JsonResponse
+from django.shortcuts import render
 
 from dtb.settings import DEBUG
 
@@ -13,8 +14,7 @@ BOT_URL = f"https://t.me/{TELEGRAM_BOT_USERNAME}"
 
 
 def index(request):
-    return JsonResponse({"error": "sup hacker"})
-
+    return render(request, 'main/index.html')
 
 class TelegramBotWebhookView(View):
     # WARNING: if fail - Telegram webhook will be delivered again. 

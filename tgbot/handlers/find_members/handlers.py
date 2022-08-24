@@ -64,17 +64,14 @@ def manage_find(update: Update, context: CallbackContext):
         foto_url = None
         if user.main_photo:
             foto_url = settings.MEDIA_DOMAIN + user.main_photo.url
-        set_rating_btn = {"setrating_"+ str(user.user_id):"Поставить оценку"}
         user_res_str = InlineQueryResultArticle(
             id=str(user.user_id),
             title=str(user),
-            #input_message_content=InputTextMessageContent(user.short_profile()),
             input_message_content = InputTextMessageContent("Выбран пользователь"),
             description = user.about,
-            thumb_url = foto_url,
-            thumb_width = 50,
-            thumb_height = 50,
-            #reply_markup=make_keyboard(set_rating_btn,"inline",1,None,BACK),
+            #thumb_url = foto_url,
+            #thumb_width = 50,
+            #thumb_height = 50,
         )
         results.append(user_res_str)
     update.inline_query.answer(results)

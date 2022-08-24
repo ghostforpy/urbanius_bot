@@ -292,7 +292,6 @@ class User(models.Model):
         res += f"<b>Компания:</b> {mystr(self.company)}\n"
         res += f"<b>Сегмент:</b> {mystr(self.segment)}\n" 
         res += f"<b>Оборот:</b> {mystr(self.turnover)}\n"
-        res += f"<b>Сегмент:</b> {mystr(self.segment)}\n" 
         res += f"<b>Должность:</b> {mystr(self.job)}\n"
         res += f"<b>Сайт:</b> {mystr(self.site)}\n"
         res += f"<b>ИНН:</b> {mystr(self.inn)}\n"
@@ -349,8 +348,6 @@ class User(models.Model):
     def get_user_refferents_count(self):
         return self.referrer.count()
 
-    def invited_users(self):  # --> User queryset 
-        return User.objects.filter(deep_link=str(self.user_id), created_at__gt=self.created_at)
 
     class Meta:
         verbose_name = 'Пользователь'

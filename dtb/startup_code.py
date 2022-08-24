@@ -17,6 +17,8 @@ try:
         os.mkdir(settings.BASE_DIR / "media/qr_codes")
     if not os.path.isdir(settings.BASE_DIR / "media/user_fotos"):
         os.mkdir(settings.BASE_DIR / "media/user_fotos")
+    if not os.path.isdir(settings.BASE_DIR / "media/downloads"):
+        os.mkdir(settings.BASE_DIR / "media/downloads")
     
     # create statuses
     status = Status.objects.filter(code = "admin").first()

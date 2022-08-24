@@ -31,7 +31,7 @@ class UserReferrersInline(admin.TabularInline):
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):   
-    readonly_fields = ['avatar_tag'] # Be sure to read only mode
+    readonly_fields = ['avatar_tag','user_id', 'username', 'deep_link'] # Be sure to read only mode
     list_display = [
         'user_id', 'username', 'first_name', 'last_name', 
         'created_at',  'is_blocked_bot', "random_coffe_on", 'comment'

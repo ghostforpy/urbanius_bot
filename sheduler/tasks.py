@@ -81,10 +81,35 @@ def restarts_tasks(jq: JobQueue) -> JobQueue:
         time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
         jq.run_daily(send_reg_reminder, time, days = days, name="reg_reminder")
         #jq.run_repeating(send_reg_reminder, 10, name="reg_reminder")
-
+   
+    # Создаем/обновляем задание "поздравление с днем рождения"
+    curr_task = Tasks.objects.get(code = "happy_birthday")
+    remove_job_if_exists("happy_birthday", jq)
+    if curr_task.is_active:
+        days = curr_task.getdays()
+        time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
+        jq.run_daily(send_happy_birthday, time, days = days, name="happy_birthday")
+        #jq.run_repeating(send_happy_birthday, 10, name="happy_birthday")
+  
     jq.start()         
     return jq
 
+
+
+def send_happy_birthday(context: CallbackContext):
+    """
+     Это задание send_happy_birthday. Оно создает запланированные к отсылке поздравления с днем рождения
+    """
+    mess_template = MessageTemplates.objects.get(code = "happy_birthday")
+    requests_set = User.objects.filter(date_of_birth__month = datetime.date.today().month, date_of_birth__day = datetime.date.today().day,)
+    for user in requests_set:
+        new_mess = MessagesToSend()
+        new_mess.receiver_user_id = user.user_id  
+        new_mess.text = mess_template.text
+        new_mess.file = mess_template.file
+        new_mess.file_id = mess_template.file_id
+        
+        new_mess.save()
 
 def send_rating_reminder(context: CallbackContext):
     """
