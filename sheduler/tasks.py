@@ -12,6 +12,7 @@ from tgbot.handlers.utils import send_message, send_photo, send_document, fill_f
 from tgbot.utils import get_uniq_file_name
 from tgbot.handlers.keyboard import make_keyboard
 from dtb import settings
+from dtb.constants import TaskCode, MessageTemplatesCode
 
 def remove_job_if_exists(name: str, jq: JobQueue):
     """
@@ -27,69 +28,69 @@ def remove_job_if_exists(name: str, jq: JobQueue):
 
 def restarts_tasks(jq: JobQueue) -> JobQueue:
     # Создаем/обновляем задание "Random coffee"
-    curr_task = Tasks.objects.get(code = "random_coffee")
-    remove_job_if_exists("random_coffee", jq)
+    curr_task = Tasks.objects.get(code = TaskCode.RANDOM_COFFEE)
+    remove_job_if_exists(TaskCode.RANDOM_COFFEE, jq)
     if curr_task.is_active:
         days = curr_task.getdays()
         time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
-        jq.run_daily(send_random_coffe, time, days = days, context = "random_coffee", name="random_coffee")
+        jq.run_daily(send_random_coffe, time, days = days, context = TaskCode.RANDOM_COFFEE, name=TaskCode.RANDOM_COFFEE)
 
     # Создаем/обновляем задание "Рассылка сообщений"
-    curr_task = Tasks.objects.get(code = "send_messages")
-    remove_job_if_exists("send_messages", jq)
+    curr_task = Tasks.objects.get(code = TaskCode.SEND_MESSAGES)
+    remove_job_if_exists(TaskCode.SEND_MESSAGES, jq)
     if curr_task.is_active:
-        jq.run_repeating(send_sheduled_message, curr_task.interval, name="send_messages")
+        jq.run_repeating(send_sheduled_message, curr_task.interval, name=TaskCode.SEND_MESSAGES)
 
     # Создаем/обновляем задание "Рассылка подтверждений на регистрацию"
-    curr_task = Tasks.objects.get(code = "send_confirm_event")
-    remove_job_if_exists("send_confirm_event", jq)
+    curr_task = Tasks.objects.get(code = TaskCode.SEND_CONFIRM_EVENT)
+    remove_job_if_exists(TaskCode.SEND_CONFIRM_EVENT, jq)
     if curr_task.is_active:
-        jq.run_repeating(send_confirm_event, curr_task.interval, name="send_confirm_event")
+        jq.run_repeating(send_confirm_event, curr_task.interval, name=TaskCode.SEND_CONFIRM_EVENT)
 
     # Создаем/обновляем задание "напоминание об оплате"
-    curr_task = Tasks.objects.get(code = "payment_reminder")
-    remove_job_if_exists("payment_reminder", jq)
+    curr_task = Tasks.objects.get(code = TaskCode.PAYMENT_REMINDER)
+    remove_job_if_exists(TaskCode.PAYMENT_REMINDER, jq)
     if curr_task.is_active:
         days = curr_task.getdays()
         time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
-        jq.run_daily(send_payment_reminder, time, days = days, name="payment_reminder")
-        #jq.run_repeating(send_payment_reminder, 10, name="payment_reminder")
+        jq.run_daily(send_payment_reminder, time, days = days, name=TaskCode.PAYMENT_REMINDER)
+        #jq.run_repeating(send_payment_reminder, 10, name=TaskCode.PAYMENT_REMINDER)
 
     # Создаем/обновляем задание "напоминание об оценке мероприятия"
-    curr_task = Tasks.objects.get(code = "rating_reminder")
-    remove_job_if_exists("rating_reminder", jq)
+    curr_task = Tasks.objects.get(code = TaskCode.RATING_REMINDER)
+    remove_job_if_exists(TaskCode.RATING_REMINDER, jq)
     if curr_task.is_active:
         days = curr_task.getdays()
         time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
-        jq.run_daily(send_rating_reminder, time, days = days, name="rating_reminder")
-        #jq.run_repeating(send_rating_reminder, 10, name="rating_reminder")
+        jq.run_daily(send_rating_reminder, time, days = days, name=TaskCode.RATING_REMINDER)
+        #jq.run_repeating(send_rating_reminder, 10, name=TaskCode.RATING_REMINDER)
 
     # Создаем/обновляем задание "рассылка анонсов мероприятия"
-    curr_task = Tasks.objects.get(code = "send_anonses")
-    remove_job_if_exists("send_anonses", jq)
+    curr_task = Tasks.objects.get(code = TaskCode.SEND_ANONSES)
+    remove_job_if_exists(TaskCode.SEND_ANONSES, jq)
     if curr_task.is_active:
         days = curr_task.getdays()
         time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
-        jq.run_daily(send_anonses, time, days = days, name="rating_reminder")
-        #jq.run_repeating(send_anonses, 10, name="send_anonses")
+        jq.run_daily(send_anonses, time, days = days, name=TaskCode.SEND_ANONSES)
+        #jq.run_repeating(send_anonses, 10, name=TaskCode.SEND_ANONSES)
 
     # Создаем/обновляем задание "напоминание о продолжении регистрации"
-    curr_task = Tasks.objects.get(code = "reg_reminder")
-    remove_job_if_exists("reg_reminder", jq)
+    curr_task = Tasks.objects.get(code = TaskCode.REG_REMINDER)
+    remove_job_if_exists(TaskCode.REG_REMINDER, jq)
     if curr_task.is_active:
         days = curr_task.getdays()
         time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
-        jq.run_daily(send_reg_reminder, time, days = days, name="reg_reminder")
-        #jq.run_repeating(send_reg_reminder, 10, name="reg_reminder")
+        jq.run_daily(send_reg_reminder, time, days = days, name=TaskCode.REG_REMINDER)
+        #jq.run_repeating(send_reg_reminder, 10, name=TaskCode.REG_REMINDER)
    
     # Создаем/обновляем задание "поздравление с днем рождения"
-    curr_task = Tasks.objects.get(code = "happy_birthday")
-    remove_job_if_exists("happy_birthday", jq)
+    curr_task = Tasks.objects.get(code = TaskCode.HAPPY_BIRTHDAY)
+    remove_job_if_exists(TaskCode.HAPPY_BIRTHDAY, jq)
     if curr_task.is_active:
         days = curr_task.getdays()
         time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
-        jq.run_daily(send_happy_birthday, time, days = days, name="happy_birthday")
-        #jq.run_repeating(send_happy_birthday, 10, name="happy_birthday")
+        jq.run_daily(send_happy_birthday, time, days = days, name=TaskCode.HAPPY_BIRTHDAY)
+        #jq.run_repeating(send_happy_birthday, 10, name=TaskCode.HAPPY_BIRTHDAY)
   
     jq.start()         
     return jq
@@ -100,7 +101,7 @@ def send_happy_birthday(context: CallbackContext):
     """
      Это задание send_happy_birthday. Оно создает запланированные к отсылке поздравления с днем рождения
     """
-    mess_template = MessageTemplates.objects.get(code = "happy_birthday")
+    mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.HAPPY_BIRTHDAY)
     requests_set = User.objects.filter(date_of_birth__month = datetime.date.today().month, date_of_birth__day = datetime.date.today().day,)
     for user in requests_set:
         new_mess = MessagesToSend()
@@ -116,7 +117,7 @@ def send_rating_reminder(context: CallbackContext):
     Это задание создает запланированные к отсылке напоминания об установке оценки мероприятия
     напоминание делается 1 раз на следующий день   
     """
-    mess_template = MessageTemplates.objects.get(code = "rating_reminder")
+    mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.RATING_REMINDER)
     requests_set = EventRequests.objects.filter(confirmed = True, event__date = datetime.date.today() - datetime.timedelta(days=1))
     for request in requests_set:
         new_mess = MessagesToSend()
@@ -173,7 +174,7 @@ def send_reg_reminder(context: CallbackContext):
      Это задание send_reg_reminder. Оно создает запланированные к отсылке напоминания продолжении регистрации
      напоминание делается 1 раз на следующий день    
     """
-    mess_template = MessageTemplates.objects.get(code = "reg_reminder")
+    mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.REG_REMINDER)
     q = (
             Q(registered = False)& 
             Q(created_at__gte = datetime.date.today()-datetime.timedelta(days=1))& 
@@ -192,7 +193,7 @@ def send_payment_reminder(context: CallbackContext):
      Это задание send_payment_reminder. Оно создает запланированные к отсылке напоминания об оплате
      напоминание делается 2 раз на следующий день после создания заявки и за день до начала мероприятия    
     """
-    mess_template = MessageTemplates.objects.get(code = "payment_reminder")
+    mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.PAYMENT_REMINDER)
     q = (
             Q(payed = False)& 
             Q(created_at__gte = datetime.date.today()-datetime.timedelta(days=1))& 
@@ -216,7 +217,7 @@ def send_random_coffe(context: CallbackContext):
      Это задание random_coffee. Оно создает запланированные к отсылке сообщения в рамках акции
      делается 1 раз в неделю (зависит от настройки задания)    
     """
-    mess_template = MessageTemplates.objects.get(code = "random_coffee")
+    mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.RANDOM_COFFEE)
     user_set = User.objects.filter(random_coffe_on = True, is_blocked_bot = False, is_banned = False)
     for user in user_set:
         recomended_user_set = User.objects.filter(random_coffe_on = True, is_blocked_bot = False, is_banned = False).exclude(pk = user.pk).order_by('?')
@@ -246,7 +247,7 @@ def send_confirm_event(context: CallbackContext):
      Это задание send_confirm_event. Оно создает запланированные к отсылке сообщения
      выполняется постоянно. Отправляет подтверждение, когда находит подтвержденную заявку    
     """
-    mess_template = MessageTemplates.objects.get(code = "send_confirm_event")
+    mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.SEND_CONFIRM_EVENT)
     requests_set = EventRequests.objects.filter(confirmed = True, qr_code_sended = False)
 
     for request in requests_set:

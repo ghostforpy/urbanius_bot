@@ -1,3 +1,4 @@
+import datetime
 from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext import (
@@ -14,15 +15,15 @@ def proc_group_mess(update: Update, context: CallbackContext):
     user = User.get_user_by_username_or_user_id(update.message.from_user.id) 
     if not user:
         return
-    group_id = update._effective_message.chat_id.first()
-    tggroup = tgGroups.objects.filter(chat_id = group_id)
+    group_id = update._effective_message.chat_id
+    tggroup = tgGroups.objects.filter(chat_id = group_id).first()
     if not tggroup:
         tggroup = tgGroups(name = update._effective_chat.title, chat_id = group_id, link = update._effective_chat.link)
         tggroup.save()
 
-    mess_stat = MessageStatistic.objects.filter(group = tggroup, user = user).first()
+    mess_stat = MessageStatistic.objects.filter(group = tggroup, user = user, date = datetime.date.today()).first()
     if not mess_stat:
-        mess_stat = MessageStatistic(group = tggroup, user = user)
+        mess_stat = MessageStatistic(group = tggroup, user = user, date = datetime.date.today())
         tggroup.save()
     mess_stat.messages += 1
     mess_stat.save()

@@ -14,6 +14,7 @@ from telegram import InputMediaDocument, MessageEntity
 from django.conf import settings
 from .messages import *
 from .answers import *
+from dtb.constants import StatusCode
 import tgbot.models as mymodels
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
@@ -605,13 +606,13 @@ def manage_offers(update: Update, context: CallbackContext):
                     file = settings.BASE_DIR / 'media/no_file'
             media_group.append(InputMediaDocument(open(file, 'rb'), caption=offer.offer))
         reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2)
-        if ((user.status == mymodels.Status.objects.get(code = "group_member"))and
+        if ((user.status == mymodels.Status.objects.get(code = StatusCode.GROUP_MEMBER))and
             (offers_count >=1)):
             reply_markup=make_keyboard(DEL_SKIP,"usual",2)
-        elif ((user.status == mymodels.Status.objects.get(code = "community_resident"))and
+        elif ((user.status == mymodels.Status.objects.get(code = StatusCode.COMMUNITY_RESIDENT))and
             (offers_count >=2)):
             reply_markup=make_keyboard(DEL_SKIP,"usual",2)
-        elif ((user.status == mymodels.Status.objects.get(code = "club_resident"))and
+        elif ((user.status == mymodels.Status.objects.get(code = StatusCode.CLUB_RESIDENT))and
             (offers_count >=3)):
             reply_markup=make_keyboard(DEL_SKIP,"usual",2)
         
@@ -698,13 +699,13 @@ def add_offers(update: Update, context: CallbackContext):
     
     offers_count =user.offers_set.count()
     reply_markup=make_keyboard(ADD_DEL_SKIP,"usual",2)
-    if ((user.status == mymodels.Status.objects.get(code = "group_member"))and
+    if ((user.status == mymodels.Status.objects.get(code = StatusCode.GROUP_MEMBER))and
         (offers_count >=1)):
         reply_markup=make_keyboard(DEL_SKIP,"usual",2)
-    elif ((user.status == mymodels.Status.objects.get(code = "community_resident"))and
+    elif ((user.status == mymodels.Status.objects.get(code = StatusCode.COMMUNITY_RESIDENT))and
         (offers_count >=2)):
         reply_markup=make_keyboard(DEL_SKIP,"usual",2)
-    elif ((user.status == mymodels.Status.objects.get(code = "club_resident"))and
+    elif ((user.status == mymodels.Status.objects.get(code = StatusCode.CLUB_RESIDENT))and
         (offers_count >=3)):
         reply_markup=make_keyboard(DEL_SKIP,"usual",2)
         

@@ -14,6 +14,8 @@ from payments.models import Payments
 from .messages import *
 from .answers import *
 from .models import *
+from dtb.constants import StatusCode, EventTypeCode
+ 
 
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
@@ -71,8 +73,8 @@ def show_event_calendar(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
-    status_club_resident = Status.objects.get(code = "club_resident")
-    event_type_club = EventTypes.objects.get(code = "club")
+    status_club_resident = Status.objects.get(code = StatusCode.CLUB_RESIDENT)
+    event_type_club = EventTypes.objects.get(code = EventTypeCode.CLUB)
     
     evens_set = Events.objects.filter(date__gte = datetime.datetime.now(),
                                     date__lte = datetime.datetime.now() + datetime.timedelta(days=30))

@@ -1,12 +1,10 @@
-import os
 import io
 import csv
 from django.contrib import admin
 from django.urls import path
 from django.utils.html import format_html
 from django.urls import reverse
-from django.http import HttpResponse, HttpResponseRedirect
-from wsgiref.util import FileWrapper
+from django.http import HttpResponse
 from django.conf import settings
 
 from .models import *

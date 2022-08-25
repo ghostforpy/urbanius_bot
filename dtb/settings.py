@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'statistic.apps.StatisticConfig',
     'events.apps.EventsConfig',
     'payments.apps.PaymentsConfig',
+    'subscribe.apps.SubscribeConfig',
 
 ]
 

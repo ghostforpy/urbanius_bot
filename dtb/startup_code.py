@@ -1,9 +1,11 @@
 from tgbot.models import Status
 from sheduler.models import Tasks, MessageTemplates
 from events.models import EventTypes
+from subscribe.models import ClubPackages
 import datetime
 import os
 from dtb import settings
+from dtb.constants import *
 import traceback 
 
 try:
@@ -21,56 +23,91 @@ try:
         os.mkdir(settings.BASE_DIR / "media/downloads")
     
     # create statuses
-    status = Status.objects.filter(code = "admin").first()
+    status = Status.objects.filter(code = StatusCode.ADMIN).first()
     if not status:
-        status = Status(code = "admin", name = "Администратор") 
+        status = Status(code =  StatusCode.ADMIN, name = "Администратор") 
         status.save()
-    status = Status.objects.filter(code = "club_resident").first()
+    status = Status.objects.filter(code = StatusCode.ADMIN).first()
     if not status:
-        status = Status(code = "club_resident", name = "Резидент закрытого клуба") 
+        status = Status(code =  StatusCode.APPLICANT, name = "Соискатель") 
         status.save()
-    status = Status.objects.filter(code = "community_resident").first()
+    status = Status.objects.filter(code = StatusCode.CLUB_RESIDENT).first()
     if not status:
-        status = Status(code = "community_resident", name = "Резидент сообщества") 
+        status = Status(code = StatusCode.CLUB_RESIDENT, name = "Резидент закрытого клуба") 
         status.save()
-    status = Status.objects.filter(code = "group_member").first()
+    status = Status.objects.filter(code = StatusCode.COMMUNITY_RESIDENT).first()
     if not status:
-        status = Status(code = "group_member", name = "Участник группы") 
+        status = Status(code = StatusCode.COMMUNITY_RESIDENT, name = "Резидент сообщества") 
+        status.save()
+    status = Status.objects.filter(code = StatusCode.GROUP_MEMBER).first()
+    if not status:
+        status = Status(code = StatusCode.GROUP_MEMBER, name = "Участник группы") 
         status.save()
 
-    #create Tasks
-    task = Tasks.objects.filter(code = "random_coffee").first()
+    # create Club Packages (пакеты участия-виды подписок)
+    status = ClubPackages.objects.filter(code = ClubPackagesCode.CLUB_MEMBER).first()
+    if not status:
+        status = ClubPackages(code =  ClubPackagesCode.CLUB_MEMBER, name = "Членство в клубе") 
+        status.save()
+    status = ClubPackages.objects.filter(code =  ClubPackagesCode.SOCNETS_TG).first()
+    if not status:
+        status = ClubPackages(code =  ClubPackagesCode.SOCNETS_TG, name = "Соцсети и чаты. Telegram") 
+        status.save()
+    status = ClubPackages.objects.filter(code =  ClubPackagesCode.CHAT_BOT).first()
+    if not status:
+        status = ClubPackages(code =  ClubPackagesCode.CHAT_BOT, name = "Чат бот") 
+        status.save()
+    status = ClubPackages.objects.filter(code =  ClubPackagesCode.EVENTS).first()
+    if not status:
+        status = ClubPackages(code =  ClubPackagesCode.EVENTS, name = "Мероприятия") 
+        status.save()
+    status = ClubPackages.objects.filter(code =  ClubPackagesCode.BUSINES).first()
+    if not status:
+        status = ClubPackages(code =  ClubPackagesCode.BUSINES, name = "Бизнес") 
+        status.save()
+    status = ClubPackages.objects.filter(code =  ClubPackagesCode.MEDIA_PR).first()
+    if not status:
+        status = ClubPackages(code =  ClubPackagesCode.MEDIA_PR, name = "Медиа и PR") 
+        status.save()
+    status = ClubPackages.objects.filter(code =  ClubPackagesCode.SOCNETS_FB_IG).first()
+    if not status:
+        status = ClubPackages(code =  ClubPackagesCode.SOCNETS_FB_IG, name = "Соцсети и чаты. FB и IG") 
+        status.save()
+
+
+    # create Tasks
+    task = Tasks.objects.filter(code = TaskCode.RANDOM_COFFEE).first()
     if not task:
         task = Tasks()
-        task.code = "random_coffee"
+        task.code = TaskCode.RANDOM_COFFEE
         task.name =  "Random coffee"
         task.time = datetime.time(9, 00, 00) # время запуска 9:00
         task.mon = True # по понедельникам
         task.is_active = True # активно 
         task.save()  
 
-    task = Tasks.objects.filter(code = "send_messages").first()
+    task = Tasks.objects.filter(code = TaskCode.SEND_MESSAGES).first()
     if not task:
         task = Tasks()
-        task.code = "send_messages"
+        task.code = TaskCode.SEND_MESSAGES
         task.name =  "Рассылка сообщений"
         task.interval = 10 # повторяется с интервалом 10 сек
         task.is_active = True # активно 
         task.save()       
 
-    task = Tasks.objects.filter(code = "send_confirm_event").first()
+    task = Tasks.objects.filter(code = TaskCode.SEND_CONFIRM_EVENT).first()
     if not task:
         task = Tasks()
-        task.code = "send_confirm_event"
+        task.code = TaskCode.SEND_CONFIRM_EVENT
         task.name =  "Рассылка подтверждений регистрацию"
         task.interval = 60 # повторяется с интервалом 60 сек
         task.is_active = True # активно 
         task.save()
 
-    task = Tasks.objects.filter(code = "happy_birthday").first()
+    task = Tasks.objects.filter(code = TaskCode.HAPPY_BIRTHDAY).first()
     if not task:
         task = Tasks()
-        task.code = "happy_birthday"
+        task.code = TaskCode.HAPPY_BIRTHDAY
         task.name =  "Поздравление с днем рождения"
         task.time = datetime.time(9, 30, 00) # время запуска 9:30
         task.mon = True # каждый день
@@ -83,10 +120,10 @@ try:
         task.is_active = True # активно 
         task.save() 
 
-    task = Tasks.objects.filter(code = "payment_reminder").first()
+    task = Tasks.objects.filter(code = TaskCode.PAYMENT_REMINDER).first()
     if not task:
         task = Tasks()
-        task.code = "payment_reminder"
+        task.code = TaskCode.PAYMENT_REMINDER
         task.name =  "Напоминание об оплате"
         task.time = datetime.time(10, 30, 00) # время запуска 9:30
         task.mon = True # каждый день
@@ -99,10 +136,10 @@ try:
         task.is_active = True # активно 
         task.save() 
 
-    task = Tasks.objects.filter(code = "rating_reminder").first()
+    task = Tasks.objects.filter(code = TaskCode.RATING_REMINDER).first()
     if not task:
         task = Tasks()
-        task.code = "rating_reminder"
+        task.code = TaskCode.RATING_REMINDER
         task.name =  "Напоминание об оценке мероприятия"
         task.time = datetime.time(10, 35, 00) # время запуска 9:30
         task.mon = True # каждый день
@@ -115,10 +152,10 @@ try:
         task.is_active = True # активно 
         task.save() 
 
-    task = Tasks.objects.filter(code = "reg_reminder").first()
+    task = Tasks.objects.filter(code = TaskCode.REG_REMINDER).first()
     if not task:
         task = Tasks()
-        task.code = "reg_reminder"
+        task.code = TaskCode.REG_REMINDER
         task.name =  "Напоминание о продолжении регистрации"
         task.time = datetime.time(10, 40, 00) # время запуска
         task.mon = True # каждый день
@@ -132,10 +169,10 @@ try:
         task.save()
 
 
-    task = Tasks.objects.filter(code = "send_anonses").first()
+    task = Tasks.objects.filter(code = TaskCode.SEND_ANONSES).first()
     if not task:
         task = Tasks()
-        task.code = "send_anonses"
+        task.code = TaskCode.SEND_ANONSES
         task.name =  "Рассылка анонсов мероприятий"
         task.time = datetime.time(10, 50, 00) # время запуска
         task.mon = True # каждый день
@@ -149,60 +186,60 @@ try:
         task.save()
 
     # create message templates
-    template = MessageTemplates.objects.filter(code = "reg_reminder").first()
+    template = MessageTemplates.objects.filter(code = MessageTemplatesCode.REG_REMINDER).first()
     if not template:
         template = MessageTemplates()
-        template.code = "reg_reminder"
+        template.code = MessageTemplatesCode.REG_REMINDER
         template.name = "Шаблон для напоминаний о продолжении регистрации"
         template.text = "Вы не завершили регистрацию в боте Urbanius Club. Для завершения регистрации введите комманду /start."
         template.save()
 
-    template = MessageTemplates.objects.filter(code = "rating_reminder").first()
+    template = MessageTemplates.objects.filter(code = MessageTemplatesCode.RATING_REMINDER).first()
     if not template:
         template = MessageTemplates()
-        template.code = "rating_reminder"
+        template.code = MessageTemplatesCode.RATING_REMINDER
         template.name = "Шаблон для напоминаний об оценке мероприятия"
         template.text = "Оцените, пожалуйста, прошедшее мероприятие в меню Мероприятия/Запрошенные мероприятия."
         template.save()
 
-    template = MessageTemplates.objects.filter(code = "payment_reminder").first()
+    template = MessageTemplates.objects.filter(code = MessageTemplatesCode.PAYMENT_REMINDER).first()
     if not template:
         template = MessageTemplates()
-        template.code = "payment_reminder"
+        template.code = MessageTemplatesCode.PAYMENT_REMINDER
         template.name = "Шаблон для напоминаний об оплате"
         template.text = "Напоминаем, что вы сделали заявку, но еще не оплатили ее."
         template.save()
  
-    template = MessageTemplates.objects.filter(code = "happy_birthday").first()
+    template = MessageTemplates.objects.filter(code = MessageTemplatesCode.HAPPY_BIRTHDAY).first()
     if not template:
         template = MessageTemplates()
-        template.code = "happy_birthday"
+        template.code = MessageTemplatesCode.HAPPY_BIRTHDAY
         template.name = "Шаблон для поздравления с днем рождения"
         template.text = "Urbanius club поздравляет вас с Днем рождения"
         template.save()
 
-    template = MessageTemplates.objects.filter(code = "random_coffee").first()
+    template = MessageTemplates.objects.filter(code = MessageTemplatesCode.RANDOM_COFFEE).first()
     if not template:
         template = MessageTemplates()
-        template.code = "random_coffee"
+        template.code = MessageTemplatesCode.RANDOM_COFFEE
         template.name = "Шаблон для сообщений Random coffee"
         template.text = "В рамках Random coffee высыылаем вам контакт участника"
         template.save()
 
-    template = MessageTemplates.objects.filter(code = "send_confirm_event").first()
+    template = MessageTemplates.objects.filter(code = MessageTemplatesCode.SEND_CONFIRM_EVENT).first()
     if not template:
         template = MessageTemplates()
-        template.code = "send_confirm_event"
+        template.code = MessageTemplatesCode.SEND_CONFIRM_EVENT
         template.name = "Шаблон для сообщения о подтверждении заявки на мероприятие"
         template.text = "Ваша заявка на мероприятие подтверждена. "\
                         "Вам высылаем код подттверждения для прохода на мероприятие. "\
                         "Также его вы можете получить в меню 'Мероприятия'"
         template.save()
 
-    template = MessageTemplates.objects.filter(code = "welcome_newuser_message").first()
+    template = MessageTemplates.objects.filter(code = MessageTemplatesCode.WELCOME_NEWUSER_MESSAGE).first()
     if not template:
         template = MessageTemplates()
-        template.code = "welcome_newuser_message"
+        template.code = MessageTemplatesCode.WELCOME_NEWUSER_MESSAGE
         template.name = "Шаблон для приветственного сообщения новому пользователю"
         template.text = "Поздравляем! Вы успешно зарегистрировались в системе URBANIUS. " \
                         "Информация передана администраторам." \
@@ -211,29 +248,29 @@ try:
         template.save()
 
 
-    template = MessageTemplates.objects.filter(code = "welcome_message").first()
+    template = MessageTemplates.objects.filter(code = MessageTemplatesCode.WELCOME_MESSAGE).first()
     if not template:
         template = MessageTemplates()
-        template.code = "welcome_message"
-        template.name = "0."
+        template.code = MessageTemplatesCode.WELCOME_MESSAGE
+        template.name = "Шаблон сообщения при начале работы для подтвержденного пользователя"
         template.text = "Добрый день! Вы находитесь в Telegram боте URBANIUS CLUB. \n" \
                         "Используйте кнопки меню для работы с ботом."
         template.save()
 
-    template = MessageTemplates.objects.filter(code = "welcome_blockerd_usr_message").first()
+    template = MessageTemplates.objects.filter(code = MessageTemplatesCode.WELCOME_BLOCKERD_USR_MESSAGE).first()
     if not template:
         template = MessageTemplates()
-        template.code = "welcome_blockerd_usr_message"
+        template.code = MessageTemplatesCode.WELCOME_BLOCKERD_USR_MESSAGE
         template.name = "Шаблон сообщения при начале работы для неподдтвержденного(заблокированного) пользователя"
         template.text = "К сожалению Ваша учетная запись все еще заблокирована. " \
                         "Ожидайте разблокировки записи или свяжитесь с администраторами. " \
-                        "Вы пока можете заполнить профиль . Причина блокировки: \n" 
+                        "Вы пока можете заполнить профиль. Причина блокировки: \n" 
         template.save()
 
-    template = MessageTemplates.objects.filter(code = "welcome_banned_usr_message").first()
+    template = MessageTemplates.objects.filter(code = MessageTemplatesCode.WELCOME_BANNED_USR_MESSAGE).first()
     if not template:
         template = MessageTemplates()
-        template.code = "welcome_banned_usr_message"
+        template.code = MessageTemplatesCode.WELCOME_BANNED_USR_MESSAGE
         template.name = "Шаблон сообщения при начале работы для забаненого пользователя"
         template.text = "К сожалению Вашу учетная запись забанили. " \
                         "Для выяснения причин свяжитесь с администраторами. Причина бана: \n"   
@@ -242,17 +279,17 @@ try:
 
 
     # create EventTypes
-    event_type = EventTypes.objects.filter(code = "close").first()
+    event_type = EventTypes.objects.filter(code = EventTypeCode.CLOSE).first()
     if not event_type:
-        event_type = EventTypes(code = "close", name = "Закрытое")
+        event_type = EventTypes(code = EventTypeCode.CLOSE, name = "Закрытое")
         event_type.save()
-    event_type = EventTypes.objects.filter(code = "club").first()
+    event_type = EventTypes.objects.filter(code = EventTypeCode.CLUB).first()
     if not event_type:
-        event_type = EventTypes(code = "club", name = "Клубное") 
+        event_type = EventTypes(code = EventTypeCode.CLUB, name = "Клубное") 
         event_type.save()
-    event_type = EventTypes.objects.filter(code = "open").first()
+    event_type = EventTypes.objects.filter(code = EventTypeCode.OPEN).first()
     if not event_type:
-        event_type = EventTypes(code = "open", name = "Открытое") 
+        event_type = EventTypes(code = EventTypeCode.OPEN, name = "Открытое") 
         event_type.save()
 except Exception as exc:
     print("Can't load init data") 

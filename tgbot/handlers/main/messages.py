@@ -1,6 +1,7 @@
 
 from tgbot.models import User
 from sheduler.models import MessageTemplates
+from dtb.constants import MessageTemplatesCode
 
 ASK_REENTER = "Пожалуйста, используйте доступные пункты меню."  
 
@@ -14,13 +15,13 @@ AFFILATE_MESS = "Если вы хотите видеть своего колле
 
 def get_start_mess(user: User):
     if user.is_banned:
-        mess_template = MessageTemplates.objects.get(code = "welcome_banned_usr_message")
+        mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.WELCOME_BANNED_USR_MESSAGE)
         res = mess_template.text + user.comment
     elif user.is_blocked_bot:
-        mess_template = MessageTemplates.objects.get(code = "welcome_blockerd_usr_message")
+        mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.WELCOME_BLOCKERD_USR_MESSAGE)
         res =  mess_template.text + user.comment
     else:
-        mess_template = MessageTemplates.objects.get(code = "welcome_message")
+        mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.WELCOME_MESSAGE)
         res =  mess_template.text
 
     if not user.username:

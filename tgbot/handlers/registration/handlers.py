@@ -1,5 +1,3 @@
-import telegram
-import os
 from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext import (
@@ -8,8 +6,8 @@ from telegram.ext import (
     Filters,
     ConversationHandler,
 )
-
-from tgbot import models
+from dtb.constants import MessageTemplatesCode
+from dtb.constants import StatusCode
 from .messages import *
 from .answers import *
 from tgbot.handlers.main.messages import NO_ADMIN_GROUP
@@ -235,7 +233,7 @@ def processing_site(update: Update, context: CallbackContext):
     user.created_at = new_user.created_at
     user.language_code = new_user.language_code
     user.deep_link = new_user.deep_link
-    user.status = Status.objects.get(code = "group_member")
+    user.status = Status.objects.get(code = StatusCode.APPLICANT)
     user.is_blocked_bot = True
     user.comment = "Ожидает подтверждения регистрации"
     user.save()
@@ -251,7 +249,7 @@ def processing_site(update: Update, context: CallbackContext):
         user_group.save()
         
     reply_markup = make_keyboard(START,"usual",1)
-    mess_template = MessageTemplates.objects.get(code = "welcome_newuser_message")
+    mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.WELCOME_NEWUSER_MESSAGE)
 
     send_mess_by_tmplt(user.user_id, mess_template, reply_markup) 
 

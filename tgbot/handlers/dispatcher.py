@@ -24,6 +24,7 @@ from tgbot.handlers.messages.handlers import setup_dispatcher_conv as setup_disp
 from events.handlers import setup_dispatcher_conv as setup_dispatcher_events
 from tgbot.handlers.groups.handlers import setup_dispatcher_conv as setup_dispatcher_groups
 from statistic.handlers import setup_dispatcher_group as setup_dispatcher_tg_group
+from subscribe.handlers import setup_dispatcher_conv as setup_dispatcher_pkgs
 
 from sheduler.tasks import restarts_tasks
 
@@ -43,8 +44,9 @@ def setup_dispatcher(dp: Dispatcher):
     setup_dispatcher_mess(dp) #заполнение обработчиков работы с поиском
     setup_dispatcher_events(dp) #заполнение обработчиков работы с мероприятиями
     setup_dispatcher_groups(dp) #заполнение обработчиков работы с группами пользователей
+    setup_dispatcher_pkgs(dp) #заполнение обработчиков работы с пакетами участия
 
-    setup_dispatcher_tg_group(dp) #заполнение обработчиков сообщений в группах телеграм
+    setup_dispatcher_tg_group(dp) #заполнение обработчиков сообщений в группах(каналах) телеграм
 
     dp.add_handler(MessageHandler(Filters.text & Filters.chat_type.private, commands.command_start))
 
