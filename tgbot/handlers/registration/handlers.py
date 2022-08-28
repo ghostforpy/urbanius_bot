@@ -108,7 +108,8 @@ def processing_about(update: Update, context: CallbackContext):
         new_user.about = update.message.text 
         new_user.save()       
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        update.message.reply_text(ASK_BIRHDAY + f"\n Уже введено: '{utils.mystr(new_user.date_of_birth)}'", reply_markup=keyboard)
+        birthday = new_user.date_of_birth.strftime("%d.%m.%Y") if new_user.date_of_birth else ""
+        update.message.reply_text(ASK_BIRHDAY + f"\n Уже введено: '{birthday}'", reply_markup=keyboard)
         return BIRHDAY
 
 def processing_birhday(update: Update, context: CallbackContext):

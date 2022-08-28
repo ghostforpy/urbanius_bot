@@ -63,7 +63,7 @@ def restarts_tasks(jq: JobQueue) -> JobQueue:
         days = curr_task.getdays()
         time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
         jq.run_daily(send_rating_reminder, time, days = days, name=TaskCode.RATING_REMINDER)
-        #jq.run_repeating(send_rating_reminder, 10, name=TaskCode.RATING_REMINDER)
+        #jq.run_repeating(send_rating_reminder, 30, name=TaskCode.RATING_REMINDER)
 
     # Создаем/обновляем задание "рассылка анонсов мероприятия"
     curr_task = Tasks.objects.get(code = TaskCode.SEND_ANONSES)

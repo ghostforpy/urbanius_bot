@@ -172,7 +172,8 @@ def manage_phone_action(update: Update, context: CallbackContext):
 # Обработчик День рождения
 def manage_date_of_birth(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-    update.message.reply_text(ASK_BIRHDAY.format(user.date_of_birth.strftime("%d.%m.%Y")), reply_markup=make_keyboard(SKIP,"usual",1))
+    birthday = user.date_of_birth.strftime("%d.%m.%Y") if user.date_of_birth else ""
+    update.message.reply_text(ASK_BIRHDAY.format(birthday), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_date_of_birth"
 
 def manage_date_of_birth_action(update: Update, context: CallbackContext):

@@ -11,12 +11,21 @@ class ClubPackages(models.Model):
 
     def get_subscrition_txt(self, user: User) -> str:
         #
-        reqw = self.packagerequests_set.filter(user = user, date_to__gte = datetime.date.today())
+        reqw = self.packagerequests_set.filter(user = user, date_to__gte = datetime.date.today(), confirmed = True)
         if reqw:
             rewqest =  reqw.latest('date_to')
-            return f"Подписка действует до {rewqest.date_to}"
+            str_date = rewqest.date_to.strftime("%d.%m.%Y")
+            return f"Подписка действует до {str_date}"
         else:
             return "Отсутствует действующая подписка"
+
+    def get_subscrition_date(self, user: User):
+        reqw = self.packagerequests_set.filter(user = user, date_to__gte = datetime.date.today(), confirmed = True)
+        if reqw:
+            rewqest =  reqw.latest('date_to')
+            return rewqest.date_to            
+        else:
+            return None
 
     class Meta:
         verbose_name_plural = 'Пакеты участия' 
@@ -40,7 +49,7 @@ class PackagePrices(models.Model):
     price = models.DecimalField("Стоимость", max_digits=11, decimal_places=2)
     period = models.IntegerField("Период, мес.", null=False, blank=False)
     def __str__(self):
-        return f"{self.package} для статуса {self.for_status} цена {self.price} руб. на {self.price} мес." 
+        return f"{self.package} цена {self.price} руб. на {self.period} мес." 
     class Meta:
         verbose_name_plural = 'Стоимость пакетов' 
         verbose_name = 'Стоимость пакета' 
@@ -60,12 +69,15 @@ class PackageRequests(models.Model):
     confirmed = models.BooleanField("Подтверждена", default=False)
     payment = models.ForeignKey(Payments, on_delete=models.PROTECT, verbose_name="Документ платежа",null=True, blank=True)
     def __str__(self):
-        return f"{self.number} на {self.package} от пользователя {self.user} цена {self.price} руб."
+        return f"№{self.number}, {self.package} от {self.user} цена {self.price} руб."
 
     def getdescr(self)->str:
         payed = "Оплачена" if self.payed else "Не оплачена"
         confirmed = "Подтверждена"  if self.confirmed else "Не подтверждена"
-        return f"№{self.number} от {self.created_at} цена {self.price} руб. на период с {self.date_from} по {self.date_to}, {payed}, {confirmed}"
+        str_created_at = self.created_at.strftime("%d.%m.%Y")
+        str_date_from = self.date_from.strftime("%d.%m.%Y")
+        str_date_to = self.date_to.strftime("%d.%m.%Y")
+        return f"№{self.number} от {str_created_at} цена {self.price} руб. на период с {str_date_from} по {str_date_to}, {payed}, {confirmed}"
     class Meta:
         verbose_name_plural = 'Заявки на пакет участия' 
         verbose_name = 'Заявка на пакет участия' 

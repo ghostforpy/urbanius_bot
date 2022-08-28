@@ -10,7 +10,6 @@ from telegram.ext import (
 from tgbot.my_telegram import ConversationHandler as ConversationHandlerMy
 from django.conf import settings
 from tgbot.models import User, Status
-from payments.models import Payments
 from .messages import *
 from .answers import *
 from .models import *
@@ -22,8 +21,8 @@ from tgbot.handlers.filters import FilterPrivateNoCommand
 from tgbot.handlers.utils import send_message, send_photo, send_video, fill_file_id, wrong_file_id
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
-from tgbot.utils import extract_user_data_from_update
 
+from payments.payments_proc import send_invois_to_tg, manage_precheckout_callback, finish_payment
 
 
 def stop_conversation(update: Update, context: CallbackContext):
@@ -196,104 +195,14 @@ def show_qr_code(update: Update, context: CallbackContext):
         send_photo(user_id, photo = bio, caption = text, parse_mode = ParseMode.HTML, reply_markup = reply_markup)        
     return "manage_event"
 
-def make_invoice(update: Update, context: CallbackContext):
-    query = update.callback_query
-    query.answer()
-    query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
-    user_id = query.from_user.id
-    # разбираем пришедшие данные. пример 'pay_request_event-256'
-    # pay_request - действие, event - имя обекта, 256 - индекс объекта в БД
-    query_data = query.data.split("-")
-    obj_pk = int(query_data[1])  # получили индекс объекта в БД
-    user = User.get_user_by_username_or_user_id(user_id)   
-    event = Events.objects.get(pk = int(obj_pk))
-    pay_request = event.get_user_request(user)
-    str_request = str(pay_request)
-    title = event.name
-    description = str_request
-    payload = "URBANIUS_CLUB"
-    currency = "RUB"
-    price = pay_request.price
-    # price * 100 so as to include 2 decimal points
-    prices = [LabeledPrice(str_request, int(price * 100))]
-
-    context.user_data["payment_started"] = True
-    context.user_data["payment_request"] = pay_request
-    """Sends an invoice with shipping-payment."""
-    # optionally pass need_name=True, need_phone_number=True,
-    # need_email=True, need_shipping_address=True, is_flexible=True
-    context.bot.send_invoice(
-        user_id,
-        title,
-        description,
-        payload,
-        settings.PAYMENT_PROVIDER_TOKEN,
-        currency,
-        prices,
-        need_name=True,
-        need_phone_number=True,
-        need_email=True,
-    )
-    return "invois_sended"
-
-# after (optional) shipping, it's the pre-checkout
-def precheckout_callback(update: Update, context: CallbackContext) -> None:
-    """Answers the PreQecheckoutQuery"""
-    user_id = update.pre_checkout_query.from_user.id
-    query = update.pre_checkout_query
-    if context.user_data.get("payment_started"):
-        # check the payload, is this from your bot?
-        if query.invoice_payload != "URBANIUS_CLUB":
-            # answer False pre_checkout_query
-            query.answer(ok=False, error_message="Что-то пошло не так...")
-            context.user_data["payment_started"] = False
-            send_message(user_id=user_id, text = "Что-то пошло не так...")
-            return "manage_event"
-        else:
-            query.answer(ok=True)
-            return "checkout"
-    else:
-        query.answer(ok=False, error_message="Срок платежа прошел. Начните новый платеж")
-        send_message(user_id=user_id, text = "Срок платежа прошел. Начните новый платеж")
-        return "manage_event"
-
-
-# finally, after contacting the payment provider...
-def successful_payment_callback(update: Update, context: CallbackContext) -> None:
-    """Confirms the successful payment."""
-    # do something after successfully receiving payment?
-    context.user_data["payment_started"] = False
-    userdata = extract_user_data_from_update(update)
-    user = User.get_user_by_username_or_user_id(userdata["user_id"])   
-    payment_request = context.user_data["payment_request"]
-    query = update.message.successful_payment
-    payment = Payments()
-    payment.user = user
-    payment.price = payment_request.price
-    payment.invoice_payload = query.invoice_payload
-    payment.provider_payment_charge_id = query.provider_payment_charge_id
-    payment.telegram_payment_charge_id = query.telegram_payment_charge_id
-    payment.email = query.order_info.email
-    payment.name = query.order_info.name
-    payment.phone_number = query.order_info.phone_number
-    payment.total_amount = query.total_amount/100
-    payment.save()
-    
-    payment_request.payment = payment
-    payment_request.payed = True
-    payment_request.save()
-    send_message(user_id=user.user_id, text = "Спасибо за Ваш платеж!")
-    send_event_desc(payment_request.event, user)   
-    return "manage_event"
-
 
 def show_requested_events(update: Update, context: CallbackContext):
     query = update.callback_query
     query.answer()
     user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
-    requests_set = EventRequests.objects.filter(event__date__gte = datetime.datetime.now() - datetime.timedelta(days=40),
-                                    event__date__lte = datetime.datetime.now() + datetime.timedelta(days=1), user = user, confirmed = True)
+    requests_set = EventRequests.objects.filter(event__date__gte = datetime.date.today() - datetime.timedelta(days=40),
+                                    event__date__lte = datetime.date.today() + datetime.timedelta(days=1), user = user, confirmed = True)
     btn_events = {}
     for request in requests_set:        
         btn_events[request.event.pk] = str(request.event)
@@ -374,8 +283,8 @@ def set_rating_comment (update: Update, context: CallbackContext):
     request.save()
     user_id = update.message.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
-    requests_set = EventRequests.objects.filter(event__date__gte = datetime.datetime.now() - datetime.timedelta(days=40),
-                                    event__date__lte = datetime.datetime.now() + datetime.timedelta(days=30), user = user, confirmed = True)
+    requests_set = EventRequests.objects.filter(event__date__gte = datetime.date.today() - datetime.timedelta(days=40),
+                                    event__date__lte = datetime.date.today() + datetime.timedelta(days=1), user = user, confirmed = True)
     btn_events = {}
     for request in requests_set:        
         btn_events[request.event.pk] = str(request.event)
@@ -396,6 +305,49 @@ def set_rating_comment_reminder (update: Update, context: CallbackContext):
     update.message.reply_text("Мероприятию установлена оценка")     
   
     return ConversationHandler.END
+
+
+def make_invoice(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+    user_id = query.from_user.id
+    # разбираем пришедшие данные. пример 'pay_request_event-256'
+    # pay_request - действие, event - имя обекта, 256 - индекс объекта в БД
+    query_data = query.data.split("-")
+    obj_pk = int(query_data[1])  # получили индекс объекта в БД
+    user = User.get_user_by_username_or_user_id(user_id)   
+    event = Events.objects.get(pk = int(obj_pk))
+    payment_request = event.get_user_request(user)
+
+    context.user_data["payment_started"] = True
+    context.user_data["payment_request"] = payment_request
+    send_invois_to_tg(user,event,payment_request)
+    return "invois_sended"
+
+# after (optional) shipping, it's the pre-checkout
+def precheckout_callback(update: Update, context: CallbackContext) -> None:
+    
+    if manage_precheckout_callback(update,context):
+        return "checkout"
+    else:
+        return "manage_event"
+
+
+# finally, after contacting the payment provider...
+def successful_payment_callback(update: Update, context: CallbackContext) -> None:
+    """Confirms the successful payment."""
+    # do something after successfully receiving payment?
+    context.user_data["payment_started"] = False
+    user_id = update.message.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)   
+    payment_request = context.user_data["payment_request"]
+    query = update.message.successful_payment
+    finish_payment(query,user,payment_request)
+    send_event_desc(payment_request.event, user)   
+    return "manage_event"
+      
+
 
 def setup_dispatcher_conv(dp: Dispatcher):
 
@@ -447,19 +399,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
 
     dp.add_handler(conv_handler)
 
-    # conv_handler_rate = ConversationHandlerMy( 
-    #     # точка входа в разговор      
-    #     entry_points=[CallbackQueryHandler(set_rating_to_event, pattern="^rateevent_"),],      
-    #     # этапы разговора, каждый со своим списком обработчиков сообщений
-    #         states={
-    #                "set_rating_comment":[MessageHandler(Filters.text & FilterPrivateNoCommand, set_rating_comment_reminder)],
-    #     },
-    #         # точка выхода из разговора
-    #         fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
-    #                    CommandHandler('start', stop_conversation, Filters.chat_type.private)]        
-    # )
 
-    # dp.add_handler(conv_handler_rate)      
 
 
 def send_event_desc(event: Events, user: User):
