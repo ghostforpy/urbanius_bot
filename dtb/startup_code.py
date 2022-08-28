@@ -27,7 +27,7 @@ try:
     if not status:
         status = Status(code =  StatusCode.ADMIN, name = "Администратор") 
         status.save()
-    status = Status.objects.filter(code = StatusCode.ADMIN).first()
+    status = Status.objects.filter(code = StatusCode.APPLICANT).first()
     if not status:
         status = Status(code =  StatusCode.APPLICANT, name = "Соискатель") 
         status.save()
