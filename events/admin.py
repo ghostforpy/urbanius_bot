@@ -1,7 +1,7 @@
 import io
 import csv
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from django.utils.html import format_html
 from django.urls import reverse
 from django.http import HttpResponse
@@ -35,7 +35,7 @@ class EventsAdmin(admin.ModelAdmin) :
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path(r'^(?P<event_pk>.+)/csv/$', self.admin_site.admin_view(self.process_download_requests), name='download-requests'),
+            re_path(r'^(?P<event_pk>.+)/csv/$', self.admin_site.admin_view(self.process_download_requests), name='download-requests'),
         ]
         return custom_urls + urls
  

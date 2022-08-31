@@ -5,7 +5,6 @@ import logging
 import uuid
 import re
 import os
-from datetime import datetime
 
 from django.conf import settings
 
@@ -64,14 +63,14 @@ def get_file_path(instance, filename):
     return filename
 
 
-def convert_2_user_time(date: datetime):
+def convert_2_user_time(date: datetime.datetime):
     """Получает дату в UTC. Возвращает в Мск."""
 
-    return date + datetime.timedelta(hours=3)
+    return date + datetime.datetime.timedelta(hours=3)
 
 def is_date(str_date: str):
     try:
-        date = datetime.strptime(str_date,"%d.%m.%Y")
+        date = datetime.datetime.strptime(str_date,"%d.%m.%Y")
         return date
     except Exception:
         return False
@@ -88,7 +87,12 @@ def mystr(val)->str:
     if val == None:
         return ""
     else:
-        return str(val)
+        if isinstance(val,datetime.date):
+            return val.strftime("%d.%m.%Y")
+        elif isinstance(val,datetime.datetime):
+            return val.strftime("%H:%M, %d.%m.%Y")
+        else:
+            return str(val)
 
 def get_uniq_file_name(path, name, ext):
     for num in range(999999):

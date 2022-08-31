@@ -168,13 +168,28 @@ try:
         task.is_active = True # активно 
         task.save()
 
-
     task = Tasks.objects.filter(code = TaskCode.SEND_ANONSES).first()
     if not task:
         task = Tasks()
         task.code = TaskCode.SEND_ANONSES
         task.name =  "Рассылка анонсов мероприятий"
         task.time = datetime.time(10, 50, 00) # время запуска
+        task.mon = True # каждый день
+        task.tue = True
+        task.wed = True
+        task.thu = True
+        task.fri = True
+        task.sat = True
+        task.san = True
+        task.is_active = True # активно 
+        task.save()
+
+    task = Tasks.objects.filter(code = TaskCode.SEND_SPEC_OFFERS).first()
+    if not task:
+        task = Tasks()
+        task.code = TaskCode.SEND_SPEC_OFFERS
+        task.name =  "Рассылка спец. предложений"
+        task.time = datetime.time(10, 55, 00) # время запуска
         task.mon = True # каждый день
         task.tue = True
         task.wed = True

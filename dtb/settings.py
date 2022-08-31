@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'events.apps.EventsConfig',
     'payments.apps.PaymentsConfig',
     'subscribe.apps.SubscribeConfig',
+    'advert.apps.AdvertConfig',
 
 ]
 
@@ -158,6 +159,16 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 PAYMENT_PROVIDER_TOKEN = os.getenv("PAYMENT_TOKEN")
 TRASH_GROUP =  os.getenv("TRASH_GROUP")
+
+# Настройки почтового сервера
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS") == "True"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL") == "True"
+SERVER_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # -----> LOGGING
 ENABLE_DECORATOR_LOGGING = os.getenv('ENABLE_DECORATOR_LOGGING', True)

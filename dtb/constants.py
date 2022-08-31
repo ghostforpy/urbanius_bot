@@ -23,6 +23,7 @@ class TaskCode:
     SEND_ANONSES = "send_anonses"
     REG_REMINDER = "reg_reminder"
     HAPPY_BIRTHDAY = "happy_birthday"
+    SEND_SPEC_OFFERS = "send_spec_offers"
 
 class MessageTemplatesCode:
     REG_REMINDER = "reg_reminder"

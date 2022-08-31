@@ -8,6 +8,7 @@ from django.db.models import Q
 from .models import *
 from tgbot.models import User, NewUser
 from events.models import EventRequests, AnonsesDates
+from advert.models import SpecialOffersDates
 from tgbot.handlers.utils import send_message, send_photo, send_document, fill_file_id, get_no_foto_id,send_mess_by_tmplt
 from tgbot.utils import get_uniq_file_name
 from tgbot.handlers.keyboard import make_keyboard
@@ -74,6 +75,16 @@ def restarts_tasks(jq: JobQueue) -> JobQueue:
         jq.run_daily(send_anonses, time, days = days, name=TaskCode.SEND_ANONSES)
         #jq.run_repeating(send_anonses, 10, name=TaskCode.SEND_ANONSES)
 
+
+    # Создаем/обновляем задание "рассылка специальных предложений"
+    curr_task = Tasks.objects.get(code = TaskCode.SEND_SPEC_OFFERS)
+    remove_job_if_exists(TaskCode.SEND_SPEC_OFFERS, jq)
+    if curr_task.is_active:
+        days = curr_task.getdays()
+        time = datetime.time(hour=curr_task.time.hour, minute=curr_task.time.minute, tzinfo=pytz.timezone('Europe/Moscow'))
+        jq.run_daily(send_spec_offers, time, days = days, name=TaskCode.SEND_SPEC_OFFERS)
+        #jq.run_repeating(send_spec_offers, 30, name=TaskCode.SEND_SPEC_OFFERS)
+
     # Создаем/обновляем задание "напоминание о продолжении регистрации"
     curr_task = Tasks.objects.get(code = TaskCode.REG_REMINDER)
     remove_job_if_exists(TaskCode.REG_REMINDER, jq)
@@ -94,7 +105,6 @@ def restarts_tasks(jq: JobQueue) -> JobQueue:
   
     jq.start()         
     return jq
-
 
 
 def send_happy_birthday(context: CallbackContext):
@@ -159,15 +169,58 @@ def send_anonses(context: CallbackContext):
             fill_file_id(anons_day.anons.event, "file", text = "send_anonses_event")
         if not anons_day.anons.file_id:
             fill_file_id(anons_day.anons, "file", text = "send_anonses_anons")
+
+        if anons_day.anons.file:
+            file = anons_day.anons.file
+            file_id = anons_day.anons.file_id            
+        else:
+            file = anons_day.anons.event.file
+            file_id = anons_day.anons.event.file_id
         for group in anons_day.anons.sending_groups.all():
             new_mess = MessagesToSend()
             new_mess.receiver_user_id = group.chat_id  
             new_mess.text = anons_day.anons.text
-            new_mess.file = anons_day.anons.event.file
-            new_mess.file_id = anons_day.anons.event.file_id
+            new_mess.file = file
+            new_mess.file_id = file_id
             new_mess.save()
         anons_day.sended = True
         anons_day.save()
+
+    
+def send_spec_offers(context: CallbackContext):
+    """
+     Это задание send_spec_offers. Оно создает запланированные спец предложения
+     отсылается в группы и даты указанные в предложения    
+    """
+    requests_set = SpecialOffersDates.objects.filter(offer_date = datetime.datetime.today(), sended = False)
+    for offer_day in requests_set:
+        use_offer_btn = {
+                        "use_offer-" + str(offer_day.offer.pk):"Воспользоваться предложением"
+                        } 
+        keyboard = {}
+        keyboard["buttons"] = use_offer_btn  
+        keyboard["type"] = "inline" 
+        keyboard["btn_in_row"] = 1
+        keyboard["first_btn"] = None
+        keyboard["last_btn"] = None                     
+
+        if not offer_day.offer.file_id:
+            fill_file_id(offer_day.offer, "file", text = "send_spec_offers")
+        for group in offer_day.offer.sending_groups.all():
+            new_mess = MessagesToSend()
+            new_mess.receiver_user_id = group.chat_id 
+
+            text = f"Специальное предложение от партнера {offer_day.offer.partner.full_name} \n"
+            text += f"{offer_day.offer.name} \n"
+            text += f"{offer_day.offer.text} \n"
+            text += "Предложение действует до " + offer_day.offer.valid_until.strftime("%d.%m.%Y")
+            new_mess.text = text
+            new_mess.file = offer_day.offer.file
+            new_mess.file_id = offer_day.offer.file_id
+            new_mess.reply_markup = keyboard              
+            new_mess.save()
+        offer_day.sended = True
+        offer_day.save()
 
 def send_reg_reminder(context: CallbackContext):
     """
@@ -236,9 +289,9 @@ def send_random_coffe(context: CallbackContext):
             new_mess.file_id = get_no_foto_id()
         else:
             if not recomended_user.main_photo_id:
-                fill_file_id(user, "main_photo", text = "send_random_coffe")
-            new_mess.file = user.main_photo
-            new_mess.file_id = user.main_photo_id
+                fill_file_id(recomended_user, "main_photo", text = "send_random_coffe")
+            new_mess.file = recomended_user.main_photo
+            new_mess.file_id = recomended_user.main_photo_id
         new_mess.save()
         
 
