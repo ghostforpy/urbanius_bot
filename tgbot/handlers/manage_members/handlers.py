@@ -59,11 +59,12 @@ def manage_find(update: Update, context: CallbackContext):
     if len(query) < 3:
         return
     users_set = mymodels.User.find_users_by_keywords(query)
+    users_set = users_set.exclude(user_id = update.inline_query.from_user.id)
     results = []
     for user in users_set:
-        foto_url = None
-        if user.main_photo:
-            foto_url = settings.MEDIA_DOMAIN + user.main_photo.url
+        # foto_url = None
+        # if user.main_photo:
+        #     foto_url = settings.MEDIA_DOMAIN + user.main_photo.url
         user_res_str = InlineQueryResultArticle(
             id=str(user.user_id),
             title=str(user),
@@ -91,31 +92,49 @@ def manage_chosen_user(update: Update, context: CallbackContext):
         photo = chosen_user.main_photo.path
         photo_id = chosen_user.main_photo_id
 
+    manage_usr_btn = make_manage_usr_btn(chosen_user_id)
 
-
-    set_rating_btn = {"setrating_"+ str(chosen_user_id):"Поставить оценку"}
-    reply_markup=make_keyboard(set_rating_btn,"inline",1,None,BACK)
-    text = chosen_user.short_profile()    
-    
+    reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
+    text = chosen_user.short_profile()        
 
     if os.path.exists(photo):
-        send_photo(user_id, photo_id, caption = text, reply_markup=reply_markup, parse_mode = ParseMode.HTML)
-    else:
-        send_message(user_id=user_id, text = text, reply_markup=reply_markup, parse_mode = ParseMode.HTML)
+        send_photo(user_id, photo_id)
+    send_message(user_id=user_id, text = text, reply_markup=reply_markup)
+    return "working"
+
+def show_full_profile(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    data = query.data.split("_")
+    found_user_id = int(data[-1])
+    found_user = User.get_user_by_username_or_user_id(found_user_id)
+    profile_text = found_user.full_profile()
+    manage_usr_btn = make_manage_usr_btn(found_user_id)
+    reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
+    query.edit_message_text(text=profile_text, reply_markup=reply_markup)
+    return "working"
+
+def back_to_user(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    data = query.data.split("_")
+    found_user_id = int(data[-1])
+    found_user = User.get_user_by_username_or_user_id(found_user_id)
+    profile_text = found_user.short_profile()
+    manage_usr_btn = make_manage_usr_btn(found_user_id)
+    reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
+    query.edit_message_text(text=profile_text, reply_markup=reply_markup)
+    return "working"
 
 # Установка оценки
 def set_rating(update: Update, context: CallbackContext):
     # Запрашиваем оценку
     query = update.callback_query
+    query.answer()
     user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
     data = query.data.split("_")
-    rated_user_id = int(data[1])
-    if rated_user_id == user_id:
-        context.user_data["search_started"] = False
-        send_message(user_id=user_id, text=NO_SELF_RATING, reply_markup=make_keyboard(EMPTY,"usual",1))
-        send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
-        return ConversationHandler.END    
+    rated_user_id = int(data[-1])   
 
     rated_user = User.get_user_by_username_or_user_id(rated_user_id)
     context.user_data["rated_user"] = rated_user
@@ -129,9 +148,9 @@ def set_rating(update: Update, context: CallbackContext):
                       4:"4",
                       5:"5",
                       }    
-    reply_markup=make_keyboard(set_rating_btn,"inline",5,None,BACK) 
+    reply_markup=make_keyboard(set_rating_btn,"inline",5,None,back_to_user_btn(rated_user_id)) 
     text = "Поставьте оценку пользователю: " + str(rated_user)
-    send_message(user_id=user.user_id, text=text, reply_markup=reply_markup)
+    query.edit_message_text(text=text, reply_markup=reply_markup)
     return "set_rating"
 
 def set_rating_comment(update: Update, context: CallbackContext):
@@ -155,31 +174,33 @@ def store_rating (update: Update, context: CallbackContext):
     user_rating.save()
     user_id = update.message.from_user.id
 
-    user = User.get_user_by_username_or_user_id(user_id)
     context.user_data["search_started"] = False
-    send_message(user_id=user_id, text=FIND_RATING, reply_markup=make_keyboard(EMPTY,"usual",1))
-    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
-    return ConversationHandler.END    
+    manage_usr_btn = make_manage_usr_btn(context.user_data["rated_user"].user_id)
+    reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
+    send_message(user_id=user_id, text=FIN_RATING,reply_markup=reply_markup)
+    return "working" 
 
 def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
     conv_handler = ConversationHandler( 
         # точка входа в разговор      
-        entry_points=[CallbackQueryHandler(start_conversation, pattern="^find_members$")],      
+        entry_points=[CallbackQueryHandler(start_conversation, pattern="^find_members$"),
+                      CallbackQueryHandler(show_full_profile, pattern="^full_profile_"),
+                      CallbackQueryHandler(set_rating, pattern="^setuserrating_"),
+                     ],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
             "working":[
                        InlineQueryHandler(manage_find),   
                        ChosenInlineResultHandler(manage_chosen_user),             
-                       MessageHandler(Filters.text([BACK["back"]]) & FilterPrivateNoCommand, stop_conversation),
                        CallbackQueryHandler(stop_conversation, pattern="^back$"),
-                       CallbackQueryHandler(set_rating, pattern="^setrating_"),
+                       CallbackQueryHandler(set_rating, pattern="^setuserrating_"),
+                       CallbackQueryHandler(show_full_profile, pattern="^full_profile_"),
                        MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
                       ],
             "set_rating":[
-                          CallbackQueryHandler(stop_conversation, pattern="^back$"),
+                          CallbackQueryHandler(back_to_user, pattern="^back_to_user_"),
                           CallbackQueryHandler(set_rating_comment),
-                          MessageHandler(Filters.text([BACK["back"]]) & FilterPrivateNoCommand, stop_conversation),
                          ],
             "set_rating_comment":[
                           MessageHandler(Filters.text & FilterPrivateNoCommand, store_rating),

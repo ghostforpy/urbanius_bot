@@ -839,7 +839,7 @@ def select_referes(update: Update, context: CallbackContext):
 #-------------------------------------------  
 # Обработчик просмотр профиля
 def view_profile(update: Update, context: CallbackContext):
-    user = mymodels.User.get_user_by_username_or_user_id(update.callback_query.from_user.id)
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     if not(user.main_photo):
         photo = settings.BASE_DIR / 'media/no_foto.jpg'
     else:

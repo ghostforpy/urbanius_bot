@@ -6,7 +6,7 @@ from django.db.models import Q, Avg
 from typing import Dict, Tuple
 
 from django.db import models
-from django.utils import timezone
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.utils.safestring import mark_safe
 
@@ -15,6 +15,7 @@ from tgbot.utils import mystr, extract_user_data_from_update
 class Offers(models.Model):
     offer = models.TextField("Суть предложения", blank = True, null = True)
     image = models.FileField("Файл", blank=True, upload_to="offers")
+    image_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
     user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
     def __str__(self):
         return  self.offer
@@ -279,8 +280,6 @@ class User(models.Model):
             Q(userreferrers_set__referrer__username__icontains = keywords)|\
             Q(userreferrers_set__referrer__last_name__icontains = keywords)
         users = cls.objects.filter(q).distinct()
-
-
         return users
 
     def short_profile(self)->str:
@@ -288,6 +287,7 @@ class User(models.Model):
         res += f"<b>Логин телеграм:</b> @{mystr(self.username)}\n"
         res += f"<b>Имя:</b> {mystr(self.last_name)} {mystr(self.first_name)} {mystr(self.sur_name)}\n"
         res += f"<b>Статус:</b> {mystr(self.status)}\n"
+        res += f"<b>Рейтинг:</b> {mystr(self.rating)}\n"
         res += f"<b>Отрасль:</b> {mystr(self.branch)}\n"
         res += f"<b>Компания:</b> {mystr(self.company)}\n"
         res += f"<b>Сегмент:</b> {mystr(self.segment)}\n" 
@@ -298,7 +298,7 @@ class User(models.Model):
         res += f"<b>Регион работы:</b> {mystr(self.job_region)}\n" 
         res += f"<b>Теги:</b> {mystr(self.tags)}\n"
         res += f"<b>Потребности:</b> {mystr(self.needs)}\n"
-        offers = get_model_text(Offers,["NN","offer"], self)
+        offers = get_model_text(Offers,["NN","offer","image"], self)
         res += f"<b>Предложения:</b> \n{offers}"
         referers = get_model_text(UserReferrers,["NN","referrer"], self)
         res += f"<b>Рекомендатели:</b>\n{referers}"
@@ -312,6 +312,7 @@ class User(models.Model):
         res += "\n  <b>Телефон:</b> " + mystr(self.telefon)
         res += "\n  <b>Дата рождения:</b> " + self.date_of_birth.strftime("%d.%m.%Y")
         res += "\n  <b>Статус:</b> " + mystr(self.status)
+        res += "\n  <b>Рейтинг:</b> " + mystr(self.rating)
         res += "\n  <b>Группы:</b>\n    " + get_model_text(UsertgGroups,["group"], self).replace("\n", "\n    ")
         res += "\n<b>Бизнес информация:</b> "
         res += "\n  <b>Компания:</b> " + mystr(self.company)
@@ -328,7 +329,7 @@ class User(models.Model):
         res += "\n  <b>Хобби:</b> " + mystr(self.hobby)
         res += "\n  <b>Соцсети:</b>\n    " + get_model_text(SocialNets,["soc_net_site","link"], self).replace("\n", "\n    ")
         res = res[:-2] + "<b>Тэги:</b> " + mystr(self.tags)
-        res += "\n<b>Предложения:</b>\n" + get_model_text(Offers,["NN","offer"], self)
+        res += "\n<b>Предложения:</b>\n" + get_model_text(Offers,["NN","offer","image"], self)
         res += "<b>Потребности:</b>\n" + mystr(self.needs)
         res += "\n<b>Рекомендатели:</b>\n" + get_model_text(UserReferrers,["NN","referrer"], self)  
         return res
@@ -439,7 +440,12 @@ def get_model_text(model, fields: list, parent = None, filter = None ):
             if field == "NN":
                 txt_str_lst.append(str(str_num)) 
             else:
-                txt_str_lst.append(str(getattr(elem, field)))
+                field_val = getattr(elem, field)
+                if isinstance(field_val,models.fields.files.FieldFile): 
+                    if field_val:
+                        txt_str_lst.append(settings.MEDIA_DOMAIN + field_val.url)
+                else:
+                    txt_str_lst.append(str(field_val))
         txt_str = ", ".join(txt_str_lst)+"\n"
         res += txt_str
 

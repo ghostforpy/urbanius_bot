@@ -19,7 +19,7 @@ from tgbot.handlers.registration.handlers import setup_dispatcher_conv as setup_
 from tgbot.handlers.main.handlers import setup_dispatcher_conv as setup_dispatcher_main
 from tgbot.handlers.profile.handlers import setup_dispatcher_conv as setup_dispatcher_prof
 from payments.handlers import setup_dispatcher_conv as setup_dispatcher_pay
-from tgbot.handlers.find_members.handlers import setup_dispatcher_conv as setup_dispatcher_find
+from tgbot.handlers.manage_members.handlers import setup_dispatcher_conv as setup_dispatcher_manage_memb
 from tgbot.handlers.messages.handlers import setup_dispatcher_conv as setup_dispatcher_mess
 from events.handlers import setup_dispatcher_conv as setup_dispatcher_events
 from tgbot.handlers.groups.handlers import setup_dispatcher_conv as setup_dispatcher_groups
@@ -41,7 +41,7 @@ def setup_dispatcher(dp: Dispatcher):
     setup_dispatcher_main(dp) #заполнение обработчиков главного диалога
     setup_dispatcher_prof(dp) #заполнение обработчиков работы с профайлом
     setup_dispatcher_pay(dp) #заполнение обработчиков работы с платежами
-    setup_dispatcher_find(dp) #заполнение обработчиков работы с поиском
+    setup_dispatcher_manage_memb(dp) #заполнение обработчиков работы с поиском
     setup_dispatcher_mess(dp) #заполнение обработчиков работы с поиском
     setup_dispatcher_events(dp) #заполнение обработчиков работы с мероприятиями
     setup_dispatcher_groups(dp) #заполнение обработчиков работы с группами пользователей

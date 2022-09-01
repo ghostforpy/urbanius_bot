@@ -1,5 +1,4 @@
 
-import os
 import pytz
 import datetime
 from telegram.ext import JobQueue, CallbackContext
@@ -9,9 +8,10 @@ from .models import *
 from tgbot.models import User, NewUser
 from events.models import EventRequests, AnonsesDates
 from advert.models import SpecialOffersDates
-from tgbot.handlers.utils import send_message, send_photo, send_document, fill_file_id, get_no_foto_id,send_mess_by_tmplt
+from tgbot.handlers.utils import fill_file_id, get_no_foto_id,send_mess_by_tmplt
 from tgbot.utils import get_uniq_file_name
 from tgbot.handlers.keyboard import make_keyboard
+from tgbot.handlers.manage_members.answers import make_manage_usr_btn
 from dtb import settings
 from dtb.constants import TaskCode, MessageTemplatesCode
 
@@ -284,6 +284,14 @@ def send_random_coffe(context: CallbackContext):
         new_mess = MessagesToSend()
         new_mess.receiver = user 
         new_mess.text = recomended_user.short_profile()
+        manage_usr_btn = make_manage_usr_btn(recomended_user.user_id)
+        keyboard = {}
+        keyboard["buttons"] = manage_usr_btn  
+        keyboard["type"] = "inline" 
+        keyboard["btn_in_row"] = 1
+        keyboard["first_btn"] = None
+        keyboard["last_btn"] = None 
+        new_mess.reply_markup = keyboard
         if not(recomended_user.main_photo):
             new_mess.file = 'no_foto.jpg'
             new_mess.file_id = get_no_foto_id()
