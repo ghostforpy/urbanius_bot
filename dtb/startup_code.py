@@ -238,7 +238,7 @@ try:
         template = MessageTemplates()
         template.code = MessageTemplatesCode.RANDOM_COFFEE
         template.name = "Шаблон для сообщений Random coffee"
-        template.text = "В рамках Random coffee высыылаем вам контакт участника"
+        template.text = "В рамках Random coffee высылаем вам контакт участника"
         template.save()
 
     template = MessageTemplates.objects.filter(code = MessageTemplatesCode.SEND_CONFIRM_EVENT).first()
@@ -256,10 +256,10 @@ try:
         template = MessageTemplates()
         template.code = MessageTemplatesCode.WELCOME_NEWUSER_MESSAGE
         template.name = "Шаблон для приветственного сообщения новому пользователю"
-        template.text = "Поздравляем! Вы успешно зарегистрировались в системе URBANIUS. " \
-                        "Информация передана администраторам." \
-                        "Для использования полного набора функций Вам необходимо дождаться подтвержденя регистрации. " \
-                        "О подтверждении регистрации мы вам сообщим. А пока можете в профиле пользователя исправить введенные и заполнить дополнительные данные"
+        template.text = "Поздравляем! Вы успешно зарегистрировались в системе URBANIUS CLUB. " \
+                        "Информация передана администраторам. " \
+                        "Для использования полного набора функций Вам необходимо дождаться подтверждения регистрации. " \
+                        "О подтверждении регистрации мы вам сообщим. А пока можете в профиле пользователя исправить введенные и заполнить дополнительные данные."
         template.save()
 
 

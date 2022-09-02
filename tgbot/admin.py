@@ -104,7 +104,7 @@ class UserAdmin(admin.ModelAdmin):
             self.message_user(request, "Broadcasting of %d messages has been started" % len(queryset))
 
             return HttpResponseRedirect(request.get_full_path())
-        text = "Ваша регистрация подтверждена. Наберите /start для обновления меню"
+        text = "Ваша регистрация подтверждена. Наберите /start для обновления меню."
         form = BroadcastForm(initial={"broadcast_text":text,'_selected_action': queryset.values_list('user_id', flat=True)})
         return render(
             request, "admin/confirm_registration.html", {'items': queryset,'form': form, 'title':u' '}

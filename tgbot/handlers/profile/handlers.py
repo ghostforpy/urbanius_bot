@@ -136,7 +136,7 @@ def manage_email_action(update: Update, context: CallbackContext):
     email = is_email(update.message.text)
     text = ""
     if update.message.text == SKIP["skip"]:        
-        text = "e-mail не изменен"
+        text = "E-mail не изменен"
     elif not(email): # ввели неверную email
         update.message.reply_text(BAD_EMAIL, make_keyboard(SKIP,"usual",1))
         return 
@@ -144,7 +144,7 @@ def manage_email_action(update: Update, context: CallbackContext):
         user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
         user.email = email
         user.save()
-        text = "e-mail изменен"
+        text = "E-mail изменен"
         
     update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
     return "working_personal_info"
@@ -188,7 +188,7 @@ def manage_date_of_birth_action(update: Update, context: CallbackContext):
         user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
         user.date_of_birth = date
         user.save()
-        text = "День рождения изменен"    
+        text = BIRHDAY_CHANGED    
     update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
     return "working_personal_info"
 
