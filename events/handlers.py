@@ -354,7 +354,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог
     conv_handler = ConversationHandlerMy( 
         # точка входа в разговор      
-        entry_points=[CallbackQueryHandler(start_conversation, pattern="^events$"),
+        entry_points=[CallbackQueryHandler(start_conversation, pattern="^events_mnu$"),
                       CallbackQueryHandler(set_rating_to_event, pattern="^remindrateevent_"),
                       ],      
         # этапы разговора, каждый со своим списком обработчиков сообщений

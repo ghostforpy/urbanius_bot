@@ -15,7 +15,7 @@ TO_ADMINS = {"to_admins":"Сообщение администраторам"}
 
 START_MENU_FULL = {
         "random_coffee":"Random Coffee",
-        "events":"Мероприятия",
+        "events_mnu":"Мероприятия",
         "find_members":"Найти участников",
         "profile":"Профиль пользователя",
         "messages":"Сообщения",
