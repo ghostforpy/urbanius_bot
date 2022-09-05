@@ -84,7 +84,7 @@ def show_event_calendar(update: Update, context: CallbackContext):
     btn_events = {}
     for event in evens_set:
         
-        btn_events[event.pk] = str(event)
+        btn_events[f"show_event-{event.pk}"] = str(event)
     if query.message.text:
         query.edit_message_text(text="Ближайшие мероприятия", reply_markup=make_keyboard(btn_events,"inline",1,None,BACK_EV_MNU))
     else:
@@ -100,7 +100,8 @@ def show_event(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
-    event = Events.objects.get(pk = int(query.data))
+    query_data = query.data.split("-")
+    event = Events.objects.get(pk = int(query_data[1]))
     text = event.get_description()
     text += event.get_user_info(user)
     request = event.get_user_request(user)
@@ -156,6 +157,12 @@ def create_request_to_event(update: Update, context: CallbackContext):
         if request.price == 0:
             request.payed = True
         request.save()
+        group = tgGroups.get_group_by_name("Администраторы")
+        if (group == None) or (group.chat_id == 0):
+            pass
+        else:
+            text = f"Зарегистрирован заявка на участие в мероприятии {event} от пользователя {user}"
+            send_message(group.chat_id, text)
     update_event_mess(query,event,user,request)
     return "manage_event"
 
@@ -226,11 +233,11 @@ def show_reqw_event(update: Update, context: CallbackContext):
     text = event.get_description()
     text += event.get_user_info(user)
     set_rating_btn = {
-                      "rateevent_1_" + str(event.pk):"1",
-                      "rateevent_2_" + str(event.pk):"2",
-                      "rateevent_3_" + str(event.pk):"3",
-                      "rateevent_4_" + str(event.pk):"4",
-                      "rateevent_5_" + str(event.pk):"5",
+                      "rateevent-1-" + str(event.pk):"1",
+                      "rateevent-2-" + str(event.pk):"2",
+                      "rateevent-3-" + str(event.pk):"3",
+                      "rateevent-4-" + str(event.pk):"4",
+                      "rateevent-5-" + str(event.pk):"5",
                       }   
     reply_markup = make_keyboard(set_rating_btn,"inline",5,None,BACK_EV_CLNDR)
 
@@ -260,7 +267,7 @@ def set_rating_to_event(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
-    query_data = query.data.split("_")
+    query_data = query.data.split("-")
     rating = query_data[1]
     event = Events.objects.get(pk = int(query_data[2]))
     request = event.get_user_request(user)
@@ -344,6 +351,13 @@ def successful_payment_callback(update: Update, context: CallbackContext) -> Non
     payment_request = context.user_data["payment_request"]
     query = update.message.successful_payment
     finish_payment(query,user,payment_request)
+    group = tgGroups.get_group_by_name("Администраторы")
+    if (group == None) or (group.chat_id == 0):
+        pass
+    else:
+        text = f"Оплачена заявка на участие в мероприятии {payment_request.event} от пользователя {user}"
+        send_message(group.chat_id, text)
+
     send_event_desc(payment_request.event, user)   
     return "manage_event"
       
@@ -355,7 +369,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
     conv_handler = ConversationHandlerMy( 
         # точка входа в разговор      
         entry_points=[CallbackQueryHandler(start_conversation, pattern="^events_mnu$"),
-                      CallbackQueryHandler(set_rating_to_event, pattern="^remindrateevent_"),
+                      CallbackQueryHandler(set_rating_to_event, pattern="^remindrateevent-"),
                       ],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
             states={
@@ -365,7 +379,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
                         MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
                         ],
         "select_event":[CallbackQueryHandler(start_conversation, pattern="^back_ev$"),
-                        CallbackQueryHandler(show_event),
+                        CallbackQueryHandler(show_event, pattern="^show_event-"),
                         MessageHandler(Filters.text & FilterPrivateNoCommand, bad_input),# Не делать асинхронным
                         ],
         "manage_event":[CallbackQueryHandler(show_event_calendar, pattern="^back_clndr$"),
@@ -398,6 +412,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
     )
 
     dp.add_handler(conv_handler)
+
 
 
 

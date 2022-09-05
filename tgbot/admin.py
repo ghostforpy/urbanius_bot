@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.forms import TextInput, Textarea, NumberInput
+from dtb.constants import StatusCode
 
 from dtb.settings import DEBUG
 
@@ -93,6 +94,7 @@ class UserAdmin(admin.ModelAdmin):
             # снимаем блокировку
             for u in queryset:
                 u.is_blocked_bot = False
+                u.status =  Status.objects.get(code = StatusCode.GROUP_MEMBER)
                 u.comment = "Регистрация подтверждена"
                 u.save()
                 for user in queryset:

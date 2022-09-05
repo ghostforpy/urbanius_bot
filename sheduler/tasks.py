@@ -143,11 +143,11 @@ def send_rating_reminder(context: CallbackContext):
         new_mess.file = request.event.file
         new_mess.file_id = request.event.file_id
         set_rating_btn = {
-                        "remindrateevent_1_" + str(request.event.pk):"1",
-                        "remindrateevent_2_" + str(request.event.pk):"2",
-                        "remindrateevent_3_" + str(request.event.pk):"3",
-                        "remindrateevent_4_" + str(request.event.pk):"4",
-                        "remindrateevent_5_" + str(request.event.pk):"5",
+                        "remindrateevent-1-" + str(request.event.pk):"1",
+                        "remindrateevent-2-" + str(request.event.pk):"2",
+                        "remindrateevent-3-" + str(request.event.pk):"3",
+                        "remindrateevent-4-" + str(request.event.pk):"4",
+                        "remindrateevent-5-" + str(request.event.pk):"5",
                         } 
         keyboard = {}
         keyboard["buttons"] = set_rating_btn  

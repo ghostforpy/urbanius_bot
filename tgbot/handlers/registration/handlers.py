@@ -2,10 +2,12 @@ from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext import (
     Dispatcher, CommandHandler,
-    MessageHandler,
+    MessageHandler, CallbackQueryHandler,
     Filters,
-    ConversationHandler,
+   # ConversationHandler,
 )
+from tgbot.my_telegram import ConversationHandler
+
 from dtb.constants import MessageTemplatesCode
 from dtb.constants import StatusCode
 from .messages import *
@@ -16,6 +18,8 @@ from sheduler.models import MessageTemplates
 
 from tgbot.handlers.utils import send_message, send_mess_by_tmplt
 from tgbot.handlers.keyboard import make_keyboard
+from tgbot.handlers.main.answers import get_start_menu
+from tgbot.handlers.main.messages import get_start_mess
 from tgbot import utils
 from tgbot.handlers.filters import FilterPrivateNoCommand
 from tgbot.handlers.utils import send_message
@@ -56,7 +60,7 @@ def processing_phone(update: Update, context: CallbackContext):
         # Если пользователь новый проверяем есть ли у него в Телеграмм имя пользователя
         if new_user.username == None:
              update.message.reply_text(USERNAME_NEEDED)
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",1)
+        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
         update.message.reply_text(ASK_FIO.format(fullname), reply_markup=keyboard)
         return FIO
     elif update.message.text == CANCEL["cancel"]: # Отказались отправить телефон
@@ -75,7 +79,7 @@ def processing_fio(update: Update, context: CallbackContext):
         stop_conversation(update, context)
         return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",1)
+        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
         update.message.reply_text(ASK_ABOUT + f"\n Уже введено: '{utils.mystr(utils.mystr(new_user.about))}'", reply_markup=keyboard)
         return ABOUT
     else:
@@ -101,7 +105,7 @@ def processing_about(update: Update, context: CallbackContext):
         stop_conversation(update, context)
         return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",1)
+        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
         update.message.reply_text(ASK_BIRHDAY + f"\n Уже введено: '{utils.mystr(new_user.date_of_birth)}'", reply_markup=keyboard)
         return BIRHDAY    
     else:
@@ -246,7 +250,9 @@ def processing_site(update: Update, context: CallbackContext):
     # Назначение пользователю групп по умолчанию
     groups_set = tgGroups.objects.filter(for_all_users = True)
     for group in groups_set:
-        user_group = UsertgGroups(group,user)
+        user_group = UsertgGroups()
+        user_group.group = group
+        user_group.user = user
         user_group.save()
         
     reply_markup = make_keyboard(START,"usual",1)
@@ -258,12 +264,74 @@ def processing_site(update: Update, context: CallbackContext):
     if (group == None) or (group.chat_id == 0):
         update.message.reply_text(NO_ADMIN_GROUP)
     else:
-        text = " ".join(["Зарегистрирован новый пользователь", "@"+utils.mystr(user.username),
-                        user.first_name, utils.mystr(user.last_name)])
-        send_message(group.chat_id, text)
+        bn = {f"manage_new_user-{user.user_id}":"Посмотреть пользователя"}
+        reply_markup =  make_keyboard(bn,"inline",1)
+        text =f"Зарегистрирован новый пользователь @{utils.mystr(user.username)} {user.first_name} {utils.mystr(user.last_name)}"
+        send_message(group.chat_id, text, reply_markup =  reply_markup)
     context.user_data.clear()   
     return ConversationHandler.END
 
+
+#-----------------------------------------------------------------------------
+#----------------Manage new user----------------------------------------------
+
+def stop_conversation_new_user(update: Update, context: CallbackContext):
+    """ 
+       Возврат к главному меню    
+    """
+    # Заканчиваем разговор.
+    if update.message:
+        user_id = update.message.from_user.id
+    else:
+        query = update.callback_query
+        query.answer()
+        user_id = query.from_user.id
+        query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+
+    user = User.get_user_by_username_or_user_id(user_id)
+    send_message(user_id=user_id, text=FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
+    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
+    return ConversationHandler.END
+
+def manage_new_user(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    if (not user) or (not user.is_admin):
+        text ="Нет прав администратора"
+        send_message(update.callback_query.message.chat_id, text)
+        return
+    query_data = query.data.split("-")
+    new_user_id = int(query_data[1])
+    new_user = User.get_user_by_username_or_user_id(new_user_id)
+    profile_text = new_user.full_profile()
+    manage_usr_btn = {f"confirm_reg-{new_user_id}":"Подтвердить регистрацию",
+                      f"uncofirm_reg-{new_user_id}":"Отклонить регистрацию"
+                     }
+    reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
+    send_message(user_id = user_id, text=profile_text, reply_markup=reply_markup)
+
+    return "wait_new_user_comand"
+
+def confirm_registration(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    query_data = query.data.split("-")
+    new_user_id = int(query_data[1])
+    new_user = User.get_user_by_username_or_user_id(new_user_id)
+    new_user.is_blocked_bot = False
+    new_user.status =  Status.objects.get(code = StatusCode.GROUP_MEMBER)
+    new_user.comment = "Регистрация подтверждена"
+    new_user.save()
+    text = "Ваша регистрация подтверждена. Наберите /start для обновления меню."
+    send_message(new_user_id, text)
+    query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+    send_message(user_id=user_id, text=FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
+    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
+    return ConversationHandler.END
 
 def setup_dispatcher_conv(dp: Dispatcher):
     conv_handler_reg = ConversationHandler( # здесь строится логика разговора
@@ -287,4 +355,19 @@ def setup_dispatcher_conv(dp: Dispatcher):
                    CommandHandler('start', stop_conversation, Filters.chat_type.private, run_async=True)]
     )
     dp.add_handler(conv_handler_reg)
-    
+
+    conv_handler_confirm_reg = ConversationHandler( 
+        # точка входа в разговор
+        entry_points=[CallbackQueryHandler(manage_new_user, pattern="^manage_new_user-")],
+        states={
+            "wait_new_user_comand":[                                  
+                       CallbackQueryHandler(stop_conversation_new_user, pattern="^back$"),
+                       CallbackQueryHandler(confirm_registration, pattern="^confirm_reg-"),
+                       CallbackQueryHandler(stop_conversation_new_user, pattern="^uncofirm_reg-"),
+                      ],
+        },
+        # точка выхода из разговора
+        fallbacks=[CommandHandler('cancel', stop_conversation_new_user, Filters.chat_type.private, run_async=True),
+                   CommandHandler('start', stop_conversation_new_user, Filters.chat_type.private, run_async=True)]
+    )
+    dp.add_handler(conv_handler_confirm_reg)

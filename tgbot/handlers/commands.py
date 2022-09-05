@@ -69,7 +69,6 @@ def command_restart_tasks(update: Update, context: CallbackContext):
     else:
         update.message.reply_text("Недостаточно прав")
 
-
     return ConversationHandler.END
 
 

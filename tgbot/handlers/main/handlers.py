@@ -77,6 +77,13 @@ def start_conversation_affiliate(update: Update, context: CallbackContext):
     text = AFFILATE_MESS
     text += f"{context.bot.link}/?start={user_id}"
     send_message(user_id=user.user_id, text=text)
+# ///////del del
+    group = tgGroups.get_group_by_name("Администраторы")
+    bn = {f"manage_new_user-{user.user_id}":"Посмотреть пользователя"}
+    reply_markup =  make_keyboard(bn,"inline",1)
+    text =f"Зарегистрирован новый пользователь @{user.username} {user.first_name} {user.last_name}"
+    send_message(group.chat_id, text, reply_markup =  reply_markup)
+# ///////del del
     ConversationHandler.END
 
 def setup_dispatcher_conv(dp: Dispatcher):
