@@ -56,7 +56,6 @@ def bad_input(update: Update, context: CallbackContext):
     update.message.reply_text(ASK_REENTER)
 
 
-
 def start_conversation(update: Update, context: CallbackContext):
     """
     Начало разговора
@@ -64,7 +63,6 @@ def start_conversation(update: Update, context: CallbackContext):
     query = update.callback_query
     query.answer()
     query.edit_message_text(text=HELLO_MESS, reply_markup=make_keyboard(EVENTS_MENU,"inline",1,None,BACK))
-
     return "working"
 
 def show_event_calendar(update: Update, context: CallbackContext):
@@ -75,7 +73,7 @@ def show_event_calendar(update: Update, context: CallbackContext):
     status_club_resident = Status.objects.get(code = StatusCode.CLUB_RESIDENT)
     event_type_club = EventTypes.objects.get(code = EventTypeCode.CLUB)
     
-    evens_set = Events.objects.filter(date__gte = datetime.datetime.now(),
+    evens_set = Events.objects.filter(date__gte = datetime.date.today(),
                                     date__lte = datetime.datetime.now() + datetime.timedelta(days=30))
     if (user.status != status_club_resident):
         # если пользователь не резидент, исключаем клубные мероприятия
@@ -162,7 +160,11 @@ def create_request_to_event(update: Update, context: CallbackContext):
             pass
         else:
             text = f"Зарегистрирован заявка на участие в мероприятии {event} от пользователя {user}"
-            send_message(group.chat_id, text)
+            reply_markup = make_keyboard(EMPTY,"inline",1)
+            if request.payed:
+                bn = {f"manage_event_reqw-{request.number}":"Показать заявку"}
+                reply_markup = make_keyboard(bn,"inline",1)
+            send_message(group.chat_id, text, reply_markup = reply_markup)
     update_event_mess(query,event,user,request)
     return "manage_event"
 
@@ -356,12 +358,53 @@ def successful_payment_callback(update: Update, context: CallbackContext) -> Non
         pass
     else:
         text = f"Оплачена заявка на участие в мероприятии {payment_request.event} от пользователя {user}"
-        send_message(group.chat_id, text)
-
+        bn = {f"manage_event_reqw-{payment_request.mumber}":"Показать заявку"}
+        reply_markup = make_keyboard(bn,"inline",1)
+        send_message(group.chat_id, text, reply_markup = reply_markup)
+        
     send_event_desc(payment_request.event, user)   
     return "manage_event"
-      
 
+
+#---------------------------------------------------------------      
+#---------------------Подтверждение заявок----------------------
+
+def manage_event_reqw(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    if (not user) or (not user.is_admin):
+        text ="Нет прав администратора"
+        send_message(update.callback_query.message.chat_id, text)
+        return
+    query_data = query.data.split("-")
+    new_reqw_id = int(query_data[1])
+    new_reqw = EventRequests.objects.get(number = new_reqw_id)
+
+    profile_text = new_reqw.description()
+    manage_reqw_btn = {f"confirm_reqw-{new_reqw_id}":"Подтвердить заявкку"
+                     }
+    reply_markup=make_keyboard(manage_reqw_btn,"inline",1,None,BACK)
+    send_message(user_id = user_id, text=profile_text, reply_markup=reply_markup)
+
+    return "wait_event_reqw_comand"
+
+def confirm_event_reqwest(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    query_data = query.data.split("-")
+    new_reqw_id = int(query_data[1])
+    new_reqw = EventRequests.objects.get(number = new_reqw_id)
+    new_reqw.confirmed = True
+    new_reqw.save()
+
+    query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+    send_message(user_id=user_id, text="Заявка подтверждена", reply_markup=make_keyboard(EMPTY,"usual",1))
+    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
+    return ConversationHandler.END    
 
 def setup_dispatcher_conv(dp: Dispatcher):
 
@@ -412,6 +455,21 @@ def setup_dispatcher_conv(dp: Dispatcher):
     )
 
     dp.add_handler(conv_handler)
+
+    conv_handler_confirm_reqw = ConversationHandlerMy( 
+        # точка входа в разговор
+        entry_points=[CallbackQueryHandler(manage_event_reqw, pattern="^manage_event_reqw-")],
+        states={
+            "wait_event_reqw_comand":[                                  
+                       CallbackQueryHandler(stop_conversation, pattern="^back$"),
+                       CallbackQueryHandler(confirm_event_reqwest, pattern="^confirm_reqw-"),
+                      ],
+        },
+        # точка выхода из разговора
+        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private, run_async=True),
+                   CommandHandler('start', stop_conversation, Filters.chat_type.private, run_async=True)]
+    )
+    dp.add_handler(conv_handler_confirm_reqw)
 
 
 

@@ -121,6 +121,17 @@ class EventRequests(models.Model):
         qr_txt = text.replace("<b>", "").replace("</b>", "")
         img = qrcode.make(qr_txt)
         return img, text
+
+    def description(self) -> str:
+        text = "Заявка "
+        date = self.created_at.strftime("%d.%m.%Y")
+        text += f"<b>№{self.number}</b> от <b>{date}</b>\n"
+        text += f"<b>На событие:</b> {self.event}\n"
+        text += f"<b>От:</b> {self.user}\n"
+        text += f"<b>Цена:</b> {self.price}\n"
+        text += "<b>Оплачена</b>\n" if self.payed else "<b>Не оплачена</b>\n"
+        text += "<b>Подтверждена</b>\n" if self.confirmed else "<b>Не подтверждена</b>\n"
+        return text
     
     class Meta:
         verbose_name_plural = 'Заявки на мероприятия' 
