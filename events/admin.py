@@ -89,5 +89,5 @@ class AnonsesAdmin(admin.ModelAdmin):
     list_display = ("event","show_groups") 
     list_display_links = ("event","show_groups") 
     search_fields = ("event",)
-    filter_horizontal = ('sending_groups',)
+    #filter_horizontal = ('sending_groups',)
     inlines = [AnonsesDatesInline]
