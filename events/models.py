@@ -141,7 +141,7 @@ class EventRequests(models.Model):
 class Anonses(models.Model):
     event = models.ForeignKey('Events', on_delete=models.PROTECT, verbose_name="Мероприятие",null=False, blank=False)
     text = models.TextField("Текст анонса", null=True, blank=True)
-    sending_groups = models.ManyToManyField(tgGroups, verbose_name="Группы для рассылки")
+    sending_groups = models.ManyToManyField(tgGroups, verbose_name="Группы для рассылки", blank=True, null = True)
     file = models.FileField("Фото/Видео", blank=True, null=True, upload_to="events")
     file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
     def __str__(self):

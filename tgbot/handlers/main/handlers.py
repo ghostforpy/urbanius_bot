@@ -75,7 +75,8 @@ def start_conversation_affiliate(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(user_id)
     query.answer()
     text = AFFILATE_MESS
-    text += f"{context.bot.link}/?start={user_id}"
+    send_message(user_id=user.user_id, text=text)
+    text = f"{context.bot.link}/?start={user_id}"
     send_message(user_id=user.user_id, text=text)
 
     ConversationHandler.END
