@@ -354,4 +354,13 @@ def send_sheduled_message(context: CallbackContext):
             mess.sended_at = datetime.datetime.now(tz=pytz.timezone('Europe/Moscow'))
         mess.sended = True
         mess.save()
+    """
+    Заодно перестартуем задачи если необходимо
+    """
+    restart_tasks = Config.objects.filter(param_name = "restart_tasks").first()
+    if restart_tasks.param_val == "True":
+        restarts_tasks(context.job_queue)
+        restart_tasks.param_val = "False"
+        restart_tasks.save()
+
     return len(mess_set)

@@ -1,5 +1,5 @@
 from django.db import models
-from tgbot.models import User
+from tgbot.models import User, Config
 
 class Tasks(models.Model):
     code = models.CharField("Код задания", unique=True, max_length=150, blank=False)
@@ -21,6 +21,16 @@ class Tasks(models.Model):
     is_active = models.BooleanField("Активно", default=False)
     def __str__(self):
         return self.name
+    def save(self, *args, **kwargs):
+        #Ставим метку перестартовать задачи при изменении параметров задачи
+        restart_tasks = Config.objects.filter(param_name = "restart_tasks").first()
+        if not restart_tasks:
+            restart_tasks = Config()
+            restart_tasks.param_name = "restart_tasks"
+        restart_tasks.param_val = "True"
+        restart_tasks.save()
+        super(Tasks, self).save(*args, **kwargs)
+
     def getdays(self):
         res = []
         if self.mon: res.append(0)
