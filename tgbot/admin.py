@@ -113,15 +113,13 @@ class UserAdmin(admin.ModelAdmin):
         )
 
 
-# @admin.register(NewUser)
-# class NewUserAdmin(admin.ModelAdmin) :
-#     pass
+@admin.register(NewUser)
+class NewUserAdmin(admin.ModelAdmin) :
+    list_display = ('user_id', 'username', 'first_name', 'last_name','registered' ) 
+    list_display_links = ('user_id', 'username', 'first_name', 'last_name',) 
+    search_fields = ('user_id', 'username', 'first_name', 'last_name',)
+    list_filter = ["registered", ] 
 
-@admin.register(SocialNetSites)
-class SocialNetSitesAdmin(admin.ModelAdmin) :
-    list_display = ("name", "link") 
-    list_display_links = ("name", "link") 
-    search_fields = ("name", "link")
 
 @admin.register(Status)
 class StatusAdmin(admin.ModelAdmin):
