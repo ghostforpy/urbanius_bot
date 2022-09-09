@@ -1,18 +1,20 @@
+from io import BytesIO
 from django.conf import settings
 from django.core.mail import send_mail
 import datetime
-from telegram import ParseMode,  Update
+from telegram import Update
 from telegram.ext import (
     Dispatcher, MessageHandler, Filters,
     CallbackQueryHandler, CommandHandler,
     CallbackContext, ConversationHandler
 )
 from tgbot.handlers.filters import FilterPrivateNoCommand
-from tgbot.models import User, Status
+from tgbot.models import User
+from events.models import EventRequests
 from .models import *
 from .messages import *
 from .answers import *
-from tgbot.handlers.utils import send_message
+from tgbot.handlers.utils import send_message, send_photo
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
@@ -127,6 +129,56 @@ def show_so_reqwest(update: Update, context: CallbackContext):
     return "show_so_reqwest"
 
 
+def show_event_reqwests_list(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    ev_reqw_set = user.eventrequests_set.reverse()[:10]
+    btn_reqw = {}
+    for ev_reqw in ev_reqw_set:
+        btn_reqw[f"show_ev_reqwest-{ev_reqw.number}"] = str(ev_reqw)
+    if len(btn_reqw) > 0:
+        text = "Выберите вашу заявку для просмотра подробностей"
+    else:
+        text = "У Вас отсутствуют заявки"    
+    reply_markup = make_keyboard(btn_reqw,"inline",1,None,BACK)
+    query.edit_message_text(text=text, reply_markup = reply_markup)   
+    return "show_ev_reqwests_list"
+
+def show_ev_reqwest(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    query_data = query.data.split("-")
+    request = EventRequests.objects.get(number = int(query_data[-1]))
+    text = request.description()
+    btns = {f"show_qr-{request.number}":"Показать код подтверждения",
+             "reqw_lst":"Вернуться к списку заявок"} #
+    reply_markup = make_keyboard(btns,"inline",1,None,BACK)
+    query.edit_message_text(text = text, reply_markup = reply_markup)
+    return "show_ev_reqwest"
+
+
+def show_qr_code(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    query_data = query.data.split("-")
+    request = EventRequests.objects.get(number = int(query_data[-1]))
+    if request:
+        img, text = request.get_qr_code()
+        bio = BytesIO()
+        bio.name = 'image.jpeg'
+        img.save(bio, 'JPEG')
+        bio.seek(0)
+        query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+        reply_markup = make_keyboard(REQW_LST,"inline",1,None, BACK)
+        send_photo(user_id, photo = bio, caption = text, reply_markup = reply_markup)        
+    return "manage_qr"
+
 def setup_dispatcher_conv(dp: Dispatcher):
     dp.add_handler(CallbackQueryHandler(use_partner_spec_offer, pattern="^use_offer-"))
 
@@ -138,6 +190,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
             "working":[             
                        CallbackQueryHandler(stop_conversation, pattern="^back$"),
                        CallbackQueryHandler(show_so_reqwests_list, pattern="^so_reqwests$"),
+                       CallbackQueryHandler(show_event_reqwests_list, pattern="^event_reqwests$"),
                        MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
                       ],
             "show_so_reqwests_list":[
@@ -148,6 +201,22 @@ def setup_dispatcher_conv(dp: Dispatcher):
             "show_so_reqwest":[
                           CallbackQueryHandler(stop_conversation, pattern="^back$"),
                           CallbackQueryHandler(show_so_reqwests_list, pattern="^reqw_lst$"),
+                          MessageHandler(Filters.text([BACK["back"]]) & FilterPrivateNoCommand, stop_conversation),
+                         ],
+            "show_ev_reqwests_list":[
+                          CallbackQueryHandler(stop_conversation, pattern="^back$"),
+                          CallbackQueryHandler(show_ev_reqwest, pattern="^show_ev_reqwest-"),
+                          MessageHandler(Filters.text([BACK["back"]]) & FilterPrivateNoCommand, stop_conversation),
+                         ],
+            "show_ev_reqwest":[
+                          CallbackQueryHandler(stop_conversation, pattern="^back$"),
+                          CallbackQueryHandler(show_event_reqwests_list, pattern="^reqw_lst$"),
+                          CallbackQueryHandler(show_qr_code, pattern="^show_qr-"),
+                          MessageHandler(Filters.text([BACK["back"]]) & FilterPrivateNoCommand, stop_conversation),
+                         ],
+            "manage_qr":[
+                          CallbackQueryHandler(stop_conversation, pattern="^back$"),
+                          CallbackQueryHandler(show_event_reqwests_list, pattern="^reqw_lst$"),
                           MessageHandler(Filters.text([BACK["back"]]) & FilterPrivateNoCommand, stop_conversation),
                          ],
         },

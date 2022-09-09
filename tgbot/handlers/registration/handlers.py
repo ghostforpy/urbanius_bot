@@ -99,6 +99,79 @@ def processing_fio(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_ABOUT + f"\n Уже введено: '{utils.mystr(new_user.about)}'", reply_markup=keyboard)
         return ABOUT
 
+
+def processing_about_fin(update: Update, context: CallbackContext):
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+    if update.message.text == CANCEL["cancel"]:
+        stop_conversation(update, context)
+        return ConversationHandler.END
+    elif update.message.text == CANCEL_SKIP["skip"]:
+        about = ""   
+    else:
+        about = update.message.text 
+
+    new_user.about = about
+    new_user.registered = True
+    new_user.save()
+
+    user = User(user_id=new_user.user_id)
+    user.username = new_user.username
+    user.last_name = new_user.last_name
+    user.first_name = new_user.first_name
+    user.email = new_user.email
+    user.telefon = new_user.telefon
+    user.sur_name = new_user.sur_name
+    user.date_of_birth = new_user.date_of_birth
+    user.company = new_user.company
+    user.job = new_user.job
+    user.branch = new_user.branch
+    user.citi = new_user.citi
+    user.job_region = new_user.job_region
+    user.site = new_user.site
+    user.about = new_user.about
+    user.created_at = new_user.created_at
+    user.language_code = new_user.language_code
+    user.deep_link = new_user.deep_link
+    user.status = Status.objects.get(code = StatusCode.APPLICANT)
+    user.is_blocked_bot = True
+    user.comment = "Ожидает подтверждения регистрации"
+    user.save()
+    # Назначение пользователю рекомендателя, если он пришел по партнерской ссылке
+    referrer = User.get_user_by_username_or_user_id(user.deep_link)
+    if referrer:
+        user_referer = UserReferrers(referrer = referrer, user = user)
+        user_referer.save()
+    # Назначение пользователю групп по умолчанию
+    groups_set = tgGroups.objects.filter(for_all_users = True)
+    for group in groups_set:
+        user_group = UsertgGroups()
+        user_group.group = group
+        user_group.user = user
+        user_group.save()
+        
+    reply_markup = make_keyboard(START,"usual",1)
+    mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.WELCOME_NEWUSER_MESSAGE)
+
+    send_mess_by_tmplt(user.user_id, mess_template, reply_markup) 
+
+    group = tgGroups.get_group_by_name("Администраторы")
+    if (group == None) or (group.chat_id == 0):
+        update.message.reply_text(NO_ADMIN_GROUP)
+    else:
+        bn = {f"manage_new_user-{user.user_id}":"Посмотреть пользователя"}
+        reply_markup =  make_keyboard(bn,"inline",1)
+        text =f"Зарегистрирован новый пользователь @{utils.mystr(user.username)} {user.first_name} {utils.mystr(user.last_name)}"
+        send_message(group.chat_id, text, reply_markup =  reply_markup)
+    context.user_data.clear()   
+    return ConversationHandler.END
+
+
+
+#--------------------------------------------------
+#-------Дальше не идем. Пользователи тупые-------------
+
+
+
 def processing_about(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
     if update.message.text == CANCEL["cancel"]:
@@ -112,7 +185,7 @@ def processing_about(update: Update, context: CallbackContext):
         new_user.about = update.message.text 
         new_user.save()       
         keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        birthday = new_user.date_of_birth.strftime("%d.%m.%Y") if new_user.date_of_birth else ""
+        birthday = utils.mystr(new_user.date_of_birth)
         update.message.reply_text(ASK_BIRHDAY + f"\n Уже введено: '{birthday}'", reply_markup=keyboard)
         return BIRHDAY
 
@@ -342,7 +415,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
             APROVAL:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_aproval, run_async=True)],
             PHONE: [MessageHandler((Filters.contact | Filters.text) & FilterPrivateNoCommand, processing_phone, run_async=True)],
             FIO: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_fio, run_async=True)],
-            ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about, run_async=True)],
+            ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about_fin, run_async=True)],
             BIRHDAY: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_birhday, run_async=True)],
             EMAIL: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_email, run_async=True)],
             CITI: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_citi, run_async=True)],

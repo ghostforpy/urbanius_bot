@@ -23,7 +23,7 @@ START_MENU_FULL = {
         # "payment":"Оплатить", # тестирование возмржности платежа
         # "groups":"Группы",
         # "packages":"Пакеты участия",
-        "my_requests": "Спецпредложения партнеров",
+        "my_requests": "Мои заявки",
     }
 
 START_MENU_SHORT = {

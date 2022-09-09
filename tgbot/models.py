@@ -154,7 +154,7 @@ class User(models.Model):
     email = models.EmailField("E-mail", max_length=100, null=True, blank=True)
     telefon = models.CharField("Телефон", max_length=13, null=True, blank=True)
     sur_name = models.CharField("Отчество", max_length=150, null=True, blank=True)
-    date_of_birth = models.DateField("Дата рождения", null=True)    
+    date_of_birth = models.DateField("Дата рождения", null=True, blank=True)    
     main_photo = models.ImageField("Основное фото", upload_to='user_fotos', null=True, blank=True)
     main_photo_id = models.CharField("id основного фото", max_length=150, null=True, blank=True)
     status = models.ForeignKey(Status, on_delete=models.PROTECT, verbose_name="Статус",null=True, blank=True)
@@ -310,7 +310,7 @@ class User(models.Model):
         res += "\n<b>Личная информация:</b> "
         res += "\n  <b>e-mail:</b> " + mystr(self.email)
         res += "\n  <b>Телефон:</b> " + mystr(self.telefon)
-        res += "\n  <b>Дата рождения:</b> " + self.date_of_birth.strftime("%d.%m.%Y")
+        res += "\n  <b>Дата рождения:</b> " + mystr(self.date_of_birth)
         res += "\n  <b>Статус:</b> " + mystr(self.status)
         res += "\n  <b>Рейтинг:</b> " + mystr(self.rating)
         res += "\n  <b>Группы:</b>\n    " + get_model_text(UsertgGroups,["group"], self).replace("\n", "\n    ")
