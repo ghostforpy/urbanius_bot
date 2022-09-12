@@ -10,3 +10,6 @@ REQW_LST = {"reqw_lst":"Вернуться к списку заявок"} #
 REQW_MNU = {"so_reqwests": "Заявки на спецпредложения",
             "event_reqwests": "Заявки на мероприятия"
            }
+SPEC_OFF_MNU = {"spec_offers_list": "Список актуальных спец предложений",
+          "add_spec_offer": "Разместить спецпредложение"
+         }

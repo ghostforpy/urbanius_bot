@@ -15,16 +15,19 @@ class Partnes(models.Model):
         verbose_name_plural = 'Партнеры'
 
 class SpecialOffers(models.Model):
-    partner = models.ForeignKey(Partnes, on_delete=models.CASCADE, verbose_name="Партнер",null=False, blank=False)
+    partner = models.ForeignKey(Partnes, on_delete=models.CASCADE, verbose_name="Партнер", blank=True, null = True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь", blank=True, null = True)
     name = models.CharField("Название предложения",max_length=100, null=False, blank=False)
     text = models.TextField("Описание предложения", null=True, blank=True)
     valid_until = models.DateField("Действует до", blank=True, null=True)
-    sending_groups = models.ManyToManyField(tgGroups, verbose_name="Группы для рассылки")
+    confirmed = models.BooleanField("Подтвержден", default=False)
+    sending_groups = models.ManyToManyField(tgGroups, verbose_name="Группы для рассылки", blank=True)
     file = models.FileField("Фото/Видео", blank=True, null=True, upload_to="advert")
     file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
     
     def __str__(self):
-        return f"{self.name}"
+        kontrag = self.partner if self.partner else self.user
+        return f"От '{kontrag}': {self.name}"
     def show_groups(self)->str:
         res = ", ".join([group.name for group in self.sending_groups.all()])
         return res    

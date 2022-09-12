@@ -271,15 +271,18 @@ def wrong_file_id(file_id: str, tg_token=TELEGRAM_TOKEN):
     except:
         return True
 
-def  send_mess_by_tmplt(user_id, mess_template, reply_markup = None, add_text = None):
+def  send_mess_by_tmplt(user_id, mess_template, reply_markup = None, head_text = None, fut_text = None):
     """
     Отправка сообщения по шаблону. Шаблоном может быть любой объект с полями text, file, file_id
     файл и текст пересылаются пользователь/группе с номером user_id и прикрепляется клавиатура
     """
     success = False
     mess_text = str(mess_template.text)
-    if add_text:
-        mess_text += add_text
+    if fut_text:
+        mess_text += fut_text
+    if head_text:
+        mess_text = head_text + mess_text
+        
 
     if not mess_template.file:
         success = send_message(user_id = user_id, text = mess_text, disable_web_page_preview=True, reply_markup = reply_markup)

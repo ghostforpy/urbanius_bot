@@ -14,10 +14,11 @@ class SpecialOffersDiscountsInline(admin.TabularInline):
 
 @admin.register(SpecialOffers)
 class SpecialOffersAdmin(admin.ModelAdmin):
-    list_display = ("partner","name","valid_until","show_groups") 
-    list_display_links = ("partner","name","valid_until","show_groups") 
+    list_display = ("partner","user","name","valid_until","show_groups") 
+    list_display_links = ("partner","user","name","valid_until","show_groups") 
     search_fields = ("offer",)
     filter_horizontal = ('sending_groups',)
+    readonly_fields = ["file_id",]
     inlines = [SpecialOffersDatesInline, SpecialOffersDiscountsInline]
 
 @admin.register(SOUserRequests)

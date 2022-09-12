@@ -54,7 +54,7 @@ def show_group(update: Update, context: CallbackContext):
     query.edit_message_text(f"<b>{group.name}</b>", reply_markup = make_keyboard(EMPTY,"inline",1))
     reply_markup=make_keyboard(EMPTY,"inline",1,None,CANCEL)
     add_text = f"\nСсылка для присоединения к группе {group.link}"
-    send_mess_by_tmplt(user_id, group, reply_markup, add_text = add_text)
+    send_mess_by_tmplt(user_id, group, reply_markup, fut_text = add_text)
 
     return "manage_group"
 
