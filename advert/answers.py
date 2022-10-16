@@ -11,5 +11,5 @@ REQW_MNU = {"so_reqwests": "Заявки на спецпредложения",
             "event_reqwests": "Заявки на мероприятия"
            }
 SPEC_OFF_MNU = {"spec_offers_list": "Список актуальных спец предложений",
-          "add_spec_offer": "Разместить спецпредложение"
+          "my_spec_offers_list": "Мои спецпредложения"
          }

@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 import os
-import dj_database_url
 import dotenv
 
 from pathlib import Path
@@ -31,7 +30,7 @@ if os.path.isfile(dotenv_file):
 SECRET_KEY = 'django-insecure-t!l^9oe+%$kb_7##@!9w$(rg9%b%ecl)o%2hj9bvok8k!=-u(m'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = not not os.getenv("DJANGO_DEBUG", False)
+DEBUG = os.getenv("DJANGO_DEBUG", False) == "True"
 
 ALLOWED_HOSTS = ['*']
 

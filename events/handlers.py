@@ -159,7 +159,7 @@ def create_request_to_event(update: Update, context: CallbackContext):
         if (group == None) or (group.chat_id == 0):
             pass
         else:
-            text = f"Зарегистрирован заявка на участие в мероприятии {event} от пользователя {user}"
+            text = f"Зарегистрирована заявка на участие в мероприятии {event} от пользователя {user}"
             reply_markup = make_keyboard(EMPTY,"inline",1)
             if request.payed:
                 bn = {f"manage_event_reqw-{request.number}":"Показать заявку"}

@@ -160,6 +160,49 @@ def use_so(update: Update, context: CallbackContext):
 
 #---------------------------------------
 #-------------ADDING SO ----------------
+
+def show_my_so_list(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    so_set = SpecialOffers.objects.filter(valid_until__gte = datetime.date.today(), user = user)
+    btns = {}
+    for so in so_set:
+        btns[f"show_my_so-{so.pk}"] = str(so)
+    if len(btns) > 0:
+        text = "Выберите спецпредложение для просмотра подробностей"
+    else:
+        text = "Отсутствуют спецпредложения" 
+    btns["add_so_offer"] = "Добавить спец. предложение"   
+    reply_markup = make_keyboard(btns,"inline",1,None,BACK)
+    query.edit_message_text(text=text, reply_markup = reply_markup)   
+    return "my_spec_offers_list"
+
+def show_my_so(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    query_data = query.data.split("-")
+    so = SpecialOffers.objects.get(pk = int(query_data[-1]))
+    kontrag = so.partner if so.partner else so.user
+    head_text = f"<b>Спецпредложение :</b> {so.name} \n"
+    head_text += f"<b>От:</b> {kontrag}\n"
+    head_text += f"<b>Текст предложения:</b> "
+
+    valid_until = mystr(so.valid_until)
+    fut_text = f"\n<b>Действует до:</b> {valid_until}\n"
+    fut_text +=  "<b>Подтверждено</b>" if so.confirmed else "<b>Не подтверждено</b>"
+
+    bns = {}
+    bns["reqw_lst"] = "Вернуться к списку предложений"
+
+    reply_markup = make_keyboard(bns,"inline",1,None,BACK)
+    query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+    send_mess_by_tmplt(user_id, so, reply_markup ,head_text = head_text, fut_text = fut_text) 
+    return "show_my_so"
+
 def add_spec_offer(update: Update, context: CallbackContext):
     query = update.callback_query
     query.answer()
@@ -244,10 +287,11 @@ def setup_dispatcher_conv(dp: Dispatcher):
         entry_points=[CallbackQueryHandler(start_conversation, pattern="^spec_offers$")],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
+
             "working":[             
                        CallbackQueryHandler(stop_conversation, pattern="^back$"),
                        CallbackQueryHandler(show_so_list, pattern="^spec_offers_list$"),
-                       CallbackQueryHandler(add_spec_offer, pattern="^add_spec_offer$"),
+                       CallbackQueryHandler(show_my_so_list, pattern="^my_spec_offers_list$"),
                        MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
                       ],
             "show_so_list":[
@@ -260,7 +304,17 @@ def setup_dispatcher_conv(dp: Dispatcher):
                           CallbackQueryHandler(show_so_list, pattern="^reqw_lst$"),
                           CallbackQueryHandler(use_so, pattern="use_offer_from_list-"),
                           MessageHandler(Filters.text([BACK["back"]]) & FilterPrivateNoCommand, stop_conversation),
-                         ],    
+                         ], 
+            "my_spec_offers_list":[
+                        CallbackQueryHandler(stop_conversation, pattern="^back$"),
+                        CallbackQueryHandler(show_my_so, pattern="show_my_so-"),
+                        MessageHandler(Filters.text([BACK["back"]]) & FilterPrivateNoCommand, stop_conversation),   
+                        ],           
+            "show_my_so":[
+                          CallbackQueryHandler(stop_conversation, pattern="^back$"),
+                          CallbackQueryHandler(show_my_so_list, pattern="^reqw_lst$"),
+                          MessageHandler(Filters.text([BACK["back"]]) & FilterPrivateNoCommand, stop_conversation),
+                         ], 
             "ask_so_name":[
                           MessageHandler(Filters.text([CANCEL["cancel"]]) & FilterPrivateNoCommand, start_conversation),
                           MessageHandler(Filters.text([BACK["back"]]) & FilterPrivateNoCommand, stop_conversation),
