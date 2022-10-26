@@ -42,7 +42,7 @@ def start_conversation(update: Update, context: CallbackContext):
 
 def processing_aproval(update: Update, context: CallbackContext):
     if update.message.text == APPROVAL_ANSWERS["yes"]: # В этом поле хранится согласие       
-        update.message.reply_text(ASK_PHONE,  reply_markup=make_keyboard(CANCEL_SKIP,"usual",2,REQUEST_PHONE))
+        update.message.reply_text(ASK_PHONE,  reply_markup=make_keyboard(CANCEL,"usual",2,REQUEST_PHONE))
         return PHONE
     elif update.message.text == APPROVAL_ANSWERS["no"]: # В этом поле хранится отказ
         stop_conversation(update, context)
@@ -71,7 +71,7 @@ def processing_phone(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_FIO.format(fullname), reply_markup=keyboard)
         return FIO
     else:
-        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(CANCEL_SKIP,"usual",2,REQUEST_PHONE))
+        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(CANCEL,"usual",2,REQUEST_PHONE))
 
 def processing_fio(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
@@ -79,7 +79,7 @@ def processing_fio(update: Update, context: CallbackContext):
         stop_conversation(update, context)
         return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         update.message.reply_text(ASK_ABOUT + f"\n Уже введено: '{utils.mystr(utils.mystr(new_user.about))}'", reply_markup=keyboard)
         return ABOUT
     else:
@@ -95,7 +95,7 @@ def processing_fio(update: Update, context: CallbackContext):
             new_user.first_name = fio[1] # Имя
             new_user.sur_name = fio[2]   # Отчество
         new_user.save()
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         update.message.reply_text(ASK_ABOUT + f"\n Уже введено: '{utils.mystr(new_user.about)}'", reply_markup=keyboard)
         return ABOUT
 
@@ -178,13 +178,13 @@ def processing_about(update: Update, context: CallbackContext):
         stop_conversation(update, context)
         return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         update.message.reply_text(ASK_BIRHDAY + f"\n Уже введено: '{utils.mystr(new_user.date_of_birth)}'", reply_markup=keyboard)
         return BIRHDAY    
     else:
         new_user.about = update.message.text 
         new_user.save()       
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         birthday = utils.mystr(new_user.date_of_birth)
         update.message.reply_text(ASK_BIRHDAY + f"\n Уже введено: '{birthday}'", reply_markup=keyboard)
         return BIRHDAY
@@ -197,16 +197,16 @@ def processing_birhday(update: Update, context: CallbackContext):
        stop_conversation(update, context)
        return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         update.message.reply_text(ASK_EMAIL + f"\n Уже введено: '{utils.mystr(new_user.email)}'", reply_markup=keyboard)
         return EMAIL
     elif not(date): # ввели неверную дату
-        update.message.reply_text(BAD_DATE, make_keyboard(CANCEL_SKIP,"usual",2))
+        update.message.reply_text(BAD_DATE, make_keyboard(CANCEL,"usual",2))
         return    
     else: # ввели верный дату
         new_user.date_of_birth = date
         new_user.save()
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         update.message.reply_text(ASK_EMAIL + f"\n Уже введено: '{utils.mystr(new_user.email)}'", reply_markup=keyboard)
         return EMAIL
 
@@ -218,16 +218,16 @@ def processing_email(update: Update, context: CallbackContext):
        stop_conversation(update, context)
        return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         update.message.reply_text(ASK_CITI + f"\n Уже введено: '{utils.mystr(new_user.citi)}'", reply_markup=keyboard)
         return CITI
     elif not(email): # ввели неверную email
-        update.message.reply_text(BAD_EMAIL,make_keyboard(CANCEL_SKIP,"usual",2))
+        update.message.reply_text(BAD_EMAIL,make_keyboard(CANCEL,"usual",2))
         return    
     else: 
         new_user.email = email
         new_user.save()
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         update.message.reply_text(ASK_CITI + f"\n Уже введено: '{utils.mystr(new_user.citi)}'", reply_markup=keyboard)
         return CITI
 
@@ -237,13 +237,13 @@ def processing_citi(update: Update, context: CallbackContext):
        stop_conversation(update, context)
        return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
         return COMPANY   
     else: 
         new_user.citi = update.message.text
         new_user.save()
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
         return COMPANY
 
@@ -253,13 +253,13 @@ def processing_company(update: Update, context: CallbackContext):
        stop_conversation(update, context)
        return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         update.message.reply_text(ASK_JOB + f"\n Уже введено: '{utils.mystr(new_user.job)}'", reply_markup=keyboard)
         return JOB   
     else: 
         new_user.company = update.message.text
         new_user.save()
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         update.message.reply_text(ASK_JOB + f"\n Уже введено: '{utils.mystr(new_user.job)}'", reply_markup=keyboard)
         return JOB
 
@@ -269,13 +269,13 @@ def processing_job(update: Update, context: CallbackContext):
        stop_conversation(update, context)
        return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         update.message.reply_text(ASK_SITE + f"\n Уже введено: '{utils.mystr(new_user.site)}'", reply_markup=keyboard)
         return SITE   
     else: 
         new_user.job = update.message.text
         new_user.save()
-        keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+        keyboard = make_keyboard(CANCEL,"usual",2)
         update.message.reply_text(ASK_SITE + f"\n Уже введено: '{utils.mystr(new_user.site)}'", reply_markup=keyboard)
         return SITE
 
@@ -415,7 +415,8 @@ def setup_dispatcher_conv(dp: Dispatcher):
             APROVAL:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_aproval, run_async=True)],
             PHONE: [MessageHandler((Filters.contact | Filters.text) & FilterPrivateNoCommand, processing_phone, run_async=True)],
             FIO: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_fio, run_async=True)],
-            ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about_fin, run_async=True)],
+            # ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about_fin, run_async=True)],
+            ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about, run_async=True)],
             BIRHDAY: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_birhday, run_async=True)],
             EMAIL: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_email, run_async=True)],
             CITI: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_citi, run_async=True)],
