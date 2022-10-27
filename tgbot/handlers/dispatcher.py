@@ -27,13 +27,22 @@ from statistic.handlers import setup_dispatcher_group as setup_dispatcher_tg_gro
 from subscribe.handlers import setup_dispatcher_conv as setup_dispatcher_pkgs
 from advert.handlers import setup_dispatcher_conv as setup_dispatcher_advert
 from advert.handlers_reqw import setup_dispatcher_conv as setup_dispatcher_reqw
-
 from sheduler.tasks import restarts_tasks
+
+from telegram.update import Update
+from telegram.ext.callbackcontext import CallbackContext
+# Отладочный пререхватчик. Ловит все апдейты 
+# Когда основные хендлеры не ловят апдейт он ловится тут
+# и можно узнать причину
+def catch_all_updates(update: Update, context: CallbackContext):
+    print(update.update_id)
 
 def setup_dispatcher(dp: Dispatcher):
     """
     Adding handlers for events from Telegram
     """
+    dp.add_handler(MessageHandler(None,catch_all_updates), group = 2)
+    dp.add_handler(CallbackQueryHandler(catch_all_updates), group = 2)
 
     dp.add_handler(CommandHandler("start", commands.command_start, Filters.chat_type.private))
     dp.add_handler(CommandHandler("restart_tasks", commands.command_restart_tasks, Filters.chat_type.private))

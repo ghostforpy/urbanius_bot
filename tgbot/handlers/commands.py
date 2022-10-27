@@ -14,7 +14,7 @@ from tgbot.handlers.utils import handler_logging
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.registration.messages import REGISTRATION_START_MESSS
 from tgbot.handlers.registration.answers import REGISTRATION_START_BTN
-from tgbot.handlers.main.answers import get_start_menu
+from tgbot.handlers.main.answers import EMPTY, get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
 from sheduler.tasks import restarts_tasks
 
@@ -23,6 +23,7 @@ logger.info("Command handlers check!")
 
 @handler_logging()
 def command_start(update: Update, context: CallbackContext):
+    update.message.reply_text("Начало работы", reply_markup=make_keyboard(EMPTY,"usual",2))
     context.user_data.clear()
     userdata = extract_user_data_from_update(update)
     context.user_data.update(userdata)
@@ -56,7 +57,17 @@ def command_start(update: Update, context: CallbackContext):
         reply_markup=get_start_menu(user)
         update.message.reply_text(get_start_mess(user), reply_markup=reply_markup, 
                                   parse_mode=telegram.ParseMode.HTML)
+    
+    clear_conversation(context.dispatcher.handlers[0])
     return ConversationHandler.END
+
+def clear_conversation(handlers):
+    for handler in handlers:
+        h_type = type(handler)
+        if h_type == ConversationHandler:
+            handler.conversations = {}
+            g=1
+        #context._dispatcher.handlers[0][11].conversations
 
 @handler_logging()
 def command_restart_tasks(update: Update, context: CallbackContext):
