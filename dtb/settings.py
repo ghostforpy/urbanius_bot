@@ -187,7 +187,7 @@ LOGGING = {
     },
     'handlers': {
         'default': {
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/main.log'),
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
@@ -196,7 +196,7 @@ LOGGING = {
             'encoding': 'utf-8',
         },
         'request_handler': {
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/django_request.log'),
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
@@ -208,12 +208,12 @@ LOGGING = {
     'loggers': {
         '': {
             'handlers': ['default'],
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'propagate': True
         },
         'django.request': {  # Stop SQL debug from logging to main logger
             'handlers': ['request_handler'],
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'propagate': False
         },
     },

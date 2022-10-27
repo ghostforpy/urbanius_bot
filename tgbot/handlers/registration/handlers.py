@@ -100,75 +100,75 @@ def processing_fio(update: Update, context: CallbackContext):
         return ABOUT
 
 
-def processing_about_fin(update: Update, context: CallbackContext):
-    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-    if update.message.text == CANCEL["cancel"]:
-        stop_conversation(update, context)
-        return ConversationHandler.END
-    elif update.message.text == CANCEL_SKIP["skip"]:
-        about = ""   
-    else:
-        about = update.message.text 
+# def processing_about_fin(update: Update, context: CallbackContext):
+#     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+#     if update.message.text == CANCEL["cancel"]:
+#         stop_conversation(update, context)
+#         return ConversationHandler.END
+#     elif update.message.text == CANCEL_SKIP["skip"]:
+#         about = ""   
+#     else:
+#         about = update.message.text 
 
-    new_user.about = about
-    new_user.registered = True
-    new_user.save()
+#     new_user.about = about
+#     new_user.registered = True
+#     new_user.save()
 
-    user = User(user_id=new_user.user_id)
-    user.username = new_user.username
-    user.last_name = new_user.last_name
-    user.first_name = new_user.first_name
-    user.email = new_user.email
-    user.telefon = new_user.telefon
-    user.sur_name = new_user.sur_name
-    user.date_of_birth = new_user.date_of_birth
-    user.company = new_user.company
-    user.job = new_user.job
-    user.branch = new_user.branch
-    user.citi = new_user.citi
-    user.job_region = new_user.job_region
-    user.site = new_user.site
-    user.about = new_user.about
-    user.created_at = new_user.created_at
-    user.language_code = new_user.language_code
-    user.deep_link = new_user.deep_link
-    user.status = Status.objects.get(code = StatusCode.APPLICANT)
-    user.is_blocked_bot = True
-    user.comment = "Ожидает подтверждения регистрации"
-    user.save()
-    # Назначение пользователю рекомендателя, если он пришел по партнерской ссылке
-    referrer = User.get_user_by_username_or_user_id(user.deep_link)
-    if referrer:
-        user_referer = UserReferrers(referrer = referrer, user = user)
-        user_referer.save()
-    # Назначение пользователю групп по умолчанию
-    groups_set = tgGroups.objects.filter(for_all_users = True)
-    for group in groups_set:
-        user_group = UsertgGroups()
-        user_group.group = group
-        user_group.user = user
-        user_group.save()
+#     user = User(user_id=new_user.user_id)
+#     user.username = new_user.username
+#     user.last_name = new_user.last_name
+#     user.first_name = new_user.first_name
+#     user.email = new_user.email
+#     user.telefon = new_user.telefon
+#     user.sur_name = new_user.sur_name
+#     user.date_of_birth = new_user.date_of_birth
+#     user.company = new_user.company
+#     user.job = new_user.job
+#     user.branch = new_user.branch
+#     user.citi = new_user.citi
+#     user.job_region = new_user.job_region
+#     user.site = new_user.site
+#     user.about = new_user.about
+#     user.created_at = new_user.created_at
+#     user.language_code = new_user.language_code
+#     user.deep_link = new_user.deep_link
+#     user.status = Status.objects.get(code = StatusCode.APPLICANT)
+#     user.is_blocked_bot = True
+#     user.comment = "Ожидает подтверждения регистрации"
+#     user.save()
+#     # Назначение пользователю рекомендателя, если он пришел по партнерской ссылке
+#     referrer = User.get_user_by_username_or_user_id(user.deep_link)
+#     if referrer:
+#         user_referer = UserReferrers(referrer = referrer, user = user)
+#         user_referer.save()
+#     # Назначение пользователю групп по умолчанию
+#     groups_set = tgGroups.objects.filter(for_all_users = True)
+#     for group in groups_set:
+#         user_group = UsertgGroups()
+#         user_group.group = group
+#         user_group.user = user
+#         user_group.save()
         
-    reply_markup = make_keyboard(START,"usual",1)
-    mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.WELCOME_NEWUSER_MESSAGE)
+#     reply_markup = make_keyboard(START,"usual",1)
+#     mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.WELCOME_NEWUSER_MESSAGE)
 
-    send_mess_by_tmplt(user.user_id, mess_template, reply_markup) 
+#     send_mess_by_tmplt(user.user_id, mess_template, reply_markup) 
 
-    group = tgGroups.get_group_by_name("Администраторы")
-    if (group == None) or (group.chat_id == 0):
-        update.message.reply_text(NO_ADMIN_GROUP)
-    else:
-        bn = {f"manage_new_user-{user.user_id}":"Посмотреть пользователя"}
-        reply_markup =  make_keyboard(bn,"inline",1)
-        text =f"Зарегистрирован новый пользователь @{utils.mystr(user.username)} {user.first_name} {utils.mystr(user.last_name)}"
-        send_message(group.chat_id, text, reply_markup =  reply_markup)
-    context.user_data.clear()   
-    return ConversationHandler.END
+#     group = tgGroups.get_group_by_name("Администраторы")
+#     if (group == None) or (group.chat_id == 0):
+#         update.message.reply_text(NO_ADMIN_GROUP)
+#     else:
+#         bn = {f"manage_new_user-{user.user_id}":"Посмотреть пользователя"}
+#         reply_markup =  make_keyboard(bn,"inline",1)
+#         text =f"Зарегистрирован новый пользователь @{utils.mystr(user.username)} {user.first_name} {utils.mystr(user.last_name)}"
+#         send_message(group.chat_id, text, reply_markup =  reply_markup)
+#     context.user_data.clear()   
+#     return ConversationHandler.END
 
 
 
-#--------------------------------------------------
-#-------Дальше не идем. Пользователи тупые-------------
+# #--------------------------------------------------
+# #-------Дальше не идем. Пользователи тупые-------------
 
 
 
@@ -201,7 +201,7 @@ def processing_birhday(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_EMAIL + f"\n Уже введено: '{utils.mystr(new_user.email)}'", reply_markup=keyboard)
         return EMAIL
     elif not(date): # ввели неверную дату
-        update.message.reply_text(BAD_DATE, make_keyboard(CANCEL,"usual",2))
+        update.message.reply_text(BAD_DATE, reply_markup=make_keyboard(CANCEL,"usual",2))
         return    
     else: # ввели верный дату
         new_user.date_of_birth = date
@@ -222,7 +222,7 @@ def processing_email(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_CITI + f"\n Уже введено: '{utils.mystr(new_user.citi)}'", reply_markup=keyboard)
         return CITI
     elif not(email): # ввели неверную email
-        update.message.reply_text(BAD_EMAIL,make_keyboard(CANCEL,"usual",2))
+        update.message.reply_text(BAD_EMAIL,reply_markup=make_keyboard(CANCEL,"usual",2))
         return    
     else: 
         new_user.email = email
@@ -359,12 +359,14 @@ def stop_conversation_new_user(update: Update, context: CallbackContext):
         query = update.callback_query
         query.answer()
         user_id = query.from_user.id
-        query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+        # query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+        # query.edit_message_text("Подтверждение завершено", reply_markup=make_keyboard(EMPTY,"inline",1))
+        query.delete_message()
 
-    user = User.get_user_by_username_or_user_id(user_id)
-    send_message(user_id=user_id, text=FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
-    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
-    return ConversationHandler.END
+    # user = User.get_user_by_username_or_user_id(user_id)
+    # send_message(user_id=user_id, text=FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
+    # send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
+    # return ConversationHandler.END
 
 def manage_new_user(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -380,10 +382,21 @@ def manage_new_user(update: Update, context: CallbackContext):
     new_user = User.get_user_by_username_or_user_id(new_user_id)
     profile_text = new_user.full_profile()
     manage_usr_btn = {f"confirm_reg-{new_user_id}":"Подтвердить регистрацию",
-                      f"uncofirm_reg-{new_user_id}":"Отклонить регистрацию"
+                      f"uncofirm_reg-{new_user_id}":"Отклонить регистрацию",
+                      f"back_from_confirm-{new_user_id}":"Отмена обработки",
                      }
-    reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
+    reply_markup=make_keyboard(manage_usr_btn,"inline",1)
     send_message(user_id = user_id, text=profile_text, reply_markup=reply_markup)
+
+    bn = {f"manage_new_user-{new_user.user_id}":"Посмотреть пользователя"}
+    reply_markup =  make_keyboard(bn,"inline",1)    
+    
+    text = query.message.text.split('\n')[0]
+
+    text += f'\nПрофиль пользователя отправлен в чат {context.bot.name} '
+    text += f'пользователю {query.from_user.full_name}'
+    query.edit_message_text(text=text, reply_markup=reply_markup)
+
 
     return "wait_new_user_comand"
 
@@ -401,10 +414,12 @@ def confirm_registration(update: Update, context: CallbackContext):
     new_user.save()
     text = "Ваша регистрация подтверждена. Наберите /start для обновления меню."
     send_message(new_user_id, text)
-    query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
-    send_message(user_id=user_id, text=FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
-    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
-    return ConversationHandler.END
+    # query.edit_message_text("Подтверждение завершено", reply_markup=make_keyboard(EMPTY,"inline",1))
+    query.delete_message()
+    # query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+    # send_message(user_id=user_id, text=FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
+    # send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
+    # return ConversationHandler.END
 
 def setup_dispatcher_conv(dp: Dispatcher):
     conv_handler_reg = ConversationHandler( # здесь строится логика разговора
@@ -430,18 +445,23 @@ def setup_dispatcher_conv(dp: Dispatcher):
     )
     dp.add_handler(conv_handler_reg)
 
-    conv_handler_confirm_reg = ConversationHandler( 
-        # точка входа в разговор
-        entry_points=[CallbackQueryHandler(manage_new_user, pattern="^manage_new_user-")],
-        states={
-            "wait_new_user_comand":[                                  
-                       CallbackQueryHandler(stop_conversation_new_user, pattern="^back$"),
-                       CallbackQueryHandler(confirm_registration, pattern="^confirm_reg-"),
-                       CallbackQueryHandler(stop_conversation_new_user, pattern="^uncofirm_reg-"),
-                      ],
-        },
-        # точка выхода из разговора
-        fallbacks=[CommandHandler('cancel', stop_conversation_new_user, Filters.chat_type.private, run_async=True),
-                   CommandHandler('start', stop_conversation_new_user, Filters.chat_type.private, run_async=True)]
-    )
-    dp.add_handler(conv_handler_confirm_reg)
+    dp.add_handler(CallbackQueryHandler(manage_new_user, pattern="^manage_new_user-"))
+    dp.add_handler(CallbackQueryHandler(stop_conversation_new_user, pattern="^back_from_confirm-"))
+    dp.add_handler(CallbackQueryHandler(confirm_registration, pattern="^confirm_reg-"))
+    dp.add_handler(CallbackQueryHandler(stop_conversation_new_user, pattern="^uncofirm_reg-"))
+     
+    # conv_handler_confirm_reg = ConversationHandler( 
+    #     # точка входа в разговор
+    #     entry_points=[CallbackQueryHandler(manage_new_user, pattern="^manage_new_user-")],
+    #     states={
+    #         "wait_new_user_comand":[                                  
+    #                    CallbackQueryHandler(stop_conversation_new_user, pattern="^back$"),
+    #                    CallbackQueryHandler(confirm_registration, pattern="^confirm_reg-"),
+    #                    CallbackQueryHandler(stop_conversation_new_user, pattern="^uncofirm_reg-"),
+    #                   ],
+    #     },
+    #     # точка выхода из разговора
+    #     fallbacks=[CommandHandler('cancel', stop_conversation_new_user, Filters.chat_type.private, run_async=True),
+    #                CommandHandler('start', stop_conversation_new_user, Filters.chat_type.private, run_async=True)]
+    # )
+    # dp.add_handler(conv_handler_confirm_reg)

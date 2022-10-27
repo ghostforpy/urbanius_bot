@@ -26,17 +26,14 @@ def stop_conversation(update: Update, context: CallbackContext):
        Возврат к главному меню    
     """
     # Заканчиваем разговор.
-    if update.message:
-        user_id = update.message.from_user.id
-    else:
-        query = update.callback_query
-        query.answer()
-        user_id = query.from_user.id
-        query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
-
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
-    send_message(user_id=user_id, text=FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
-    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
+    query.edit_message_text(get_start_mess(user), reply_markup=get_start_menu(user))
+
+    # send_message(user_id=user_id, text=FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
+    # send_message(user_id=user_id, text=)
     return ConversationHandler.END
 
 def blank(update: Update, context: CallbackContext):
