@@ -35,7 +35,8 @@ from telegram.ext.callbackcontext import CallbackContext
 # Когда основные хендлеры не ловят апдейт он ловится тут
 # и можно узнать причину
 def catch_all_updates(update: Update, context: CallbackContext):
-    print(update.update_id)
+    #print(update.update_id)
+    pass
 
 def setup_dispatcher(dp: Dispatcher):
     """

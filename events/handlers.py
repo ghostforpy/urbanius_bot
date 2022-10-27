@@ -5,7 +5,7 @@ from telegram import ParseMode,  Update, LabeledPrice
 from telegram.ext import (
     Dispatcher, CommandHandler,PreCheckoutQueryHandler,
     MessageHandler, CallbackQueryHandler,
-    Filters, CallbackContext, ConversationHandler
+    Filters, CallbackContext
 )
 from tgbot.my_telegram import ConversationHandler as ConversationHandlerMy
 from django.conf import settings
@@ -35,7 +35,7 @@ def stop_conversation(update: Update, context: CallbackContext):
     user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
     query.edit_message_text(get_start_mess(user), reply_markup=get_start_menu(user))
-    return ConversationHandler.END
+    return ConversationHandlerMy.END
 
 def blank(update: Update, context: CallbackContext):
     """
@@ -307,7 +307,7 @@ def set_rating_comment_reminder (update: Update, context: CallbackContext):
     request.save()
     update.message.reply_text("Мероприятию установлена оценка")     
   
-    return ConversationHandler.END
+    return ConversationHandlerMy.END
 
 
 def make_invoice(update: Update, context: CallbackContext):

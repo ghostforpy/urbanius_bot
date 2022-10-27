@@ -4,7 +4,7 @@ from telegram import ParseMode,  Update, LabeledPrice, CallbackQuery
 from telegram.ext import (
     Dispatcher, CommandHandler,PreCheckoutQueryHandler,
     MessageHandler, CallbackQueryHandler,
-    Filters, CallbackContext, ConversationHandler
+    Filters, CallbackContext,
 )
 from tgbot.my_telegram import ConversationHandler as ConversationHandlerMy
 from django.conf import settings
@@ -34,7 +34,7 @@ def stop_conversation(update: Update, context: CallbackContext):
 
     # send_message(user_id=user_id, text=FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
     # send_message(user_id=user_id, text=)
-    return ConversationHandler.END
+    return ConversationHandlerMy.END
 
 def blank(update: Update, context: CallbackContext):
     """
