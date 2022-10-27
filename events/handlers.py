@@ -30,17 +30,11 @@ def stop_conversation(update: Update, context: CallbackContext):
        Возврат к главному меню    
     """
     # Заканчиваем разговор.
-    if update.message:
-        user_id = update.message.from_user.id
-    else:
-        query = update.callback_query
-        query.answer()
-        user_id = query.from_user.id
-        query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
-
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
-    send_message(user_id=user_id, text=FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
-    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
+    query.edit_message_text(get_start_mess(user), reply_markup=get_start_menu(user))
     return ConversationHandler.END
 
 def blank(update: Update, context: CallbackContext):
@@ -368,6 +362,15 @@ def successful_payment_callback(update: Update, context: CallbackContext) -> Non
 
 #---------------------------------------------------------------      
 #---------------------Подтверждение заявок----------------------
+def stop_conversation_new_reqw(update: Update, context: CallbackContext):
+    """ 
+       Возврат к главному меню    
+    """
+    # Заканчиваем разговор.
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    query.delete_message()
 
 def manage_event_reqw(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -383,12 +386,18 @@ def manage_event_reqw(update: Update, context: CallbackContext):
     new_reqw = EventRequests.objects.get(number = new_reqw_id)
 
     profile_text = new_reqw.description()
-    manage_reqw_btn = {f"confirm_reqw-{new_reqw_id}":"Подтвердить заявкку"
-                     }
-    reply_markup=make_keyboard(manage_reqw_btn,"inline",1,None,BACK)
+    manage_reqw_btn = {f"confirm_reqw-{new_reqw_id}":"Подтвердить заявку",
+                       f"back_from_reqw_confirm-{new_reqw_id}":"Отмена подтверждения",
+                      }
+    reply_markup=make_keyboard(manage_reqw_btn,"inline",1)
     send_message(user_id = user_id, text=profile_text, reply_markup=reply_markup)
 
-    return "wait_event_reqw_comand"
+    bn = {f"manage_event_reqw-{new_reqw.number}":"Показать заявку"}
+    reply_markup =  make_keyboard(bn,"inline",1)       
+    text = query.message.text.split('\n')[0]
+    text += f'\nЗаявка отправлена в чат {context.bot.name} '
+    text += f'пользователю {query.from_user.full_name}'
+    query.edit_message_text(text=text, reply_markup=reply_markup)
 
 def confirm_event_reqwest(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -400,11 +409,12 @@ def confirm_event_reqwest(update: Update, context: CallbackContext):
     new_reqw = EventRequests.objects.get(number = new_reqw_id)
     new_reqw.confirmed = True
     new_reqw.save()
-
-    query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
-    send_message(user_id=user_id, text="Заявка подтверждена", reply_markup=make_keyboard(EMPTY,"usual",1))
-    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
-    return ConversationHandler.END    
+    query.delete_message()
+    
+    # query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+    # send_message(user_id=user_id, text="Заявка подтверждена", reply_markup=make_keyboard(EMPTY,"usual",1))
+    # send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
+  
 
 def setup_dispatcher_conv(dp: Dispatcher):
 
@@ -455,21 +465,24 @@ def setup_dispatcher_conv(dp: Dispatcher):
     )
 
     dp.add_handler(conv_handler)
-
-    conv_handler_confirm_reqw = ConversationHandlerMy( 
-        # точка входа в разговор
-        entry_points=[CallbackQueryHandler(manage_event_reqw, pattern="^manage_event_reqw-")],
-        states={
-            "wait_event_reqw_comand":[                                  
-                       CallbackQueryHandler(stop_conversation, pattern="^back$"),
-                       CallbackQueryHandler(confirm_event_reqwest, pattern="^confirm_reqw-"),
-                      ],
-        },
-        # точка выхода из разговора
-        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private, run_async=True),
-                   CommandHandler('start', stop_conversation, Filters.chat_type.private, run_async=True)]
-    )
-    dp.add_handler(conv_handler_confirm_reqw)
+    dp.add_handler(CallbackQueryHandler(manage_event_reqw, pattern="^manage_event_reqw-"))
+    dp.add_handler(CallbackQueryHandler(stop_conversation_new_reqw, pattern="^back_from_reqw_confirm-"))
+    dp.add_handler(CallbackQueryHandler(confirm_event_reqwest, pattern="^confirm_reqw-"))
+        
+    # conv_handler_confirm_reqw = ConversationHandlerMy( 
+    #     # точка входа в разговор
+    #     entry_points=[CallbackQueryHandler(manage_event_reqw, pattern="^manage_event_reqw-")],
+    #     states={
+    #         "wait_event_reqw_comand":[                                  
+    #                    CallbackQueryHandler(stop_conversation_new_reqw, pattern="^back_from_reqw_confirm-"),
+    #                    ,
+    #                   ],
+    #     },
+    #     # точка выхода из разговора
+    #     fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private, run_async=True),
+    #                CommandHandler('start', stop_conversation, Filters.chat_type.private, run_async=True)]
+    # )
+    # dp.add_handler(conv_handler_confirm_reqw)
 
 
 

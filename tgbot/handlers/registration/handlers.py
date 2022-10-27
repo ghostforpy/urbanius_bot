@@ -383,16 +383,14 @@ def manage_new_user(update: Update, context: CallbackContext):
     profile_text = new_user.full_profile()
     manage_usr_btn = {f"confirm_reg-{new_user_id}":"Подтвердить регистрацию",
                       f"uncofirm_reg-{new_user_id}":"Отклонить регистрацию",
-                      f"back_from_confirm-{new_user_id}":"Отмена обработки",
+                      f"back_from_user_confirm-{new_user_id}":"Отмена обработки",
                      }
     reply_markup=make_keyboard(manage_usr_btn,"inline",1)
     send_message(user_id = user_id, text=profile_text, reply_markup=reply_markup)
 
     bn = {f"manage_new_user-{new_user.user_id}":"Посмотреть пользователя"}
-    reply_markup =  make_keyboard(bn,"inline",1)    
-    
+    reply_markup =  make_keyboard(bn,"inline",1)       
     text = query.message.text.split('\n')[0]
-
     text += f'\nПрофиль пользователя отправлен в чат {context.bot.name} '
     text += f'пользователю {query.from_user.full_name}'
     query.edit_message_text(text=text, reply_markup=reply_markup)
@@ -446,7 +444,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
     dp.add_handler(conv_handler_reg)
 
     dp.add_handler(CallbackQueryHandler(manage_new_user, pattern="^manage_new_user-"))
-    dp.add_handler(CallbackQueryHandler(stop_conversation_new_user, pattern="^back_from_confirm-"))
+    dp.add_handler(CallbackQueryHandler(stop_conversation_new_user, pattern="^back_from_user_confirm-"))
     dp.add_handler(CallbackQueryHandler(confirm_registration, pattern="^confirm_reg-"))
     dp.add_handler(CallbackQueryHandler(stop_conversation_new_user, pattern="^uncofirm_reg-"))
      
