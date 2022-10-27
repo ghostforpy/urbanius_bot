@@ -59,14 +59,14 @@ def command_start(update: Update, context: CallbackContext):
         update.message.reply_text(get_start_mess(user), reply_markup=reply_markup, 
                                   parse_mode=telegram.ParseMode.HTML)
     
-    clear_conversation(context.dispatcher.handlers[0])
+    clear_conversation(context.dispatcher.handlers[0], user_id)
     return ConversationHandler.END
 
-def clear_conversation(handlers):
+def clear_conversation(handlers, user_id):
     for handler in handlers:
         h_type = type(handler)
         if h_type == ConversationHandler or h_type == ConversationHandler_my:
-            handler.conversations = {}
+            handler.conversations.pop((user_id,user_id),1)
             g=1
         #context._dispatcher.handlers[0][11].conversations
 
