@@ -7,6 +7,7 @@ import telegram
 from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext import ConversationHandler
+from tgbot.my_telegram import ConversationHandler as ConversationHandler_my
 from django.utils import timezone
 from tgbot.models import User, NewUser
 from tgbot.utils import extract_user_data_from_update
@@ -64,7 +65,7 @@ def command_start(update: Update, context: CallbackContext):
 def clear_conversation(handlers):
     for handler in handlers:
         h_type = type(handler)
-        if h_type == ConversationHandler:
+        if h_type == ConversationHandler or h_type == ConversationHandler_my:
             handler.conversations = {}
             g=1
         #context._dispatcher.handlers[0][11].conversations
