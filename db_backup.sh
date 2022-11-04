@@ -1,0 +1,7 @@
+export PGHOST="localhost"
+export PGPORT="5432"
+export PGUSER="postgres"
+export PGPASSWORD=""
+export PGDATABASE=""
+backup_filename="backup_$(date +'%Y_%m_%dT%H_%M_%S').sql.gz"
+pg_dump | gzip > "backups_db/${backup_filename}"
