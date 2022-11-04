@@ -156,4 +156,5 @@ media/downloads/*
 media/advert/*
 
 
-
+# DB backups
+backups_db
