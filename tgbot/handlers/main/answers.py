@@ -18,13 +18,13 @@ START_MENU_FULL = {
         "events_mnu":"Мероприятия",
         "find_members":"Найти участников",
         "profile":"Профиль пользователя",
-        "messages":"Сообщения",
-        "affiliate":"Стать рекомендателем",
+        #"messages":"Сообщения",
+        #"affiliate":"Стать рекомендателем",
         # "payment":"Оплатить", # тестирование возмржности платежа
         "groups":"Группы",
         "packages":"Пакеты участия",
         "spec_offers":"Спец предложения партнеров",
-        "my_requests": "Мои заявки",
+        #"my_requests": "Мои заявки",
     }
 
 START_MENU_SHORT = {

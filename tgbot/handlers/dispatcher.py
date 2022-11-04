@@ -51,14 +51,14 @@ def setup_dispatcher(dp: Dispatcher):
     setup_dispatcher_reg(dp) #заполнение обработчиков регистрации
     setup_dispatcher_main(dp) #заполнение обработчиков главного диалога
     setup_dispatcher_prof(dp) #заполнение обработчиков работы с профайлом
-    setup_dispatcher_pay(dp) #заполнение обработчиков работы с платежами
+    #setup_dispatcher_pay(dp) #заполнение обработчиков работы с платежами
     setup_dispatcher_manage_memb(dp) #заполнение обработчиков работы с поиском
-    setup_dispatcher_mess(dp) #заполнение обработчиков работы с сообщениями
+    #setup_dispatcher_mess(dp) #заполнение обработчиков работы с сообщениями
     setup_dispatcher_events(dp) #заполнение обработчиков работы с мероприятиями
     setup_dispatcher_groups(dp) #заполнение обработчиков работы с группами пользователей
     setup_dispatcher_pkgs(dp) #заполнение обработчиков работы с пакетами участия
     setup_dispatcher_advert(dp) #заполнение обработчиков работы с рекламными рассылками
-    setup_dispatcher_reqw(dp) #заполнение обработчиков работы с разными заявками
+    #setup_dispatcher_reqw(dp) #заполнение обработчиков работы с разными заявками
 
     setup_dispatcher_tg_group(dp) #заполнение обработчиков сообщений в группах(каналах) телеграм
 

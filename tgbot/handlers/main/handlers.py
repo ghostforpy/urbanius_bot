@@ -86,7 +86,8 @@ def setup_dispatcher_conv(dp: Dispatcher):
     conv_handler_send_mess = ConversationHandler( # здесь строится логика разговора
         # точка входа в разговор
         entry_points=[CallbackQueryHandler(start_conversation_coffe, pattern="^random_coffee$"),
-                      CallbackQueryHandler(start_conversation_affiliate, pattern="^affiliate$")],      
+                     # CallbackQueryHandler(start_conversation_affiliate, pattern="^affiliate$")
+                      ],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
             #"sending":[MessageHandler(Filters.text & FilterPrivateNoCommand, sending_mess)],
