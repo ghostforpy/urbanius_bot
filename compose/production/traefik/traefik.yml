@@ -33,7 +33,7 @@ certificatesResolvers:
 http:
   routers:
     web-secure-api-router:
-      rule: "Host(`bot.urbanius.club`) || Host(`www.bot.urbanius.club`)"
+      rule: "Host(`bot.urbanius.club`)"
       entryPoints:
         - web-secure
       middlewares:
@@ -67,7 +67,7 @@ http:
     django:
       loadBalancer:
         servers:
-          - url: http://127.0.0.1:8000
+          - url: http://0.0.0.0:8001
 
 providers:
   # https://docs.traefik.io/master/providers/file/
