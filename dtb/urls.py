@@ -20,7 +20,13 @@ from django.contrib import admin
 from django.urls import path, include
 from dtb import startup_code
 
+
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
+
 urlpatterns = [
+    path('sentry-debug/', trigger_error),
     path('tgadmin/', admin.site.urls),
     path('', include('tgbot.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
