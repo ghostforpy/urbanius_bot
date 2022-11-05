@@ -71,7 +71,7 @@ def prepare_ask_citi(update: Update, new_user: NewUser):
 
 def prepare_ask_company(update: Update, new_user: NewUser):
     # keyboard = make_keyboard(CANCEL,"usual",2)
-    keys = CANCEL_SKIP if len(new_user.company) else CANCEL
+    keys = CANCEL_SKIP if new_user.company is not None else CANCEL
     keyboard = make_keyboard(
         keys,
         "usual",
