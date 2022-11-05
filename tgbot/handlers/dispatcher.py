@@ -20,6 +20,7 @@ from tgbot.handlers.main.handlers import setup_dispatcher_conv as setup_dispatch
 from tgbot.handlers.profile.handlers import setup_dispatcher_conv as setup_dispatcher_prof
 # from payments.handlers import setup_dispatcher_conv as setup_dispatcher_pay
 from tgbot.handlers.manage_members.handlers import setup_dispatcher_conv as setup_dispatcher_manage_memb
+from tgbot.handlers.manage_members.handlers import manage_find
 # from tgbot.handlers.messages.handlers import setup_dispatcher_conv as setup_dispatcher_mess
 from events.handlers import setup_dispatcher_conv as setup_dispatcher_events
 from tgbot.handlers.groups.handlers import setup_dispatcher_conv as setup_dispatcher_groups
@@ -63,6 +64,7 @@ def setup_dispatcher(dp: Dispatcher):
     setup_dispatcher_tg_group(dp) #заполнение обработчиков сообщений в группах(каналах) телеграм
 
     dp.add_handler(MessageHandler(Filters.text & Filters.chat_type.private, commands.command_start))
+    dp.add_handler(InlineQueryHandler(manage_find))
 
 
     return dp
