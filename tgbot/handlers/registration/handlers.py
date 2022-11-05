@@ -51,7 +51,7 @@ from .prepares import (
 #APROVAL,COMPANY,CITI,JOB,FIO,BIRHTDAY,ABOUT,SITE,PHONE = range(9)
 step_iterator = counter(1)
 STEPS = {
-    "APPROVAL": {
+    "APROVAL": {
         "step": step_iterator.current,
         "prepare": prepare_ask_company,
         "next": next(step_iterator)
@@ -107,16 +107,16 @@ def stop_conversation(update: Update, context: CallbackContext):
 
 def start_conversation(update: Update, context: CallbackContext):
     update.message.reply_text(WELCOME_REG, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
-    return STEPS["APPROVAL"]["step"]
+    return STEPS["APROVAL"]["step"]
 
 def processing_aproval(update: Update, context: CallbackContext):
     if update.message.text == APPROVAL_ANSWERS["yes"]: # В этом поле хранится согласие
         # update.message.reply_text(ASK_PHONE,  reply_markup=make_keyboard(CANCEL,"usual",2,REQUEST_PHONE))
         # prepare_ask_phone(update)
-        f = STEPS["APPROVAL"]["prepare"]
+        f = STEPS["APROVAL"]["prepare"]
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
         f(update, new_user)
-        return STEPS["APPROVAL"]["next"]
+        return STEPS["APROVAL"]["next"]
     elif update.message.text == APPROVAL_ANSWERS["no"]: # В этом поле хранится отказ
         stop_conversation(update, context)
         return ConversationHandler.END
