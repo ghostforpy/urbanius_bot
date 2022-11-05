@@ -164,7 +164,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 PAYMENT_PROVIDER_TOKEN = os.getenv("PAYMENT_TOKEN")
 TRASH_GROUP = os.getenv("TRASH_GROUP")
-TELEGRAM_WEBHOOK = os.getenv("TELEGRAM_TOKEN") + os.getenv("TELEGRAM_WEBHOOK_SALT") + "/"
+TELEGRAM_WEBHOOK = os.getenv("DOMAIN") + "/" + os.getenv("TELEGRAM_TOKEN") + os.getenv("TELEGRAM_WEBHOOK_SALT") + "/"
 
 # Настройки почтового сервера
 EMAIL_HOST = os.getenv("EMAIL_HOST")
