@@ -422,24 +422,24 @@ def confirm_registration(update: Update, context: CallbackContext):
 def setup_dispatcher_conv(dp: Dispatcher):
     conv_handler_reg = ConversationHandler( # здесь строится логика разговора
         # точка входа в разговор
-        entry_points=[MessageHandler(Filters.text(REGISTRATION_START_BTN["reg_start"]) & FilterPrivateNoCommand, start_conversation, run_async=True)],      
+        entry_points=[MessageHandler(Filters.text(REGISTRATION_START_BTN["reg_start"]) & FilterPrivateNoCommand, start_conversation)],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
-            APROVAL:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_aproval, run_async=True)],
-            PHONE: [MessageHandler((Filters.contact | Filters.text) & FilterPrivateNoCommand, processing_phone, run_async=True)],
-            FIO: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_fio, run_async=True)],
-            # ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about_fin, run_async=True)],
-            ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about, run_async=True)],
-            BIRHDAY: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_birhday, run_async=True)],
-            EMAIL: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_email, run_async=True)],
-            CITI: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_citi, run_async=True)],
-            COMPANY: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company, run_async=True)],
-            JOB: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_job, run_async=True)],
-            SITE: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_site, run_async=True)],
+            APROVAL:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_aproval)],
+            PHONE: [MessageHandler((Filters.contact | Filters.text) & FilterPrivateNoCommand, processing_phone)],
+            FIO: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_fio)],
+            # ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about_fin)],
+            ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about)],
+            BIRHDAY: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_birhday)],
+            EMAIL: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_email)],
+            CITI: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_citi)],
+            COMPANY: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company)],
+            JOB: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_job)],
+            SITE: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_site)],
         },
         # точка выхода из разговора
-        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private, run_async=True),
-                   CommandHandler('start', stop_conversation, Filters.chat_type.private, run_async=True)]
+        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
+                   CommandHandler('start', stop_conversation, Filters.chat_type.private)]
     )
     dp.add_handler(conv_handler_reg)
 
@@ -459,7 +459,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
     #                   ],
     #     },
     #     # точка выхода из разговора
-    #     fallbacks=[CommandHandler('cancel', stop_conversation_new_user, Filters.chat_type.private, run_async=True),
-    #                CommandHandler('start', stop_conversation_new_user, Filters.chat_type.private, run_async=True)]
+    #     fallbacks=[CommandHandler('cancel', stop_conversation_new_user, Filters.chat_type.private),
+    #                CommandHandler('start', stop_conversation_new_user, Filters.chat_type.private)]
     # )
     # dp.add_handler(conv_handler_confirm_reg)
