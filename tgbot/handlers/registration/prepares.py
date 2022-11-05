@@ -35,7 +35,7 @@ def prepare_ask_fio(update: Update, new_user: NewUser):
 
 def prepare_ask_about(update:Update, new_user: NewUser):
     # keyboard = make_keyboard(CANCEL,"usual",2)
-    keys = CANCEL_SKIP if new_user.about != "" else CANCEL
+    keys = CANCEL_SKIP if len(new_user.about) else CANCEL
     keyboard = make_keyboard(
         keys,
         "usual",
@@ -45,7 +45,7 @@ def prepare_ask_about(update:Update, new_user: NewUser):
 
 def prepare_ask_birthday(update: Update, new_user: NewUser):
     # keyboard = make_keyboard(CANCEL,"usual",2)
-    keys = CANCEL_SKIP if new_user.birthday != "" else CANCEL # проверить
+    keys = CANCEL_SKIP if len(new_user.birthday) else CANCEL # проверить
     keyboard = make_keyboard(
         keys,
         "usual",
@@ -61,7 +61,7 @@ def prepare_ask_email(update: Update, new_user: NewUser):
 
 def prepare_ask_citi(update: Update, new_user: NewUser):
     # keyboard = make_keyboard(CANCEL,"usual",2)
-    keys = CANCEL_SKIP if new_user.citi != "" else CANCEL
+    keys = CANCEL_SKIP if len(new_user.citi) else CANCEL
     keyboard = make_keyboard(
         keys,
         "usual",
@@ -71,7 +71,7 @@ def prepare_ask_citi(update: Update, new_user: NewUser):
 
 def prepare_ask_company(update: Update, new_user: NewUser):
     # keyboard = make_keyboard(CANCEL,"usual",2)
-    keys = CANCEL_SKIP if new_user.company != "" else CANCEL
+    keys = CANCEL_SKIP if len(new_user.company) else CANCEL
     keyboard = make_keyboard(
         keys,
         "usual",
@@ -81,7 +81,7 @@ def prepare_ask_company(update: Update, new_user: NewUser):
 
 def prepare_ask_job(update: Update, new_user: NewUser):
     # keyboard = make_keyboard(CANCEL,"usual",2)
-    keys = CANCEL_SKIP if new_user.job != "" else CANCEL
+    keys = CANCEL_SKIP if len(new_user.job) else CANCEL
     keyboard = make_keyboard(
         keys,
         "usual",
@@ -91,7 +91,7 @@ def prepare_ask_job(update: Update, new_user: NewUser):
 
 def prepare_ask_site(update: Update, new_user: NewUser):
     # keyboard = make_keyboard(CANCEL,"usual",2)
-    keys = CANCEL_SKIP if new_user.site != "" else CANCEL
+    keys = CANCEL_SKIP if len(new_user.site) else CANCEL
     keyboard = make_keyboard(
         keys,
         "usual",
