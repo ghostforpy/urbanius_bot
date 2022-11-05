@@ -173,7 +173,7 @@ def processing_job(update: Update, context: CallbackContext):
         f(update, new_user)
         # keyboard = make_keyboard(CANCEL,"usual",2)
         # update.message.reply_text(ASK_SITE + f"\n Уже введено: '{utils.mystr(new_user.site)}'", reply_markup=keyboard)
-        return STEPS["JOB"]["prepare"]
+        return STEPS["JOB"]["next"]
     else: 
         new_user.job = update.message.text
         new_user.save()
@@ -181,7 +181,7 @@ def processing_job(update: Update, context: CallbackContext):
         f(update, new_user)
         # keyboard = make_keyboard(CANCEL,"usual",2)
         # update.message.reply_text(ASK_SITE + f"\n Уже введено: '{utils.mystr(new_user.site)}'", reply_markup=keyboard)
-        return STEPS["JOB"]["prepare"]
+        return STEPS["JOB"]["next"]
 
 def processing_fio(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
