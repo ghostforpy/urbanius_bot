@@ -14,12 +14,12 @@ logger = logging.getLogger("default")
 # WEBHOOK_URL = os.getenv("WEBHOOK_URL", False)
 
 if not settings.DEBUG:
-    logger.info("Set telegram webhook url {}".format(settings.TELEGRAM_WEBHOOK))
+    logger.info("Set telegram webhook url {}".format(settings.TELEGRAM_WEBHOOK_FULL))
     # print('Set telegram webhook url')
 
     url = "https://api.telegram.org/bot{}/setWebhook?url={}".format(
         settings.TELEGRAM_TOKEN,
-        settings.TELEGRAM_WEBHOOK
+        settings.TELEGRAM_WEBHOOK_FULL
     )
     r = requests.post(url)
     json_response = r.json()
