@@ -57,42 +57,42 @@ STEPS = {
         "next": next(step_iterator)
     },
     "COMPANY": {
-        "step": step_iterator,
+        "step": step_iterator.current,
         "prepare": prepare_ask_citi,
         "next": next(step_iterator)
     },
     "CITI": {
-        "step": step_iterator,
+        "step": step_iterator.current,
         "prepare": prepare_ask_job,
         "next": next(step_iterator)
     },
     "JOB": {
-        "step": step_iterator,
+        "step": step_iterator.current,
         "prepare": prepare_ask_fio,
         "next": next(step_iterator)
     },
     "FIO": {
-        "step": step_iterator,
+        "step": step_iterator.current,
         "prepare": prepare_ask_birthday,
         "next": next(step_iterator)
     },
     "BIRHTDAY": {
-        "step": step_iterator,
+        "step": step_iterator.current,
         "prepare": prepare_ask_about,
         "next": next(step_iterator)
     },
     "ABOUT": {
-        "step": step_iterator,
+        "step": step_iterator.current,
         "prepare": prepare_ask_site,
         "next": next(step_iterator)
     },
     "SITE": {
-        "step": step_iterator,
+        "step": step_iterator.current,
         "prepare": prepare_ask_phone,
         "next": next(step_iterator)
     },
     "PHONE": {
-        "step": step_iterator,
+        "step": step_iterator.current,
         "prepare": prepare_ask_email,
         "next": end_registration
     },
