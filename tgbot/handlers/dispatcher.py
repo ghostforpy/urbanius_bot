@@ -18,15 +18,15 @@ from tgbot.handlers import commands
 from tgbot.handlers.registration.handlers import setup_dispatcher_conv as setup_dispatcher_reg
 from tgbot.handlers.main.handlers import setup_dispatcher_conv as setup_dispatcher_main
 from tgbot.handlers.profile.handlers import setup_dispatcher_conv as setup_dispatcher_prof
-from payments.handlers import setup_dispatcher_conv as setup_dispatcher_pay
+# from payments.handlers import setup_dispatcher_conv as setup_dispatcher_pay
 from tgbot.handlers.manage_members.handlers import setup_dispatcher_conv as setup_dispatcher_manage_memb
-from tgbot.handlers.messages.handlers import setup_dispatcher_conv as setup_dispatcher_mess
+# from tgbot.handlers.messages.handlers import setup_dispatcher_conv as setup_dispatcher_mess
 from events.handlers import setup_dispatcher_conv as setup_dispatcher_events
 from tgbot.handlers.groups.handlers import setup_dispatcher_conv as setup_dispatcher_groups
 from statistic.handlers import setup_dispatcher_group as setup_dispatcher_tg_group
 from subscribe.handlers import setup_dispatcher_conv as setup_dispatcher_pkgs
 from advert.handlers import setup_dispatcher_conv as setup_dispatcher_advert
-from advert.handlers_reqw import setup_dispatcher_conv as setup_dispatcher_reqw
+# from advert.handlers_reqw import setup_dispatcher_conv as setup_dispatcher_reqw
 from sheduler.tasks import restarts_tasks
 
 from telegram.update import Update
