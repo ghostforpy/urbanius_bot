@@ -20,10 +20,11 @@ class TelegramBotWebhookView(View):
     # WARNING: if fail - Telegram webhook will be delivered again. 
     # Can be fixed with async  task execution
     def post(self, request, *args, **kwargs):
-        if DEBUG:
-            process_telegram_event(json.loads(request.body))
-        else:  # use ce in production
-            process_telegram_event.delay(json.loads(request.body))
+        # TODO: there is a great trick to send data in webhook response
+        #if DEBUG:
+        process_telegram_event(json.loads(request.body))
+        #else:  # use ce in production
+        #    process_telegram_event.delay(json.loads(request.body))
 
         # TODO: there is a great trick to send data in webhook response
         # e.g. remove buttons

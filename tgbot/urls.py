@@ -7,7 +7,6 @@ from django.contrib import admin
 from . import views
 
 urlpatterns = [  
-    # TODO: make webhook more secure
     path('', views.index, name="index"),
     path(settings.TELEGRAM_WEBHOOK, csrf_exempt(views.TelegramBotWebhookView.as_view())),
 ]
