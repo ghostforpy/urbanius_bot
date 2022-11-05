@@ -1,5 +1,6 @@
 import json
 import logging
+import threading
 from django.views import View
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -22,10 +23,11 @@ class TelegramBotWebhookView(View):
     def post(self, request, *args, **kwargs):
         # TODO: there is a great trick to send data in webhook response
         #if DEBUG:
-        process_telegram_event(json.loads(request.body))
+        #process_telegram_event(json.loads(request.body))
         #else:  # use ce in production
         #    process_telegram_event.delay(json.loads(request.body))
-
+        t = threading.Thread(target=process_telegram_event, args=(json.loads(request.body),))
+        t.start()
         # TODO: there is a great trick to send data in webhook response
         # e.g. remove buttons
         return JsonResponse({"ok": "POST request processed"})
