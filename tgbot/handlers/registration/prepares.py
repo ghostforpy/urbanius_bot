@@ -34,32 +34,39 @@ def prepare_ask_fio(update: Update, new_user: NewUser):
     update.message.reply_text(ASK_FIO.format(fullname), reply_markup=keyboard)
 
 def prepare_ask_about(update:Update, new_user: NewUser):
-    keyboard = make_keyboard(CANCEL,"usual",2)
+    # keyboard = make_keyboard(CANCEL,"usual",2)
+    keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
     update.message.reply_text(ASK_ABOUT + f"\n Уже введено: '{utils.mystr(new_user.about)}'", reply_markup=keyboard)
 
 def prepare_ask_birthday(update: Update, new_user: NewUser):
-    keyboard = make_keyboard(CANCEL,"usual",2)
+    # keyboard = make_keyboard(CANCEL,"usual",2)
+    keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
     birthday = utils.mystr(new_user.date_of_birth)
     update.message.reply_text(ASK_BIRHDAY + f"\n Уже введено: '{birthday}'", reply_markup=keyboard)
 
 def prepare_ask_email(update: Update, new_user: NewUser):
-    keyboard = make_keyboard(CANCEL,"usual",2)
+    # keyboard = make_keyboard(CANCEL,"usual",2)
+    keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
     update.message.reply_text(ASK_EMAIL + f"\n Уже введено: '{utils.mystr(new_user.email)}'", reply_markup=keyboard)
 
 def prepare_ask_citi(update: Update, new_user: NewUser):
-    keyboard = make_keyboard(CANCEL,"usual",2)
+    # keyboard = make_keyboard(CANCEL,"usual",2)
+    keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
     update.message.reply_text(ASK_CITI + f"\n Уже введено: '{utils.mystr(new_user.citi)}'", reply_markup=keyboard)
 
 def prepare_ask_company(update: Update, new_user: NewUser):
-    keyboard = make_keyboard(CANCEL,"usual",2)
+    # keyboard = make_keyboard(CANCEL,"usual",2)
+    keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
     update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
 
 def prepare_ask_job(update: Update, new_user: NewUser):
-    keyboard = make_keyboard(CANCEL,"usual",2)
+    # keyboard = make_keyboard(CANCEL,"usual",2)
+    keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
     update.message.reply_text(ASK_JOB + f"\n Уже введено: '{utils.mystr(new_user.job)}'", reply_markup=keyboard)
 
 def prepare_ask_site(update: Update, new_user: NewUser):
-    keyboard = make_keyboard(CANCEL,"usual",2)
+    # keyboard = make_keyboard(CANCEL,"usual",2)
+    keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
     update.message.reply_text(ASK_SITE + f"\n Уже введено: '{utils.mystr(new_user.site)}'", reply_markup=keyboard)
 
 
