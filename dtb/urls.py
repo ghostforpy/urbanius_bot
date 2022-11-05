@@ -19,7 +19,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from dtb import startup_code
-from tgbot import set_webhook_url
+# TODO: сделать автоматическую установку webhook url
+#from tgbot import set_webhook_url
 
 
 urlpatterns = [
