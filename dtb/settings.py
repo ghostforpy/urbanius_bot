@@ -29,8 +29,7 @@ if os.path.isfile(dotenv_file):
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-t!l^9oe+%$kb_7##@!9w$(rg9%b%ecl)o%2hj9bvok8k!=-u(m'
-
+SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG", False) == "True"
 
@@ -149,6 +148,11 @@ MEDIA_DOMAIN = os.getenv("MEDIA_DOMAIN")
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = 'media/'
 
+if DEBUG:
+    ADMIN_URL = "tgadmin/"
+else:
+    ADMIN_URL = os.getenv("ADMIN_URL")
+
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC_URL = 'staticfiles/'
 # STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
@@ -159,7 +163,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # -----> TELEGRAM
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 PAYMENT_PROVIDER_TOKEN = os.getenv("PAYMENT_TOKEN")
-TRASH_GROUP =  os.getenv("TRASH_GROUP")
+TRASH_GROUP = os.getenv("TRASH_GROUP")
+TELEGRAM_WEBHOOK = os.getenv("TELEGRAM_TOKEN") + os.getenv("TELEGRAM_WEBHOOK_SALT") + "/"
 
 # Настройки почтового сервера
 EMAIL_HOST = os.getenv("EMAIL_HOST")

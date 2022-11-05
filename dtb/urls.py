@@ -19,9 +19,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from dtb import startup_code
+from tgbot import set_webhook_url
 
 
 urlpatterns = [
-    path('tgadmin/', admin.site.urls),
+    path(settings.ADMIN_URL, admin.site.urls),
     path('', include('tgbot.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
