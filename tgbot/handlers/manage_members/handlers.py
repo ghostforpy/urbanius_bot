@@ -185,7 +185,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
             "working":[
-                    #    InlineQueryHandler(manage_find),   
+                       InlineQueryHandler(manage_find),   
                        ChosenInlineResultHandler(manage_chosen_user),             
                        CallbackQueryHandler(stop_conversation, pattern="^back$"),
                        CallbackQueryHandler(set_rating, pattern="^setuserrating_"),
