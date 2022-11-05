@@ -11,8 +11,8 @@ from telegram.ext import (
     InlineQueryHandler, CallbackQueryHandler,
     ChosenInlineResultHandler, PollAnswerHandler, Defaults
 )
-
-from dtb.settings import TELEGRAM_TOKEN
+from django.conf import settings
+#from dtb.settings import TELEGRAM_TOKEN
 
 from tgbot.handlers import commands
 from tgbot.handlers.registration.handlers import setup_dispatcher_conv as setup_dispatcher_reg
@@ -72,14 +72,14 @@ def run_pooling():
 
     defaults = Defaults(parse_mode=telegram.ParseMode.HTML, tzinfo=pytz.timezone('Europe/Moscow'))
     """ Run bot in pooling mode """
-    updater = Updater(TELEGRAM_TOKEN, use_context=True, defaults=defaults)
+    updater = Updater(settings.TELEGRAM_TOKEN, use_context=True, defaults=defaults)
 
     dp = updater.dispatcher
     dp = setup_dispatcher(dp)
     jq = updater.job_queue
     restarts_tasks(jq)
 
-    bot_info = telegram.Bot(TELEGRAM_TOKEN).get_me()
+    bot_info = telegram.Bot(settings.TELEGRAM_TOKEN).get_me()
     bot_link = f"https://t.me/" + bot_info["username"]
 
     print(f"Pooling of '{bot_link}' started")
@@ -94,6 +94,6 @@ def process_telegram_event(update_json):
     dispatcher.process_update(update)
 
 # Global variable - best way I found to init Telegram bot
-bot = telegram.Bot(TELEGRAM_TOKEN)
+bot = telegram.Bot(settings.TELEGRAM_TOKEN)
 dispatcher = setup_dispatcher(Dispatcher(bot, None, workers=4, use_context=True))
 TELEGRAM_BOT_USERNAME = bot.get_me()["username"]
