@@ -114,7 +114,7 @@ def processing_aproval(update: Update, context: CallbackContext):
         # update.message.reply_text(ASK_PHONE,  reply_markup=make_keyboard(CANCEL,"usual",2,REQUEST_PHONE))
         # prepare_ask_phone(update)
         f = STEPS["APROVAL"]["prepare"]
-        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+        new_user = NewUser.objects.get_or_create(user_id = update.message.from_user.id)
         f(update, new_user)
         return STEPS["APROVAL"]["next"]
     elif update.message.text == APPROVAL_ANSWERS["no"]: # В этом поле хранится отказ
