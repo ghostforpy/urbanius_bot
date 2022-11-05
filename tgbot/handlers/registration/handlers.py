@@ -76,7 +76,7 @@ STEPS = {
         "prepare": prepare_ask_birthday,
         "next": next(step_iterator)
     },
-    "BIRHTDAY": {
+    "BIRTHDAY": {
         "step": step_iterator.current,
         "prepare": prepare_ask_about,
         "next": next(step_iterator)
@@ -216,7 +216,6 @@ def processing_fio(update: Update, context: CallbackContext):
 def processing_birhday(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
     date = utils.is_date(update.message.text)
-
     if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
        stop_conversation(update, context)
        return ConversationHandler.END
@@ -493,7 +492,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
             STEPS["FIO"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_fio)],
             # ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about_fin)],
             STEPS["ABOUT"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about)],
-            STEPS["BIRHTDAY"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_birhday)],
+            STEPS["BIRTHDAY"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_birhday)],
             # EMAIL: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_email)],
             STEPS["CITI"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_citi)],
             STEPS["COMPANY"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company)],
