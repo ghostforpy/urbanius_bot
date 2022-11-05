@@ -221,7 +221,6 @@ def processing_birhday(update: Update, context: CallbackContext):
        stop_conversation(update, context)
        return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
-        prepare_ask_email(new_user.email)
         f = STEPS["BIRTHDAY"]["prepare"]
         f(update, new_user)
         # keyboard = make_keyboard(CANCEL,"usual",2)
@@ -233,7 +232,6 @@ def processing_birhday(update: Update, context: CallbackContext):
     else: # ввели верный дату
         new_user.date_of_birth = date
         new_user.save()
-        prepare_ask_email(new_user.email)
         f = STEPS["BIRTHDAY"]["prepare"]
         f(update, new_user)
         # keyboard = make_keyboard(CANCEL,"usual",2)
