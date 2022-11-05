@@ -7,7 +7,7 @@ from django.conf import settings
 #from tgcommands import available_commands
 #import sys
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("default")
 
 #AVAILABLE_COMMANDS = available_commands.AVAILABLE_COMMANDS
 # TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", False)
