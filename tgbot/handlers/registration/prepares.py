@@ -45,7 +45,7 @@ def prepare_ask_about(update:Update, new_user: NewUser):
 
 def prepare_ask_birthday(update: Update, new_user: NewUser):
     # keyboard = make_keyboard(CANCEL,"usual",2)
-    keys = CANCEL_SKIP if new_user.birthday is not None else CANCEL # проверить
+    keys = CANCEL_SKIP if new_user.date_of_birth is not None else CANCEL # проверить
     keyboard = make_keyboard(
         keys,
         "usual",
