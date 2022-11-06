@@ -1,0 +1,50 @@
+version: "3"
+
+volumes:
+  urbanius_local_postgres_data: {}
+  urbanius_local_postgres_data_backups: {}
+
+services:
+  web: &web
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: urbanius_local_django
+    container_name: urbanius_local_django
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - "8000:8000"
+    command: /start
+
+  bot:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile.bot
+    container_name: urban_bot
+    command: python run_pooling.py
+    volumes:
+      - .:/code
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    depends_on:
+      - web
+      - postgres
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: urbanius_production_postgres
+    container_name: urbanius_local_postgres
+    volumes:
+      - urbanius_local_postgres_data:/var/lib/postgresql/data:Z
+      - urbanius_local_postgres_data_backups:/backups:z
+    env_file:
+      - ./.envs/.local/.postgres
