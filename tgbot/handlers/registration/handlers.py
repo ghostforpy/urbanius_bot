@@ -37,7 +37,7 @@ from .prepares import (
     prepare_ask_about,
     prepare_ask_fio,
     prepare_ask_birthday,
-    prepare_ask_email,
+    # prepare_ask_email,
     prepare_ask_citi,
     prepare_ask_company,
     prepare_ask_job,
@@ -89,14 +89,71 @@ STEPS = {
     "SITE": {
         "step": step_iterator.current,
         "prepare": prepare_ask_phone,
+        # "prepare": prepare_ask_business_branch,
         "next": next(step_iterator)
     },
+    # "BUSINESS_BRANCH": {
+    #     "step": step_iterator.current,
+    #     "prepare": prepare_ask_money_turnover,
+    #     "next": next(step_iterator)
+    # },
+    # "MONEY_TURNOVER": {
+    #     "step": step_iterator.current,
+    #     "prepare": prepare_ask_tags,
+    #     "next": next(step_iterator)
+    # },
+#     "TAGS": {
+    #     "step": step_iterator.current,
+    #     "prepare": prepare_ask_business_needs,
+    #     "next": next(step_iterator)
+    # },
+    # "BUSINESS_NEEDS": {
+    #     "step": step_iterator.current,
+    #     "prepare": prepare_ask_user_benefit,
+    #     "next": next(step_iterator)
+    # },
+    # "USER_BENEFIT": {
+    #     "step": step_iterator.current,
+    #     "prepare": prepare_ask_resident_urbanius_club,
+    #     "next": next(step_iterator)
+    # },
+    # "RESIDENT_URBANIUS_CLUB": {
+    #     "step": step_iterator.current,
+    #     "prepare": prepare_ask_businesss_club_member,
+    #     "next": next(step_iterator)
+    # },
+    # "BUSINESS_CLUB_MEMBER": {
+    #     "step": step_iterator.current,
+    #     "prepare": prepare_ask_hobby,
+    #     "next": next(step_iterator)
+    # },
+    # "HOBBY": {
+    #     "step": step_iterator.current,
+    #     "prepare": prepare_ask_find_out,
+    #     "next": next(step_iterator)
+    # },
+    # "FIND_OUT": {
+    #     "step": step_iterator.current,
+    #     "prepare": prepare_ask_socials_nets,
+    #     "next": next(step_iterator)
+    # },
+    # "SOCIAL_NETS": {
+    #     "step": step_iterator.current,
+    #     "prepare": prepare_ask_phone,
+    #     "next": next(step_iterator)
+    # },
     "PHONE": {
         "step": step_iterator.current,
-        "prepare": prepare_ask_email,
+        "prepare": "",
+        # "prepare": prepare_ask_photo,
         "next": end_registration
+        # "next": next(step_iterator)
     },
-
+    # "PHOTO": {
+    #     "step": step_iterator.current,
+    #     "prepare": "",
+    #     "next": end_registration
+    # },
 }
 def stop_conversation(update: Update, context: CallbackContext):
     # Заканчиваем разговор.
