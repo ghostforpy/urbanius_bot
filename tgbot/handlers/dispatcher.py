@@ -30,6 +30,7 @@ from advert.handlers import setup_dispatcher_conv as setup_dispatcher_advert
 from sheduler.tasks import restarts_tasks
 
 from telegram.update import Update
+from telegram import BotCommand
 from telegram.ext.callbackcontext import CallbackContext
 # Отладочный пререхватчик. Ловит все апдейты 
 # Когда основные хендлеры не ловят апдейт он ловится тут
@@ -97,3 +98,15 @@ def process_telegram_event(update_json):
 bot = telegram.Bot(settings.TELEGRAM_TOKEN)
 dispatcher = setup_dispatcher(Dispatcher(bot, None, workers=4, use_context=True))
 TELEGRAM_BOT_USERNAME = bot.get_me()["username"]
+bot.set_my_commands(
+    [
+        BotCommand("/cancel", "Отмена"),
+        BotCommand("/start", "Начало"),
+    ]
+)
+bot.set_webhook(
+    url="https://api.telegram.org/bot{}/setWebhook?url={}".format(
+        settings.TELEGRAM_TOKEN,
+        settings.TELEGRAM_WEBHOOK_FULL
+    )
+)
