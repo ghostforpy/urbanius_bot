@@ -6,6 +6,9 @@ local:
 local_web:
 	docker-compose -f docker-compose.local.yml up web $(SERVICE) --remove-orphans
 
+local_bot:
+	docker-compose -f docker-compose.local.yml up bot $(SERVICE) --remove-orphans
+
 local_build:
 	docker-compose -f docker-compose.local.yml up --build --remove-orphans
 
