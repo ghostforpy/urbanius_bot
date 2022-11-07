@@ -28,6 +28,30 @@ from tgbot.handlers.utils import send_message
 def prepare_approval(update: Update, new_user: NewUser):
     update.message.reply_text(ASK_APPROVAL, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
 
+def prepare_resident_urbanius_club(update: Update, new_user: NewUser):
+    update.message.reply_text(
+        ASK_RESIDENT_URBANIUS_CLUB,
+        reply_markup=make_keyboard(YES_NO_CANCEL,"usual",2)
+    )
+
+def prepare_business_club_member(update: Update, new_user: NewUser):
+    update.message.reply_text(
+        ASK_BUSINESS_CLUB_MEMBER,
+        reply_markup=make_keyboard(CANCEL_SKIP,"usual",2)
+    )
+
+def prepare_job_region(update: Update, new_user: NewUser):
+    update.message.reply_text(
+        ASK_JOB_REGION,
+        reply_markup=make_keyboard(CANCEL,"usual",2)
+    )
+
+def prepare_deep_link(update: Update, new_user: NewUser):
+    update.message.reply_text(
+        ASK_DEEP_LINK,
+        reply_markup=make_keyboard(CANCEL_SKIP,"usual",2)
+    )
+
 def prepare_ask_phone(update: Update, new_user: NewUser):
     update.message.reply_text(ASK_PHONE, reply_markup=make_keyboard(CANCEL,"usual",2,REQUEST_PHONE))
 

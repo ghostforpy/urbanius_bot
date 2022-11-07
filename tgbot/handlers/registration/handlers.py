@@ -247,6 +247,68 @@ def processing_aproval(update: Update, context: CallbackContext):
     else:
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
 
+def processing_resident_urbanius_club(update: Update, context: CallbackContext):
+    if update.message.text == CANCEL["cancel"]: # решили прервать регистрацию
+       stop_conversation(update, context)
+       return ConversationHandler.END
+    if update.message.text not in YES_NO.keys():
+        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(YES_NO,"usual",2))
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+    if update.message.text == YES_NO["yes"]:
+        new_user.resident_urbanius_club = True
+        new_user.save()
+    f = STEPS["RESIDENT_URBANIUS_CLUB"]["prepare"]
+    f(update, new_user)
+    return STEPS["RESIDENT_URBANIUS_CLUB"]["next"]
+
+def processing_business_club_member(update: Update, context: CallbackContext):
+    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+       stop_conversation(update, context)
+       return ConversationHandler.END
+    elif update.message.text != CANCEL_SKIP["skip"]:
+        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+        new_user.business_club_member = update.message.text
+        new_user.save()
+    f = STEPS["RESIDENT_URBANIUS_CLUB"]["prepare"]
+    f(update, new_user)
+    return STEPS["RESIDENT_URBANIUS_CLUB"]["next"]
+
+def processing_business_club_member(update: Update, context: CallbackContext):
+    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+       stop_conversation(update, context)
+       return ConversationHandler.END
+    elif update.message.text != CANCEL_SKIP["skip"]:
+        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+        new_user.business_club_member = update.message.text
+        new_user.save()
+    f = STEPS["BUSINESS_CLUB_MEMBER"]["prepare"]
+    f(update, new_user)
+    return STEPS["BUSINESS_CLUB_MEMBER"]["next"]
+
+def processing_job_region(update: Update, context: CallbackContext):
+    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+       stop_conversation(update, context)
+       return ConversationHandler.END
+    elif update.message.text != CANCEL_SKIP["skip"]:
+        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+        new_user.job_region = update.message.text
+        new_user.save()
+    f = STEPS["JOB_REGION"]["prepare"]
+    f(update, new_user)
+    return STEPS["JOB_REGION"]["next"]
+
+def processing_deep_link(update: Update, context: CallbackContext):
+    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+       stop_conversation(update, context)
+       return ConversationHandler.END
+    elif update.message.text != CANCEL_SKIP["skip"]:
+        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+        new_user.deep_link = update.message.text.replace("@","")
+        new_user.save()
+    f = STEPS["DEEP_LINK"]["prepare"]
+    f(update, new_user)
+    return STEPS["DEEP_LINK"]["next"]
+
 def processing_company(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
     if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
@@ -624,7 +686,11 @@ def setup_dispatcher_conv(dp: Dispatcher):
             STEPS["COMPANY"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company)],
             STEPS["JOB"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_job)],
             STEPS["SITE"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_site)],
+            STEPS["JOB_REGION"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_job_region)],
 
+            STEPS["RESIDENT_URBANIUS_CLUB"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_resident_urbanius_club)],
+            STEPS["BUSINESS_CLUB_MEMBER"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_business_club_member)],
+            STEPS["DEEP_LINK"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_deep_link)],
             STEPS["APROVAL"]["step"]:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_aproval)],
             STEPS["PHONE"]["step"]: [MessageHandler((Filters.contact | Filters.text) & FilterPrivateNoCommand, processing_phone)],
             # STEPS["FIO"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_fio)],

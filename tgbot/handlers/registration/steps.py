@@ -10,7 +10,11 @@ from .prepares import (
     prepare_ask_site,
     prepare_ask_lastname,
     prepare_ask_surname,
-    prepare_approval
+    prepare_approval,
+    prepare_resident_urbanius_club,
+    prepare_business_club_member,
+    prepare_deep_link,
+    prepare_job_region
 )
 from .utils import counter
 from .saveuser import end_registration
@@ -53,6 +57,26 @@ STEPS = {
         "next": next(step_iterator)
     },
     "SITE": {
+        "step": step_iterator.current,
+        "prepare": prepare_job_region,
+        "next": next(step_iterator)
+    },
+    "JOB_REGION": {
+        "step": step_iterator.current,
+        "prepare": prepare_resident_urbanius_club,
+        "next": next(step_iterator)
+    },
+    "RESIDENT_URBANIUS_CLUB": {
+        "step": step_iterator.current,
+        "prepare": prepare_business_club_member,
+        "next": next(step_iterator)
+    },
+    "BUSINESS_CLUB_MEMBER": {
+        "step": step_iterator.current,
+        "prepare": prepare_deep_link,
+        "next": next(step_iterator)
+    },
+    "DEEP_LINK": {
         "step": step_iterator.current,
         "prepare": prepare_approval,
         "next": next(step_iterator)
