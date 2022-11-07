@@ -29,7 +29,7 @@ services:
     container_name: urban_bot
     command: python run_pooling.py
     volumes:
-      - .:/code
+      - .:/app:z
     env_file:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
