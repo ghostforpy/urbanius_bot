@@ -35,7 +35,8 @@ class AbstractTgUser(models.Model):
     citi = models.CharField("Город", max_length=150, null=True, blank=True)
     job_region = models.CharField("Регион присутствия", max_length=150, null=True, blank=True)
     site = models.CharField("Сайт", max_length=150, null=True, blank=True)
-
+    resident_urbanius_club = models.BooleanField("Член клуба URBANIUS CLUB", default=False)
+    business_club_member = models.CharField("Членство в бизнес клубах", max_length=150, null=True, blank=True)
     # О себе:
     about = models.TextField("О себе", null=True, blank=True)
 
