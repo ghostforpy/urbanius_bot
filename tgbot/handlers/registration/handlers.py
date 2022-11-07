@@ -238,8 +238,8 @@ def processing_aproval(update: Update, context: CallbackContext):
         # update.message.reply_text(ASK_PHONE,  reply_markup=make_keyboard(CANCEL,"usual",2,REQUEST_PHONE))
         # prepare_ask_phone(update)
         f = STEPS["APROVAL"]["prepare"]
-        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-        f(update, new_user)
+        # new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+        f(update, None)
         return STEPS["APROVAL"]["next"]
     elif update.message.text == APPROVAL_ANSWERS["no"]: # В этом поле хранится отказ
         stop_conversation(update, context)
@@ -253,8 +253,9 @@ def processing_resident_urbanius_club(update: Update, context: CallbackContext):
        return ConversationHandler.END
     if update.message.text not in YES_NO.keys():
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(YES_NO,"usual",2))
-    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+    new_user = None
     if update.message.text == YES_NO["yes"]:
+        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
         new_user.resident_urbanius_club = True
         new_user.save()
     f = STEPS["RESIDENT_URBANIUS_CLUB"]["prepare"]
@@ -262,6 +263,7 @@ def processing_resident_urbanius_club(update: Update, context: CallbackContext):
     return STEPS["RESIDENT_URBANIUS_CLUB"]["next"]
 
 def processing_business_club_member(update: Update, context: CallbackContext):
+    new_user = None
     if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
        stop_conversation(update, context)
        return ConversationHandler.END
@@ -274,6 +276,7 @@ def processing_business_club_member(update: Update, context: CallbackContext):
     return STEPS["RESIDENT_URBANIUS_CLUB"]["next"]
 
 def processing_business_club_member(update: Update, context: CallbackContext):
+    new_user = None
     if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
        stop_conversation(update, context)
        return ConversationHandler.END
@@ -286,6 +289,7 @@ def processing_business_club_member(update: Update, context: CallbackContext):
     return STEPS["BUSINESS_CLUB_MEMBER"]["next"]
 
 def processing_job_region(update: Update, context: CallbackContext):
+    new_user = None
     if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
        stop_conversation(update, context)
        return ConversationHandler.END
@@ -298,6 +302,7 @@ def processing_job_region(update: Update, context: CallbackContext):
     return STEPS["JOB_REGION"]["next"]
 
 def processing_deep_link(update: Update, context: CallbackContext):
+    new_user = None
     if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
        stop_conversation(update, context)
        return ConversationHandler.END
