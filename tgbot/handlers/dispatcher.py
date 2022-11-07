@@ -104,9 +104,10 @@ bot.set_my_commands(
         BotCommand("/start", "Начало"),
     ]
 )
-bot.set_webhook(
-    url="https://api.telegram.org/bot{}/setWebhook?url={}".format(
-        settings.TELEGRAM_TOKEN,
-        settings.TELEGRAM_WEBHOOK_FULL
+if not settings.DEBUG:
+    bot.set_webhook(
+        url="https://api.telegram.org/bot{}/setWebhook?url={}".format(
+            settings.TELEGRAM_TOKEN,
+            settings.TELEGRAM_WEBHOOK_FULL
+        )
     )
-)
