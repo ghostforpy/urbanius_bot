@@ -1,5 +1,6 @@
 import random
 import telegram
+from django.db import models
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
