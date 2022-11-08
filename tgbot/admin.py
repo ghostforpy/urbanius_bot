@@ -138,6 +138,10 @@ class BusinessNeedsAdmin(admin.ModelAdmin):
 class BusinessBenefitsAdmin(admin.ModelAdmin):
     pass
 
+@admin.register(BusinessBranches)
+class BusinessBranchesAdmin(admin.ModelAdmin):
+    pass
+
 @admin.register(tgGroups)
 class tgGroupsAdmin(admin.ModelAdmin) :
     list_display = ("name", "chat_id", "link") 
