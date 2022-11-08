@@ -8,6 +8,7 @@ from telegram.ext import (
 )
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
+from django.conf import settings
 from tgbot.models.business_benefits import BusinessBenefits
 from tgbot.models.business_branches import BusinessBranches
 from tgbot.models.business_needs import BusinessNeeds
@@ -30,6 +31,8 @@ from tgbot.models import (
 # from sheduler.models import MessageTemplates
 
 # from tgbot.handlers.utils import send_message, send_mess_by_tmplt
+from tgbot.handlers.files import _get_file_id
+
 from tgbot.handlers.keyboard import make_keyboard
 # from tgbot.handlers.main.answers import get_start_menu
 # from tgbot.handlers.main.messages import get_start_mess
@@ -518,40 +521,47 @@ def processing_site(update: Update, context: CallbackContext):
     # return end_registration(update, context, new_user)
 
 def processing_phone(update: Update, context: CallbackContext):
-    # new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-    # fullname = " ".join([new_user.first_name, utils.mystr(new_user.last_name), utils.mystr(new_user.sur_name)])
     if update.message.contact != None: # Был прислан контакт        
         # Запоминаем телефон
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
         new_user.telefon = update.message.contact.phone_number
         new_user.save()
-        # Если пользователь новый проверяем есть ли у него в Телеграмм имя пользователя
-        # if new_user.username == None:
-        #      update.message.reply_text(USERNAME_NEEDED)
         if isinstance(STEPS["PHONE"]["next"], int):
             f = STEPS["PHONE"]["prepare"]
             f(update, new_user)
             return STEPS["PHONE"]["next"]
         else:
-        # keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        # update.message.reply_text(ASK_FIO.format(fullname), reply_markup=keyboard)
             return end_registration(update, context, new_user)
-    # elif update.message.text == CANCEL["cancel"]: # Отказались отправить телефон
-    #     stop_conversation(update, context)
-    #     return ConversationHandler.END
-    # elif update.message.text == CANCEL_SKIP["skip"]:
-    #     if isinstance(STEPS["PHONE"]["next"], int):
-    #         f = STEPS["PHONE"]["prepare"]
-    #         f(update, new_user)
-    #         return STEPS["PHONE"]["next"]
-    #     else:
-    #     # keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-    #     # update.message.reply_text(ASK_FIO.format(fullname), reply_markup=keyboard)
-    #         return end_registration(update, context, new_user)
     else:
-        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(CANCEL,"usual",2,REQUEST_PHONE))
+        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard({},"usual",2,REQUEST_PHONE))
 
+def processing_photo(update: Update, context: CallbackContext):
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+    # if update.message.photo != None:
+    # user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+    foto_id, filename_orig = _get_file_id(update.message)
+    filename_lst = filename_orig.split(".")
+    newFile = context.bot.get_file(foto_id)
+    filename = utils.get_uniq_file_name(settings.BASE_DIR / "media/user_fotos",filename_lst[0],filename_lst[1])
+    newFile.download(settings.BASE_DIR / ("media/user_fotos/"+filename))
+    new_user.main_photo = "user_fotos/"+filename
+    new_user.main_photo_id = foto_id
+    new_user.save()
+    if isinstance(STEPS["PHOTO"]["next"], int):
+        f = STEPS["PHOTO"]["prepare"]
+        f(update, new_user)
+        return STEPS["PHOTO"]["next"]
+    else:
+        return end_registration(update, context, new_user)
+    # else:
+    #     update.message.reply_text(
+    #         "Пришлите именно фотографию",
+    #         reply_markup=make_keyboard({},"usual",2,{})
+    #     )
 
+def processing_photo_txt(update: Update, context: CallbackContext):
+    update.message.reply_text("Пришлите именно фотографию")
+    return
 # def processing_about_fin(update: Update, context: CallbackContext):
 #     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
 #     if update.message.text == CANCEL["cancel"]:
@@ -756,17 +766,15 @@ def setup_dispatcher_conv(dp: Dispatcher):
                 CallbackQueryHandler(processing_company_business_branches),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_branches)
                 ],
-
             STEPS["RESIDENT_URBANIUS_CLUB"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_resident_urbanius_club)],
             STEPS["BUSINESS_CLUB_MEMBER"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_business_club_member)],
             STEPS["DEEP_LINK"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_deep_link)],
             STEPS["APROVAL"]["step"]:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_aproval)],
             STEPS["PHONE"]["step"]: [MessageHandler((Filters.contact | Filters.text) & FilterPrivateNoCommand, processing_phone)],
-            # STEPS["FIO"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_fio)],
-            # ABOUT: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about_fin)],
-            # STEPS["ABOUT"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_about)],
-            # STEPS["BIRTHDAY"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_birhday)],
-            # EMAIL: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_email)],
+            STEPS["PHOTO"]["step"]:[
+                MessageHandler(Filters.photo & FilterPrivateNoCommand, processing_photo),
+                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_photo_txt)
+                ],
         },
         # точка выхода из разговора
         fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),

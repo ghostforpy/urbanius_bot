@@ -1,5 +1,6 @@
 # import logging
 from telegram.update import Update
+from telegram import ReplyKeyboardRemove
 # from telegram.ext.callbackcontext import CallbackContext
 # from telegram.ext import (
 #     Dispatcher, CommandHandler,
@@ -179,6 +180,9 @@ def prepare_company_business_branches(update: Update, new_user: NewUser):
 
 def prepare_ask_phone(update: Update, new_user: NewUser):
     update.message.reply_text(ASK_PHONE, reply_markup=make_keyboard({},"usual",2,REQUEST_PHONE))
+
+def prepare_ask_photo(update: Update, new_user: NewUser):
+    update.message.reply_text(ASK_PHOTO, reply_markup=ReplyKeyboardRemove())
 
 def prepare_ask_fio(update: Update, new_user: NewUser):
     fullname = " ".join([new_user.first_name, utils.mystr(new_user.last_name), utils.mystr(new_user.sur_name)])

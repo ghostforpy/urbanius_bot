@@ -15,6 +15,8 @@ from .prepares import (
     prepare_company_number_of_employees,
     prepare_company_business_needs,
     prepare_company_business_benefits,
+    prepare_company_business_branches,
+    prepare_ask_photo,
     prepare_ask_first_name
 )
 from .utils import counter
@@ -115,8 +117,14 @@ STEPS = {
     },
     "PHONE": {
         "step": step_iterator.current,
+        "prepare": prepare_ask_photo,
+        "self_prepare": prepare_ask_phone,
+        "next": next(step_iterator)
+    },
+    "PHOTO": {
+        "step": step_iterator.current,
         "prepare": "",
-        # "prepare": prepare_ask_photo,
+        "self_prepare": prepare_ask_photo,
         "next": end_registration
         # "next": next(step_iterator)
     },
@@ -138,41 +146,14 @@ STEPS = {
     #     "next": next(step_iterator)
     # },
 
-    # "BUSINESS_BRANCH": {
-    #     "step": step_iterator.current,
-    #     "prepare": prepare_ask_money_turnover,
-    #     "next": next(step_iterator)
-    # },
-    # "MONEY_TURNOVER": {
-    #     "step": step_iterator.current,
-    #     "prepare": prepare_ask_tags,
-    #     "next": next(step_iterator)
-    # },
+
 #     "TAGS": {
     #     "step": step_iterator.current,
     #     "prepare": prepare_ask_business_needs,
     #     "next": next(step_iterator)
     # },
-    # "BUSINESS_NEEDS": {
-    #     "step": step_iterator.current,
-    #     "prepare": prepare_ask_user_benefit,
-    #     "next": next(step_iterator)
-    # },
-    # "USER_BENEFIT": {
-    #     "step": step_iterator.current,
-    #     "prepare": prepare_ask_resident_urbanius_club,
-    #     "next": next(step_iterator)
-    # },
-    # "RESIDENT_URBANIUS_CLUB": {
-    #     "step": step_iterator.current,
-    #     "prepare": prepare_ask_businesss_club_member,
-    #     "next": next(step_iterator)
-    # },
-    # "BUSINESS_CLUB_MEMBER": {
-    #     "step": step_iterator.current,
-    #     "prepare": prepare_ask_hobby,
-    #     "next": next(step_iterator)
-    # },
+
+
     # "HOBBY": {
     #     "step": step_iterator.current,
     #     "prepare": prepare_ask_find_out,
@@ -188,16 +169,3 @@ STEPS = {
     #     "prepare": prepare_ask_phone,
     #     "next": next(step_iterator)
     # },
-    # "PHONE": {
-    #     "step": step_iterator.current,
-    #     "prepare": "",
-    #     # "prepare": prepare_ask_photo,
-    #     "next": end_registration
-    #     # "next": next(step_iterator)
-    # },
-    # "PHOTO": {
-    #     "step": step_iterator.current,
-    #     "prepare": "",
-    #     "next": end_registration
-    # },
-}
