@@ -7,6 +7,7 @@ from telegram.ext import (
     Filters,
    # ConversationHandler,
 )
+from tgbot.models.business_benefits import BusinessBenefits
 from tgbot.my_telegram import ConversationHandler
 
 from dtb.constants import MessageTemplatesCode
@@ -113,6 +114,34 @@ def prepare_company_business_needs(update: Update, new_user: NewUser):
             ASK_COMPANY_COMPANY_BUSINESS_NEEDS,
             reply_markup=make_keyboard(
                 company_business_needs,
+                "inline",
+                1,
+                footer_buttons=footer_buttons
+            )
+        )
+
+def prepare_company_business_benefits(update: Update, new_user: NewUser):
+    company_business_benefits = dict()
+    for n in BusinessBenefits.objects.all():
+        company_business_benefits[str(n.id)] = n.title
+        if n in new_user.business_benefits.all():
+            company_business_benefits[str(n.id)] = CHECK_ICON + company_business_benefits[str(n.id)]
+    footer_buttons = NEXT if new_user.business_benefits.count() > 0 else []
+    if update.message is not None:
+        update.message.reply_text(
+            ASK_COMPANY_COMPANY_BUSINESS_BENEFITS,
+            reply_markup=make_keyboard(
+                company_business_benefits,
+                "inline",
+                1,
+                footer_buttons=footer_buttons
+            )
+        )
+    elif update.callback_query is not None:
+        update.callback_query.edit_message_text(
+            ASK_COMPANY_COMPANY_BUSINESS_BENEFITS,
+            reply_markup=make_keyboard(
+                company_business_benefits,
                 "inline",
                 1,
                 footer_buttons=footer_buttons

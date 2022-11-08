@@ -8,6 +8,7 @@ from telegram.ext import (
 )
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
+from tgbot.models.business_benefits import BusinessBenefits
 from tgbot.models.business_needs import BusinessNeeds
 
 from tgbot.my_telegram import ConversationHandler
@@ -240,6 +241,43 @@ def processing_company_business_needs(update: Update, context: CallbackContext):
         f(update, new_user)
         return
 
+def processing_company_business_benefits(update: Update, context: CallbackContext):
+    if update.message is not None:
+        update.message.reply_text(
+            "Используйте предложенные варианты.",
+            reply_markup=make_keyboard({},"usual",2)
+        )
+        f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
+        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+        f(update, new_user)
+        return
+    new_user = NewUser.objects.get(user_id = update.callback_query.from_user.id)
+    query = update.callback_query
+    variant = query.data
+    query.answer()
+    if variant == "next":
+        f = STEPS["COMPANY_BUSINESS_BENEFITS"]["prepare"]
+        f(update, new_user)
+        return STEPS["COMPANY_BUSINESS_BENEFITS"]["next"]
+    benefit = BusinessBenefits.objects.get(id=variant)
+    if benefit in new_user.business_benefits.all():
+        new_user.business_benefits.remove(benefit)
+        f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
+        f(update, new_user)
+        return
+    else:
+        if new_user.business_benefits.count() < MAX_BUSINESS_BENEFITS:
+            new_user.business_benefits.add(benefit)
+        else:
+            send_message(
+                user_id=update.callback_query.from_user.id,
+                text="Не допускается выбрать более {} вариантов".format(MAX_BUSINESS_BENEFITS),
+                reply_markup=make_keyboard({},"inline",1)
+            )
+        f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
+        f(update, new_user)
+        return
+
 def processing_job_region(update: Update, context: CallbackContext):
     new_user = None
     # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
@@ -413,19 +451,19 @@ def processing_about(update: Update, context: CallbackContext):
 
 def processing_site(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
-       stop_conversation(update, context)
-       return ConversationHandler.END
-    # elif update.message.text == CANCEL_SKIP["skip"]:
-    #     site = ""
-    else:
-        validate = URLValidator()
-        site = update.message.text
-        try:
-            validate(site)
-        except ValidationError:
-            update.message.reply_text(BAD_SITE, reply_markup=make_keyboard(CANCEL,"usual",2))
-            return
+    # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+    #    stop_conversation(update, context)
+    #    return ConversationHandler.END
+    # # elif update.message.text == CANCEL_SKIP["skip"]:
+    # #     site = ""
+    # else:
+    validate = URLValidator()
+    site = update.message.text
+    try:
+        validate(site)
+    except ValidationError:
+        update.message.reply_text(BAD_SITE, reply_markup=make_keyboard({},"usual",2))
+        return
     new_user.site = site
     new_user.registered = True
     new_user.save()
@@ -664,6 +702,10 @@ def setup_dispatcher_conv(dp: Dispatcher):
             STEPS["COMPANY_BUSINESS_NEEDS"]["step"]: [
                 CallbackQueryHandler(processing_company_business_needs),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_needs)
+                ],
+            STEPS["COMPANY_BUSINESS_BENEFITS"]["step"]: [
+                CallbackQueryHandler(processing_company_business_benefits),
+                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_benefits)
                 ],
 
             STEPS["RESIDENT_URBANIUS_CLUB"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_resident_urbanius_club)],

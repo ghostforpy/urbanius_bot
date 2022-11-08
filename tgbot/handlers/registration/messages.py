@@ -74,8 +74,10 @@ ASK_COMPANY_TURNOVER = "Выберите оборот компании в год
 
 ASK_COMPANY_NUMBER_OF_EMPLOYESS = "Выберите численность сотрудников вашего бизнеса"
 
-MAX_BUSINESS_NEEDS = 3
+MAX_BUSINESS_NEEDS = MAX_BUSINESS_BENEFITS = 3
 
 ASK_COMPANY_COMPANY_BUSINESS_NEEDS = "Выберите регулярные потребности вашего бизнеса (не более {})".format(MAX_BUSINESS_NEEDS)
+
+ASK_COMPANY_COMPANY_BUSINESS_BENEFITS = "Выберите чем вы можете быть полезны участникам сообщества (не более {})".format(MAX_BUSINESS_NEEDS)
 
 CHECK_ICON = "✔️ ☑️ "

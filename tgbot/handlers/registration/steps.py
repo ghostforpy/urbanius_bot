@@ -13,7 +13,8 @@ from .prepares import (
     prepare_job_region,
     prepare_company_turnover,
     prepare_company_number_of_employees,
-    prepare_company_business_needs
+    prepare_company_business_needs,
+    prepare_company_business_benefits
 )
 from .utils import counter
 from .saveuser import end_registration
@@ -74,8 +75,14 @@ STEPS = {
     },
     "COMPANY_BUSINESS_NEEDS": {
         "step": step_iterator.current,
-        "prepare": prepare_resident_urbanius_club,
+        "prepare": prepare_company_business_benefits,
         "self_prepare": prepare_company_business_needs,
+        "next": next(step_iterator)
+    },
+    "COMPANY_BUSINESS_BENEFITS": {
+        "step": step_iterator.current,
+        "prepare": prepare_resident_urbanius_club,
+        "self_prepare": prepare_company_business_benefits,
         "next": next(step_iterator)
     },
     "RESIDENT_URBANIUS_CLUB": {

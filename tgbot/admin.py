@@ -48,9 +48,9 @@ class UserAdmin(admin.ModelAdmin):
               ('is_blocked_bot', 'is_banned', 'is_admin', 'is_moderator'),
               ("verified_by_security", "random_coffe_on"),
               ('company', 'job', 'branch', 'inn'),
-              ('citi', 'job_region', 'site'),
+              ('citi', 'job_region', 'site', 'number_of_employees'),
               ('segment', 'company_turnover'),
-              ('number_of_employees', 'business_needs'),
+              ('business_needs', 'business_benefits'),
                'about',
                'sport',
                'hobby',
@@ -132,6 +132,10 @@ class StatusAdmin(admin.ModelAdmin):
 
 @admin.register(BusinessNeeds)
 class BusinessNeedsAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(BusinessBenefits)
+class BusinessBenefitsAdmin(admin.ModelAdmin):
     pass
 
 @admin.register(tgGroups)

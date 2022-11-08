@@ -54,6 +54,7 @@ def end_registration(update:Update, context: CallbackContext, new_user: NewUser)
     user.save()
 
     user.business_needs.set(new_user.business_needs.all())
+    user.business_benefits.set(new_user.business_benefits.all())
     # Назначение пользователю рекомендателя, если он пришел по партнерской ссылке
     referrer = User.get_user_by_username_or_user_id(user.deep_link)
     if referrer:
