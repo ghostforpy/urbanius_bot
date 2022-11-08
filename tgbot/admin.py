@@ -51,6 +51,7 @@ class UserAdmin(admin.ModelAdmin):
               ('citi', 'job_region', 'site', 'number_of_employees'),
               ('segment', 'company_turnover'),
               ('business_needs', 'business_benefits'),
+              ('business_branches'),
                'about',
                'sport',
                'hobby',
