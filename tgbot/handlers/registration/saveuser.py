@@ -47,10 +47,13 @@ def end_registration(update:Update, context: CallbackContext, new_user: NewUser)
     user.business_club_member = new_user.business_club_member
     user.company_turnover = new_user.company_turnover
     user.number_of_employees = new_user.number_of_employees
+
     user.status = Status.objects.get(code = StatusCode.APPLICANT)
     user.is_blocked_bot = True
     user.comment = "Ожидает подтверждения регистрации"
     user.save()
+
+    user.business_needs.set(new_user.business_needs.all())
     # Назначение пользователю рекомендателя, если он пришел по партнерской ссылке
     referrer = User.get_user_by_username_or_user_id(user.deep_link)
     if referrer:

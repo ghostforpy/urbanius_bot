@@ -82,10 +82,13 @@ def prepare_company_number_of_employees(update: Update, new_user: NewUser):
             reply_markup=make_keyboard(company_number_of_employees,"inline",1)
         )
     elif update.callback_query is not None:
-        send_message(
-            user_id=update.callback_query.from_user.id,
-            text=ASK_COMPANY_NUMBER_OF_EMPLOYESS,
-            reply_markup=make_keyboard(company_number_of_employees,"inline",1)
+        update.callback_query.edit_message_text(
+            ASK_COMPANY_NUMBER_OF_EMPLOYESS,
+            reply_markup=make_keyboard(
+                company_number_of_employees,
+                "inline",
+                1,
+            )
         )
 
 def prepare_company_business_needs(update: Update, new_user: NewUser):
@@ -106,13 +109,14 @@ def prepare_company_business_needs(update: Update, new_user: NewUser):
             )
         )
     elif update.callback_query is not None:
-        update.callback_query.edit_message_reply_markup(
+        update.callback_query.edit_message_text(
+            ASK_COMPANY_COMPANY_BUSINESS_NEEDS,
             reply_markup=make_keyboard(
                 company_business_needs,
                 "inline",
                 1,
                 footer_buttons=footer_buttons
-                )
+            )
         )
 
 def prepare_ask_phone(update: Update, new_user: NewUser):
