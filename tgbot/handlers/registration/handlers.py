@@ -124,18 +124,23 @@ def processing_surname(update: Update, context: CallbackContext):
     return STEPS["SURNAME"]["next"]
 
 def processing_aproval(update: Update, context: CallbackContext):
-    if update.message.text == APPROVAL_ANSWERS["yes"]: # В этом поле хранится согласие
-        # update.message.reply_text(ASK_PHONE,  reply_markup=make_keyboard(CANCEL,"usual",2,REQUEST_PHONE))
-        # prepare_ask_phone(update)
-        f = STEPS["APROVAL"]["prepare"]
-        # new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-        f(update, None)
-        return STEPS["APROVAL"]["next"]
-    elif update.message.text == APPROVAL_ANSWERS["no"]: # В этом поле хранится отказ
-        stop_conversation(update, context)
-        return ConversationHandler.END
-    else:
+    if update.message.text not in [APPROVAL_ANSWERS[i] for i in APPROVAL_ANSWERS]:
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
+    f = STEPS["APROVAL"]["prepare"]
+    f(update, None)
+    return STEPS["APROVAL"]["next"]
+    # if update.message.text == APPROVAL_ANSWERS["yes"]: # В этом поле хранится согласие
+    #     # update.message.reply_text(ASK_PHONE,  reply_markup=make_keyboard(CANCEL,"usual",2,REQUEST_PHONE))
+    #     # prepare_ask_phone(update)
+    #     f = STEPS["APROVAL"]["prepare"]
+    #     # new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+    #     f(update, None)
+    #     return STEPS["APROVAL"]["next"]
+    # elif update.message.text == APPROVAL_ANSWERS["no"]: # В этом поле хранится отказ
+    #     stop_conversation(update, context)
+    #     return ConversationHandler.END
+    # else:
+    #     update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
 
 def processing_resident_urbanius_club(update: Update, context: CallbackContext):
     # if update.message.text == CANCEL["cancel"]: # решили прервать регистрацию
