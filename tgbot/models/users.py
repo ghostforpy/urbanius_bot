@@ -24,7 +24,7 @@ class AbstractTgUser(models.Model):
     email = models.EmailField("E-mail", max_length=100, null=True, blank=True)
     telefon = models.CharField("Телефон", max_length=13, null=True, blank=True)
     sur_name = models.CharField("Отчество", max_length=150, null=True, blank=True)
-    date_of_birth = models.DateField("Дата рождения", null=True)
+    date_of_birth = models.DateField("Дата рождения", null=True, blank=True)
     main_photo = models.ImageField("Основное фото", upload_to='user_fotos', null=True, blank=True)
     main_photo_id = models.CharField("id основного фото", max_length=150, null=True, blank=True)
 
