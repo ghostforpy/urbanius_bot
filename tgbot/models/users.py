@@ -55,54 +55,12 @@ class AbstractTgUser(models.Model):
         return res
 
 class NewUser(AbstractTgUser):
-    # Личная инфо:
-    # user_id = models.BigIntegerField(primary_key=True)
-    # username = models.CharField("Телеграм логин",max_length=32, null=True, blank=True)
-    # last_name = models.CharField("Фамилия", max_length=256, null=True, blank=True)
-    # first_name = models.CharField("Имя", max_length=256)
-    # email = models.EmailField("E-mail", max_length=100, null=True, blank=True)
-    # telefon = models.CharField("Телефон", max_length=13, null=True, blank=True)
-    # sur_name = models.CharField("Отчество", max_length=150, null=True, blank=True)
-    # date_of_birth = models.DateField("Дата рождения", null=True)    
-    # Бизнес инфо:
-    # company = models.CharField("Компания", max_length=150, null=True, blank=True)
-    # job = models.CharField("Должность", max_length=150, null=True, blank=True)
-    # branch = models.CharField("Отрасль", max_length=150, null=True, blank=True)
-    # citi = models.CharField("Город", max_length=150, null=True, blank=True)
-    # job_region = models.CharField("Регион присутствия", max_length=150, null=True, blank=True)
-    # site = models.CharField("Сайт", max_length=150, null=True, blank=True)
-
-    # О себе:
-    # about = models.TextField("О себе", null=True, blank=True)
-
-
-    # Дополнительные поля
-    # created_at = models.DateTimeField("Создан", auto_now_add=True)
-    # language_code = models.CharField(max_length=8, null=True, blank=True, help_text="Telegram client's lang")
-    # deep_link = models.CharField("Рекомендательная сылка", max_length=64, null=True, blank=True)
-    # registered = models.BooleanField("Зарегистрирован", default=False)
-    
-    # def __str__(self):
-    #     res = f'@{self.username}' if self.username is not None else f'{self.user_id}'
-    #     res = " ".join([res, str(self.first_name), str(self.last_name)])
-    #     return res
-
     class Meta:
         verbose_name = 'Новый пользователь'
         verbose_name_plural = 'Новые пользователи'
 
 class User(AbstractTgUser):
     # Личная инфо:
-    # user_id = models.BigIntegerField(primary_key=True)
-    # username = models.CharField("Телеграм логин",max_length=32, null=True, blank=True)
-    # last_name = models.CharField("Фамилия", max_length=256, null=True, blank=True)
-    # first_name = models.CharField("Имя", max_length=256)
-    # email = models.EmailField("E-mail", max_length=100, null=True, blank=True)
-    # telefon = models.CharField("Телефон", max_length=13, null=True, blank=True)
-    # sur_name = models.CharField("Отчество", max_length=150, null=True, blank=True)
-    # date_of_birth = models.DateField("Дата рождения", null=True, blank=True)    
-    # main_photo = models.ImageField("Основное фото", upload_to='user_fotos', null=True, blank=True)
-    # main_photo_id = models.CharField("id основного фото", max_length=150, null=True, blank=True)
     status = models.ForeignKey("Status", on_delete=models.PROTECT, verbose_name="Статус",null=True, blank=True)
     rating = models.IntegerField("Итоговый ретинг", default=3, null=True, blank=True)
 
@@ -113,35 +71,19 @@ class User(AbstractTgUser):
     random_coffe_on = models.BooleanField("Подключено Random coffee",default=False)
     verified_by_security = models.BooleanField("Проверен службой безопасности",default=False)
     # Бизнес инфо:
-    # company = models.CharField("Компания", max_length=150, null=True, blank=True)
-    # job = models.CharField("Должность", max_length=150, null=True, blank=True)
-    # branch = models.CharField("Отрасль", max_length=150, null=True, blank=True)
-    # citi = models.CharField("Город", max_length=150, null=True, blank=True)
-    # job_region = models.CharField("Регион присутствия", max_length=150, null=True, blank=True)
-    # site = models.CharField("Сайт", max_length=150, null=True, blank=True)
     inn = models.CharField("ИНН", max_length=12, null=True, blank=True)
     segment = models.CharField("Сегмент", max_length=150, null=True, blank=True)
     turnover =  models.IntegerField("Оборот компании",default=0 , null=True, blank=True)
     
     # О себе:
-    # about = models.TextField("О себе", null=True, blank=True)
     sport = models.TextField("Спорт", null=True, blank=True)
     hobby = models.TextField("Хобби", null=True, blank=True)
     tags = models.TextField("Тэги",  null=True, blank=True)
     needs = models.TextField("Потребности", null=True, blank=True)
     comment = models.TextField("комментарий", null=True, blank=True)
+
     # Дополнительные поля
-
-    # created_at = models.DateTimeField("Создан", auto_now_add=True)
     updated_at = models.DateTimeField("Изменен", auto_now=True)
-    # language_code = models.CharField(max_length=8, null=True, blank=True, help_text="Telegram client's lang")
-    # deep_link = models.CharField("Рекомендательная сылка", max_length=64, null=True, blank=True)
-
-    
-    # def __str__(self):
-    #     res = f'@{self.username}' if self.username is not None else f'{self.user_id}'
-    #     res = " ".join([res, str(self.first_name), str(self.last_name)])
-    #     return res
 
     def save(self, *args, **kwargs):
         import random
