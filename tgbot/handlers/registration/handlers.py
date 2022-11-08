@@ -164,6 +164,25 @@ def processing_business_club_member(update: Update, context: CallbackContext):
     f(update, new_user)
     return STEPS["BUSINESS_CLUB_MEMBER"]["next"]
 
+def processing_company_turnover(update: Update, context: CallbackContext):
+    if update.message is not None:
+        update.message.reply_text(
+            "Используйте предложенные варианты.",
+            reply_markup=make_keyboard({},"usual",2)
+        )
+        f = STEPS["COMPANY_TURNOVER"]["self_prepare"]
+        f(update, None)
+        return
+    query = update.callback_query
+    variant = query.data
+    query.answer()
+    new_user = NewUser.objects.get(user_id = update.callback_query.from_user.id)
+    new_user.company_turnover = variant
+    new_user.save()
+    f = STEPS["COMPANY_TURNOVER"]["prepare"]
+    f(update, new_user)
+    return STEPS["COMPANY_TURNOVER"]["next"]
+
 def processing_job_region(update: Update, context: CallbackContext):
     new_user = None
     # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
@@ -577,6 +596,10 @@ def setup_dispatcher_conv(dp: Dispatcher):
             STEPS["JOB"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_job)],
             STEPS["SITE"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_site)],
             STEPS["JOB_REGION"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_job_region)],
+            STEPS["COMPANY_TURNOVER"]["step"]: [
+                CallbackQueryHandler(processing_company_turnover),
+                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_turnover)
+                ],
 
             STEPS["RESIDENT_URBANIUS_CLUB"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_resident_urbanius_club)],
             STEPS["BUSINESS_CLUB_MEMBER"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_business_club_member)],

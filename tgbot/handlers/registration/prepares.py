@@ -13,7 +13,7 @@ from dtb.constants import StatusCode
 from .messages import *
 from .answers import *
 from tgbot.handlers.main.messages import NO_ADMIN_GROUP
-from tgbot.models import Status, User, UsertgGroups, tgGroups, UserReferrers, NewUser
+from tgbot.models import Status, User, UsertgGroups, tgGroups, UserReferrers, NewUser, AbstractTgUser
 from sheduler.models import MessageTemplates
 
 from tgbot.handlers.utils import send_message, send_mess_by_tmplt
@@ -29,10 +29,17 @@ def prepare_approval(update: Update, new_user: NewUser):
     update.message.reply_text(ASK_APPROVAL, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
 
 def prepare_resident_urbanius_club(update: Update, new_user: NewUser):
-    update.message.reply_text(
-        ASK_RESIDENT_URBANIUS_CLUB,
-        reply_markup=make_keyboard(YES_NO,"usual",2)
-    )
+    if update.message is not None:
+        update.message.reply_text(
+            ASK_RESIDENT_URBANIUS_CLUB,
+            reply_markup=make_keyboard(YES_NO,"usual",2)
+        )
+    elif update.callback_query is not None:
+        send_message(
+            user_id=update.callback_query.from_user.id,
+            text=ASK_RESIDENT_URBANIUS_CLUB,
+            reply_markup=make_keyboard(YES_NO,"usual",2)
+        )  
 
 def prepare_business_club_member(update: Update, new_user: NewUser):
     update.message.reply_text(
@@ -50,6 +57,15 @@ def prepare_deep_link(update: Update, new_user: NewUser):
     update.message.reply_text(
         ASK_DEEP_LINK,
         reply_markup=make_keyboard(SKIP,"usual",2)
+    )
+
+def prepare_company_turnover(update: Update, new_user: NewUser):
+    company_turnovers = {
+        item[0]: item[1] for item in AbstractTgUser.COMPANY_TURNOVERS_CHOISES
+    }
+    update.message.reply_text(
+        ASK_COMPANY_TURNOVER,
+        reply_markup=make_keyboard(company_turnovers,"inline",1)
     )
 
 def prepare_ask_phone(update: Update, new_user: NewUser):
