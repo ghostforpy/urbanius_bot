@@ -23,6 +23,13 @@ class AbstractTgUser(models.Model):
         ("from 1 to 5 billions", "От 1 до 5 млрд. руб."),
         ("more then 5 billions", "Свыше 5 млрд. руб."),
     ]
+    COMPANY_NUMBER_OF_EMPLOYESS_CHOISES = [
+        ("under 10 employess", "До 10 человек"),
+        ("from 10 to 50 employess", "От 10 до 50 человек"),
+        ("from 50 to 500 employess", "От 50 человек до 500"),
+        ("more then 500 employess", "От 500 и более"),
+    ]
+
     # Личная инфо:
     user_id = models.BigIntegerField(primary_key=True)
     username = models.CharField("Телеграм логин",max_length=32, null=True, blank=True)
@@ -45,6 +52,12 @@ class AbstractTgUser(models.Model):
     resident_urbanius_club = models.BooleanField("Член клуба URBANIUS CLUB", default=False)
     business_club_member = models.CharField("Членство в бизнес клубах", max_length=150, null=True, blank=True)
     # turnover =  models.IntegerField("Оборот компании",default=0 , null=True, blank=True)
+    number_of_employees = models.CharField(
+        _("Численность сотрудников"),
+        max_length=50,
+        default="under 10 employess",
+        choices=COMPANY_NUMBER_OF_EMPLOYESS_CHOISES
+    )
     company_turnover = models.CharField(
         _("Оборот компании в год"),
         max_length=50,

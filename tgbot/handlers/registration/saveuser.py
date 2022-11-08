@@ -45,6 +45,8 @@ def end_registration(update:Update, context: CallbackContext, new_user: NewUser)
     user.deep_link = new_user.deep_link
     user.resident_urbanius_club = new_user.resident_urbanius_club
     user.business_club_member = new_user.business_club_member
+    user.company_turnover = new_user.company_turnover
+    user.number_of_employees = new_user.number_of_employees
     user.status = Status.objects.get(code = StatusCode.APPLICANT)
     user.is_blocked_bot = True
     user.comment = "Ожидает подтверждения регистрации"
