@@ -21,6 +21,9 @@ down:
 make_migrations_local:
 	docker-compose -f docker-compose.local.yml run --rm web python manage.py makemigrations && sudo chown ghost:ghost -R ./
 
+empty_migration:
+	docker-compose -f docker-compose.local.yml run --rm web python manage.py makemigrations --empty $(APP) && sudo chown ghost:ghost -R ./
+
 migrate_production:
 	sudo docker-compose -f production.yml run --rm web python manage.py migrate
 
