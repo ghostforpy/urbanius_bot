@@ -14,4 +14,5 @@ REGISTRATION_START_BTN = {"reg_start":"Начать регистрацию"}
 REQUEST_PHONE = {"reg_start":{"label":"Отправить телефонный номер","type":"phone"}}
 CANCEL_SKIP_REQUEST_PHONE = {"reg_start":{"label":"Отправить телефонный номер","type":"phone"},
                              "cancel":"Прервать регистрацию"}
+NEXT = {"next": "Готово"}
 

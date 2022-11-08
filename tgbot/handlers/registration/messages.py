@@ -73,3 +73,9 @@ ASK_DEEP_LINK_NO_USER = "Пользователь с таким юзернейм
 ASK_COMPANY_TURNOVER = "Выберите оборот компании в год"
 
 ASK_COMPANY_NUMBER_OF_EMPLOYESS = "Выберите численность сотрудников вашего бизнеса"
+
+MAX_BUSINESS_NEEDS = 3
+
+ASK_COMPANY_COMPANY_BUSINESS_NEEDS = "Выберите регулярные потребности вашего бизнеса (не более {})".format(MAX_BUSINESS_NEEDS)
+
+CHECK_ICON = "✔️ ☑️ "

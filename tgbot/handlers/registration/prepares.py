@@ -1,3 +1,4 @@
+import logging
 from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext import (
@@ -13,7 +14,10 @@ from dtb.constants import StatusCode
 from .messages import *
 from .answers import *
 from tgbot.handlers.main.messages import NO_ADMIN_GROUP
-from tgbot.models import Status, User, UsertgGroups, tgGroups, UserReferrers, NewUser, AbstractTgUser
+from tgbot.models import (
+    Status, User, UsertgGroups,
+    tgGroups, UserReferrers, NewUser, AbstractTgUser, BusinessNeeds
+)
 from sheduler.models import MessageTemplates
 
 from tgbot.handlers.utils import send_message, send_mess_by_tmplt
@@ -82,6 +86,33 @@ def prepare_company_number_of_employees(update: Update, new_user: NewUser):
             user_id=update.callback_query.from_user.id,
             text=ASK_COMPANY_NUMBER_OF_EMPLOYESS,
             reply_markup=make_keyboard(company_number_of_employees,"inline",1)
+        )
+
+def prepare_company_business_needs(update: Update, new_user: NewUser):
+    company_business_needs = dict()
+    for n in BusinessNeeds.objects.all():
+        company_business_needs[str(n.id)] = n.title
+        if n in new_user.business_needs.all():
+            company_business_needs[str(n.id)] = CHECK_ICON + company_business_needs[str(n.id)]
+    footer_buttons = NEXT if new_user.business_needs.count() > 0 else []
+    if update.message is not None:
+        update.message.reply_text(
+            ASK_COMPANY_COMPANY_BUSINESS_NEEDS,
+            reply_markup=make_keyboard(
+                company_business_needs,
+                "inline",
+                1,
+                footer_buttons=footer_buttons
+            )
+        )
+    elif update.callback_query is not None:
+        update.callback_query.edit_message_reply_markup(
+            reply_markup=make_keyboard(
+                company_business_needs,
+                "inline",
+                1,
+                footer_buttons=footer_buttons
+                )
         )
 
 def prepare_ask_phone(update: Update, new_user: NewUser):

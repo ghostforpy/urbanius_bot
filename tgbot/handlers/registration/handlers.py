@@ -8,6 +8,7 @@ from telegram.ext import (
 )
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
+from tgbot.models.business_needs import BusinessNeeds
 
 from tgbot.my_telegram import ConversationHandler
 
@@ -186,7 +187,7 @@ def processing_company_turnover(update: Update, context: CallbackContext):
 def processing_company_number_of_employess(update: Update, context: CallbackContext):
     if update.message is not None:
         update.message.reply_text(
-            "Используйте предложенные варианты222.",
+            "Используйте предложенные варианты.",
             reply_markup=make_keyboard({},"usual",2)
         )
         f = STEPS["COMPANY_NUMBER_OF_EMPLOYESS"]["self_prepare"]
@@ -201,6 +202,43 @@ def processing_company_number_of_employess(update: Update, context: CallbackCont
     f = STEPS["COMPANY_NUMBER_OF_EMPLOYESS"]["prepare"]
     f(update, new_user)
     return STEPS["COMPANY_NUMBER_OF_EMPLOYESS"]["next"]
+
+def processing_company_business_needs(update: Update, context: CallbackContext):
+    if update.message is not None:
+        update.message.reply_text(
+            "Используйте предложенные варианты.",
+            reply_markup=make_keyboard({},"usual",2)
+        )
+        f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
+        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+        f(update, new_user)
+        return
+    new_user = NewUser.objects.get(user_id = update.callback_query.from_user.id)
+    query = update.callback_query
+    variant = query.data
+    query.answer()
+    if variant == "next":
+        f = STEPS["COMPANY_BUSINESS_NEEDS"]["prepare"]
+        f(update, new_user)
+        return STEPS["COMPANY_BUSINESS_NEEDS"]["next"]
+    need = BusinessNeeds.objects.get(id=variant)
+    if need in new_user.business_needs.all():
+        new_user.business_needs.remove(need)
+        f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
+        f(update, new_user)
+        return
+    else:
+        if new_user.business_needs.count() < MAX_BUSINESS_NEEDS:
+            new_user.business_needs.add(need)
+        else:
+            send_message(
+                user_id=update.callback_query.from_user.id,
+                text="Не допускается выбрать более {} вариантов".format(MAX_BUSINESS_NEEDS),
+                reply_markup=make_keyboard({},"inline",1)
+            )
+        f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
+        f(update, new_user)
+        return
 
 def processing_job_region(update: Update, context: CallbackContext):
     new_user = None
@@ -622,6 +660,10 @@ def setup_dispatcher_conv(dp: Dispatcher):
             STEPS["COMPANY_NUMBER_OF_EMPLOYESS"]["step"]: [
                 CallbackQueryHandler(processing_company_number_of_employess),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_number_of_employess)
+                ],
+            STEPS["COMPANY_BUSINESS_NEEDS"]["step"]: [
+                CallbackQueryHandler(processing_company_business_needs),
+                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_needs)
                 ],
 
             STEPS["RESIDENT_URBANIUS_CLUB"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_resident_urbanius_club)],
