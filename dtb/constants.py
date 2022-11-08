@@ -33,6 +33,7 @@ class MessageTemplatesCode:
     RANDOM_COFFEE = "random_coffee"
     SEND_CONFIRM_EVENT = "send_confirm_event"
     WELCOME_NEWUSER_MESSAGE = "welcome_newuser_message"
+    WAIT_APPOVE_MESSAGE = "wait_approve_message"
     WELCOME_MESSAGE = "welcome_message"
     WELCOME_BLOCKERD_USR_MESSAGE = "welcome_blockerd_usr_message"
     WELCOME_BANNED_USR_MESSAGE = "welcome_banned_usr_message"

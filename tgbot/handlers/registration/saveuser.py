@@ -22,7 +22,7 @@ from tgbot.handlers.keyboard import make_keyboard
 # from tgbot.handlers.main.messages import get_start_mess
 from tgbot import utils
 # from tgbot.handlers.filters import FilterPrivateNoCommand
-from tgbot.handlers.utils import send_message
+from tgbot.handlers.utils import send_message, fill_file_id, send_photo
 
 def end_registration(update:Update, context: CallbackContext, new_user: NewUser):
     user = User(user_id=new_user.user_id)
@@ -69,11 +69,20 @@ def end_registration(update:Update, context: CallbackContext, new_user: NewUser)
         user_group.group = group
         user_group.user = user
         user_group.save()
-        
-    reply_markup = make_keyboard(START,"usual",1)
-    mess_template = MessageTemplates.objects.get(code = MessageTemplatesCode.WELCOME_NEWUSER_MESSAGE)
+    if not user.main_photo_id:
+        fill_file_id(user, "main_photo")
+    # photo = user.main_photo.path
+    photo_id = user.main_photo_id
+    send_photo(user.user_id, photo_id)
+    profile_txt = user.full_profile()
+    # reply_markup = make_keyboard_start_menu()
+    send_message(user_id = user.user_id, text = profile_txt, 
+                 disable_web_page_preview=True)
 
+    reply_markup = make_keyboard(START,"usual",1)
+    mess_template = MessageTemplates.objects.get(code=MessageTemplatesCode.WAIT_APPOVE_MESSAGE)
     send_mess_by_tmplt(user.user_id, mess_template, reply_markup) 
+
 
     group = tgGroups.get_group_by_name("Администраторы")
     if (group == None) or (group.chat_id == 0):
