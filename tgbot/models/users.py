@@ -240,7 +240,7 @@ class User(AbstractTgUser):
         res += f"<b>Отрасль:</b> {mystr(self.branch)}\n"
         res += f"<b>Компания:</b> {mystr(self.company)}\n"
         res += f"<b>Сегмент:</b> {mystr(self.segment)}\n" 
-        res += f"<b>Оборот:</b> {mystr(self.turnover)}\n"
+        res += f"<b>Оборот:</b> {mystr(self.get_company_turnover_display())}\n"
         res += f"<b>Должность:</b> {mystr(self.job)}\n"
         res += f"<b>Сайт:</b> {mystr(self.site)}\n"
         res += f"<b>ИНН:</b> {mystr(self.inn)}\n"
@@ -266,7 +266,7 @@ class User(AbstractTgUser):
         res += "\n<b>Бизнес информация:</b> "
         res += "\n  <b>Компания:</b> " + mystr(self.company)
         res += "\n  <b>Сегмент:</b>  " + mystr(self.segment) 
-        res += "\n  <b>Оборот:</b>  " + mystr(self.turnover) 
+        res += "\n  <b>Оборот:</b>  " + mystr(self.get_company_turnover_display()) 
         res += "\n  <b>Должность:</b> " + mystr(self.job)
         res += "\n  <b>Отрасль:</b> " + mystr(self.branch)
         res += "\n  <b>Город:</b> " + mystr(self.citi)
