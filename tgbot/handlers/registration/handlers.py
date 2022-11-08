@@ -36,129 +36,9 @@ from tgbot.handlers.utils import send_message
 from .steps import STEPS
 from .saveuser import end_registration
 # from .utils import counter
-from .prepares import prepare_ask_username
-#     prepare_ask_phone,
-#     prepare_ask_about,
-#     prepare_ask_fio,
-#     prepare_ask_birthday,
-#     # prepare_ask_email,
-#     prepare_ask_citi,
-#     prepare_ask_company,
-#     prepare_ask_job,
-#     prepare_ask_site
-# )
+from .prepares import prepare_ask_first_name
 
-# # Шаги диалога
-# # SITE->BUSINESS_BRANCH->MONEY_TURNOVER->TAGS->BUISNESS_NEEDS->USER_BENEFIT->RESEDENT_URBANIUS_CLUB->
-# # BUSINESS_CLUB_MEMBER->HOBBY->FIND_OUT->SOCIAL_NETS->REFERRER->PHONE->PHOTO->END
-# # EMAIL not need
-# #APROVAL,COMPANY,CITI,JOB,FIO,BIRHTDAY,ABOUT,SITE,PHONE = range(9)
-# step_iterator = counter(1)
-# STEPS = {
-#     "APROVAL": {
-#         "step": step_iterator.current,
-#         "prepare": prepare_ask_company,
-#         "next": next(step_iterator)
-#     },
-#     "COMPANY": {
-#         "step": step_iterator.current,
-#         "prepare": prepare_ask_citi,
-#         "next": next(step_iterator)
-#     },
-#     "CITI": {
-#         "step": step_iterator.current,
-#         "prepare": prepare_ask_job,
-#         "next": next(step_iterator)
-#     },
-#     "JOB": {
-#         "step": step_iterator.current,
-#         "prepare": prepare_ask_fio,
-#         "next": next(step_iterator)
-#     },
-#     "FIO": {
-#         "step": step_iterator.current,
-#         "prepare": prepare_ask_birthday,
-#         "next": next(step_iterator)
-#     },
-#     "BIRTHDAY": {
-#         "step": step_iterator.current,
-#         "prepare": prepare_ask_about,
-#         "next": next(step_iterator)
-#     },
-#     "ABOUT": {
-#         "step": step_iterator.current,
-#         "prepare": prepare_ask_site,
-#         "next": next(step_iterator)
-#     },
-#     "SITE": {
-#         "step": step_iterator.current,
-#         "prepare": prepare_ask_phone,
-#         # "prepare": prepare_ask_business_branch,
-#         "next": next(step_iterator)
-#     },
-#     # "BUSINESS_BRANCH": {
-#     #     "step": step_iterator.current,
-#     #     "prepare": prepare_ask_money_turnover,
-#     #     "next": next(step_iterator)
-#     # },
-#     # "MONEY_TURNOVER": {
-#     #     "step": step_iterator.current,
-#     #     "prepare": prepare_ask_tags,
-#     #     "next": next(step_iterator)
-#     # },
-# #     "TAGS": {
-#     #     "step": step_iterator.current,
-#     #     "prepare": prepare_ask_business_needs,
-#     #     "next": next(step_iterator)
-#     # },
-#     # "BUSINESS_NEEDS": {
-#     #     "step": step_iterator.current,
-#     #     "prepare": prepare_ask_user_benefit,
-#     #     "next": next(step_iterator)
-#     # },
-#     # "USER_BENEFIT": {
-#     #     "step": step_iterator.current,
-#     #     "prepare": prepare_ask_resident_urbanius_club,
-#     #     "next": next(step_iterator)
-#     # },
-#     # "RESIDENT_URBANIUS_CLUB": {
-#     #     "step": step_iterator.current,
-#     #     "prepare": prepare_ask_businesss_club_member,
-#     #     "next": next(step_iterator)
-#     # },
-#     # "BUSINESS_CLUB_MEMBER": {
-#     #     "step": step_iterator.current,
-#     #     "prepare": prepare_ask_hobby,
-#     #     "next": next(step_iterator)
-#     # },
-#     # "HOBBY": {
-#     #     "step": step_iterator.current,
-#     #     "prepare": prepare_ask_find_out,
-#     #     "next": next(step_iterator)
-#     # },
-#     # "FIND_OUT": {
-#     #     "step": step_iterator.current,
-#     #     "prepare": prepare_ask_socials_nets,
-#     #     "next": next(step_iterator)
-#     # },
-#     # "SOCIAL_NETS": {
-#     #     "step": step_iterator.current,
-#     #     "prepare": prepare_ask_phone,
-#     #     "next": next(step_iterator)
-#     # },
-#     "PHONE": {
-#         "step": step_iterator.current,
-#         "prepare": "",
-#         # "prepare": prepare_ask_photo,
-#         "next": end_registration
-#         # "next": next(step_iterator)
-#     },
-#     # "PHOTO": {
-#     #     "step": step_iterator.current,
-#     #     "prepare": "",
-#     #     "next": end_registration
-#     # },
-# }
+
 def stop_conversation(update: Update, context: CallbackContext):
     # Заканчиваем разговор.
     context.user_data.clear()
@@ -168,70 +48,75 @@ def stop_conversation(update: Update, context: CallbackContext):
 
 def start_conversation(update: Update, context: CallbackContext):
     new_user, _ = NewUser.objects.get_or_create(user_id = update.message.from_user.id)
+    # проверяем есть ли у пользователя в Телеграмм имя пользователя
+    if new_user.username is None:
+        update.message.reply_text(USERNAME_NEEDED)
+        stop_conversation(update, context)
+        return ConversationHandler.END
     update.message.reply_text(WELCOME_REG)
-    prepare_ask_username(update, new_user)
+    prepare_ask_first_name(update, new_user)
     # update.message.reply_text(WELCOME_REG, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
-    return STEPS["USERNAME"]["step"]
+    return STEPS["FIRSTNAME"]["step"]
 
-def processing_username(update: Update, context: CallbackContext):
+def processing_firstname(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
-       stop_conversation(update, context)
-       return ConversationHandler.END
-    elif update.message.text == CANCEL_SKIP["skip"]:
-        f = STEPS["USERNAME"]["prepare"]
-        f(update, new_user)
-        # keyboard = make_keyboard(CANCEL,"usual",2)
-        # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
-        return STEPS["USERNAME"]["next"]
-    else: 
-        new_user.username = update.message.text
-        new_user.save()
-        f = STEPS["USERNAME"]["prepare"]
-        f(update, new_user)
-        # keyboard = make_keyboard(CANCEL,"usual",2)
-        # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
-        return STEPS["USERNAME"]["next"]
+    # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+    #    stop_conversation(update, context)
+    #    return ConversationHandler.END
+    # elif update.message.text == CANCEL_SKIP["skip"]:
+    #     f = STEPS["FIRSTNAME"]["prepare"]
+    #     f(update, new_user)
+    #     # keyboard = make_keyboard(CANCEL,"usual",2)
+    #     # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
+    #     return STEPS["FIRSTNAME"]["next"]
+    # else: 
+    new_user.first_name = update.message.text
+    new_user.save()
+    f = STEPS["FIRSTNAME"]["prepare"]
+    f(update, new_user)
+    # keyboard = make_keyboard(CANCEL,"usual",2)
+    # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
+    return STEPS["FIRSTNAME"]["next"]
 
 def processing_lastname(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
-       stop_conversation(update, context)
-       return ConversationHandler.END
-    elif update.message.text == CANCEL_SKIP["skip"]:
-        f = STEPS["LASTNAME"]["prepare"]
-        f(update, new_user)
-        # keyboard = make_keyboard(CANCEL,"usual",2)
-        # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
-        return STEPS["LASTNAME"]["next"]
-    else: 
-        new_user.last_name = update.message.text
-        new_user.save()
-        f = STEPS["LASTNAME"]["prepare"]
-        f(update, new_user)
-        # keyboard = make_keyboard(CANCEL,"usual",2)
-        # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
-        return STEPS["LASTNAME"]["next"]
+    # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+    #    stop_conversation(update, context)
+    #    return ConversationHandler.END
+    # elif update.message.text == CANCEL_SKIP["skip"]:
+    #     f = STEPS["LASTNAME"]["prepare"]
+    #     f(update, new_user)
+    #     # keyboard = make_keyboard(CANCEL,"usual",2)
+    #     # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
+    #     return STEPS["LASTNAME"]["next"]
+    # else: 
+    new_user.last_name = update.message.text
+    new_user.save()
+    f = STEPS["LASTNAME"]["prepare"]
+    f(update, new_user)
+    # keyboard = make_keyboard(CANCEL,"usual",2)
+    # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
+    return STEPS["LASTNAME"]["next"]
 
 def processing_surname(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
-       stop_conversation(update, context)
-       return ConversationHandler.END
-    elif update.message.text == CANCEL_SKIP["skip"]:
-        f = STEPS["SURNAME"]["prepare"]
-        f(update, new_user)
-        # keyboard = make_keyboard(CANCEL,"usual",2)
-        # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
-        return STEPS["SURNAME"]["next"]
-    else: 
-        new_user.sur_name = update.message.text
-        new_user.save()
-        f = STEPS["SURNAME"]["prepare"]
-        f(update, new_user)
-        # keyboard = make_keyboard(CANCEL,"usual",2)
-        # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
-        return STEPS["SURNAME"]["next"]
+    # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+    #    stop_conversation(update, context)
+    #    return ConversationHandler.END
+    # elif update.message.text == CANCEL_SKIP["skip"]:
+    #     f = STEPS["SURNAME"]["prepare"]
+    #     f(update, new_user)
+    #     # keyboard = make_keyboard(CANCEL,"usual",2)
+    #     # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
+    #     return STEPS["SURNAME"]["next"]
+    # else: 
+    new_user.sur_name = update.message.text
+    new_user.save()
+    f = STEPS["SURNAME"]["prepare"]
+    f(update, new_user)
+    # keyboard = make_keyboard(CANCEL,"usual",2)
+    # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
+    return STEPS["SURNAME"]["next"]
 
 def processing_aproval(update: Update, context: CallbackContext):
     if update.message.text == APPROVAL_ANSWERS["yes"]: # В этом поле хранится согласие
@@ -248,11 +133,15 @@ def processing_aproval(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
 
 def processing_resident_urbanius_club(update: Update, context: CallbackContext):
-    if update.message.text == CANCEL["cancel"]: # решили прервать регистрацию
-       stop_conversation(update, context)
-       return ConversationHandler.END
-    if update.message.text not in YES_NO.keys():
-        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(YES_NO,"usual",2))
+    # if update.message.text == CANCEL["cancel"]: # решили прервать регистрацию
+    #    stop_conversation(update, context)
+    #    return ConversationHandler.END
+    if update.message.text not in [YES_NO[i] for i in YES_NO.keys()]:
+        update.message.reply_text(
+            ASK_REENTER + "\n" + ASK_RESIDENT_URBANIUS_CLUB,
+            reply_markup=make_keyboard(YES_NO,"usual",2)
+        )
+        return
     new_user = None
     if update.message.text == YES_NO["yes"]:
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
@@ -264,23 +153,10 @@ def processing_resident_urbanius_club(update: Update, context: CallbackContext):
 
 def processing_business_club_member(update: Update, context: CallbackContext):
     new_user = None
-    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
-       stop_conversation(update, context)
-       return ConversationHandler.END
-    elif update.message.text != CANCEL_SKIP["skip"]:
-        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-        new_user.business_club_member = update.message.text
-        new_user.save()
-    f = STEPS["RESIDENT_URBANIUS_CLUB"]["prepare"]
-    f(update, new_user)
-    return STEPS["RESIDENT_URBANIUS_CLUB"]["next"]
-
-def processing_business_club_member(update: Update, context: CallbackContext):
-    new_user = None
-    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
-       stop_conversation(update, context)
-       return ConversationHandler.END
-    elif update.message.text != CANCEL_SKIP["skip"]:
+    # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+    #    stop_conversation(update, context)
+    #    return ConversationHandler.END
+    if update.message.text != NO["no"]:
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
         new_user.business_club_member = update.message.text
         new_user.save()
@@ -290,25 +166,33 @@ def processing_business_club_member(update: Update, context: CallbackContext):
 
 def processing_job_region(update: Update, context: CallbackContext):
     new_user = None
-    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
-       stop_conversation(update, context)
-       return ConversationHandler.END
-    elif update.message.text != CANCEL_SKIP["skip"]:
-        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-        new_user.job_region = update.message.text
-        new_user.save()
+    # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+    #    stop_conversation(update, context)
+    #    return ConversationHandler.END
+    # elif update.message.text != CANCEL_SKIP["skip"]:
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+    new_user.job_region = update.message.text
+    new_user.save()
     f = STEPS["JOB_REGION"]["prepare"]
     f(update, new_user)
     return STEPS["JOB_REGION"]["next"]
 
 def processing_deep_link(update: Update, context: CallbackContext):
     new_user = None
-    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
-       stop_conversation(update, context)
-       return ConversationHandler.END
-    elif update.message.text != CANCEL_SKIP["skip"]:
+    # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+    #    stop_conversation(update, context)
+    #    return ConversationHandler.END
+    if update.message.text != SKIP["skip"]:
+        # проверяем наличие пользователя в базе
+        if not User.get_user_by_username_or_user_id(update.message.text.replace("@","")):
+            update.message.reply_text(
+                ASK_DEEP_LINK_NO_USER,
+                reply_markup=make_keyboard(SKIP,"usual",2)
+            )
+            return
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
         new_user.deep_link = update.message.text.replace("@","")
+
         new_user.save()
     f = STEPS["DEEP_LINK"]["prepare"]
     f(update, new_user)
@@ -316,63 +200,63 @@ def processing_deep_link(update: Update, context: CallbackContext):
 
 def processing_company(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
-       stop_conversation(update, context)
-       return ConversationHandler.END
-    elif update.message.text == CANCEL_SKIP["skip"]:
-        f = STEPS["COMPANY"]["prepare"]
-        f(update, new_user)
-        # keyboard = make_keyboard(CANCEL,"usual",2)
-        # update.message.reply_text(ASK_JOB + f"\n Уже введено: '{utils.mystr(new_user.job)}'", reply_markup=keyboard)
-        return STEPS["COMPANY"]["next"]
-    else: 
-        new_user.company = update.message.text
-        new_user.save()
-        f = STEPS["COMPANY"]["prepare"]
-        f(update, new_user)
-        # keyboard = make_keyboard(CANCEL,"usual",2)
-        # update.message.reply_text(ASK_JOB + f"\n Уже введено: '{utils.mystr(new_user.job)}'", reply_markup=keyboard)
-        return STEPS["COMPANY"]["next"]
+    # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+    #    stop_conversation(update, context)
+    #    return ConversationHandler.END
+    # elif update.message.text == CANCEL_SKIP["skip"]:
+    #     f = STEPS["COMPANY"]["prepare"]
+    #     f(update, new_user)
+    #     # keyboard = make_keyboard(CANCEL,"usual",2)
+    #     # update.message.reply_text(ASK_JOB + f"\n Уже введено: '{utils.mystr(new_user.job)}'", reply_markup=keyboard)
+    #     return STEPS["COMPANY"]["next"]
+    # else: 
+    new_user.company = update.message.text
+    new_user.save()
+    f = STEPS["COMPANY"]["prepare"]
+    f(update, new_user)
+    # keyboard = make_keyboard(CANCEL,"usual",2)
+    # update.message.reply_text(ASK_JOB + f"\n Уже введено: '{utils.mystr(new_user.job)}'", reply_markup=keyboard)
+    return STEPS["COMPANY"]["next"]
 
 def processing_citi(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
-       stop_conversation(update, context)
-       return ConversationHandler.END
-    elif update.message.text == CANCEL_SKIP["skip"]:
-        f = STEPS["CITI"]["prepare"]
-        f(update, new_user)
-        # keyboard = make_keyboard(CANCEL,"usual",2)
-        # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
-        return STEPS["CITI"]["next"]
-    else: 
-        new_user.citi = update.message.text
-        new_user.save()
-        f = STEPS["CITI"]["prepare"]
-        f(update, new_user)
-        # keyboard = make_keyboard(CANCEL,"usual",2)
-        # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
-        return STEPS["CITI"]["next"]
+    # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+    #    stop_conversation(update, context)
+    #    return ConversationHandler.END
+    # elif update.message.text == CANCEL_SKIP["skip"]:
+    #     f = STEPS["CITI"]["prepare"]
+    #     f(update, new_user)
+    #     # keyboard = make_keyboard(CANCEL,"usual",2)
+    #     # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
+    #     return STEPS["CITI"]["next"]
+    # else: 
+    new_user.citi = update.message.text
+    new_user.save()
+    f = STEPS["CITI"]["prepare"]
+    f(update, new_user)
+    # keyboard = make_keyboard(CANCEL,"usual",2)
+    # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
+    return STEPS["CITI"]["next"]
 
 def processing_job(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-    if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
-       stop_conversation(update, context)
-       return ConversationHandler.END
-    elif update.message.text == CANCEL_SKIP["skip"]:
-        f = STEPS["JOB"]["prepare"]
-        f(update, new_user)
-        # keyboard = make_keyboard(CANCEL,"usual",2)
-        # update.message.reply_text(ASK_SITE + f"\n Уже введено: '{utils.mystr(new_user.site)}'", reply_markup=keyboard)
-        return STEPS["JOB"]["next"]
-    else: 
-        new_user.job = update.message.text
-        new_user.save()
-        f = STEPS["JOB"]["prepare"]
-        f(update, new_user)
-        # keyboard = make_keyboard(CANCEL,"usual",2)
-        # update.message.reply_text(ASK_SITE + f"\n Уже введено: '{utils.mystr(new_user.site)}'", reply_markup=keyboard)
-        return STEPS["JOB"]["next"]
+    # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
+    #    stop_conversation(update, context)
+    #    return ConversationHandler.END
+    # elif update.message.text == CANCEL_SKIP["skip"]:
+    #     f = STEPS["JOB"]["prepare"]
+    #     f(update, new_user)
+    #     # keyboard = make_keyboard(CANCEL,"usual",2)
+    #     # update.message.reply_text(ASK_SITE + f"\n Уже введено: '{utils.mystr(new_user.site)}'", reply_markup=keyboard)
+    #     return STEPS["JOB"]["next"]
+    # else: 
+    new_user.job = update.message.text
+    new_user.save()
+    f = STEPS["JOB"]["prepare"]
+    f(update, new_user)
+    # keyboard = make_keyboard(CANCEL,"usual",2)
+    # update.message.reply_text(ASK_SITE + f"\n Уже введено: '{utils.mystr(new_user.site)}'", reply_markup=keyboard)
+    return STEPS["JOB"]["next"]
 
 def processing_fio(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
@@ -475,15 +359,16 @@ def processing_site(update: Update, context: CallbackContext):
     # return end_registration(update, context, new_user)
 
 def processing_phone(update: Update, context: CallbackContext):
-    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+    # new_user = NewUser.objects.get(user_id = update.message.from_user.id)
     # fullname = " ".join([new_user.first_name, utils.mystr(new_user.last_name), utils.mystr(new_user.sur_name)])
     if update.message.contact != None: # Был прислан контакт        
         # Запоминаем телефон
+        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
         new_user.telefon = update.message.contact.phone_number
         new_user.save()
         # Если пользователь новый проверяем есть ли у него в Телеграмм имя пользователя
-        if new_user.username == None:
-             update.message.reply_text(USERNAME_NEEDED)
+        # if new_user.username == None:
+        #      update.message.reply_text(USERNAME_NEEDED)
         if isinstance(STEPS["PHONE"]["next"], int):
             f = STEPS["PHONE"]["prepare"]
             f(update, new_user)
@@ -492,18 +377,18 @@ def processing_phone(update: Update, context: CallbackContext):
         # keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
         # update.message.reply_text(ASK_FIO.format(fullname), reply_markup=keyboard)
             return end_registration(update, context, new_user)
-    elif update.message.text == CANCEL["cancel"]: # Отказались отправить телефон
-        stop_conversation(update, context)
-        return ConversationHandler.END
-    elif update.message.text == CANCEL_SKIP["skip"]:
-        if isinstance(STEPS["PHONE"]["next"], int):
-            f = STEPS["PHONE"]["prepare"]
-            f(update, new_user)
-            return STEPS["PHONE"]["next"]
-        else:
-        # keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
-        # update.message.reply_text(ASK_FIO.format(fullname), reply_markup=keyboard)
-            return end_registration(update, context, new_user)
+    # elif update.message.text == CANCEL["cancel"]: # Отказались отправить телефон
+    #     stop_conversation(update, context)
+    #     return ConversationHandler.END
+    # elif update.message.text == CANCEL_SKIP["skip"]:
+    #     if isinstance(STEPS["PHONE"]["next"], int):
+    #         f = STEPS["PHONE"]["prepare"]
+    #         f(update, new_user)
+    #         return STEPS["PHONE"]["next"]
+    #     else:
+    #     # keyboard = make_keyboard(CANCEL_SKIP,"usual",2)
+    #     # update.message.reply_text(ASK_FIO.format(fullname), reply_markup=keyboard)
+    #         return end_registration(update, context, new_user)
     else:
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(CANCEL,"usual",2,REQUEST_PHONE))
 
@@ -684,7 +569,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
         entry_points=[MessageHandler(Filters.text(REGISTRATION_START_BTN["reg_start"]) & FilterPrivateNoCommand, start_conversation)],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
-            STEPS["USERNAME"]["step"]:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_username)],
+            STEPS["FIRSTNAME"]["step"]:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_firstname)],
             STEPS["LASTNAME"]["step"]:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_lastname)],
             STEPS["SURNAME"]["step"]:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_surname)],
             STEPS["CITI"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_citi)],
