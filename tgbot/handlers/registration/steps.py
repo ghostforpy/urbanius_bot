@@ -11,7 +11,8 @@ from .prepares import (
     prepare_business_club_member,
     prepare_deep_link,
     prepare_job_region,
-    prepare_company_turnover
+    prepare_company_turnover,
+    prepare_company_number_of_employees
 )
 from .utils import counter
 from .saveuser import end_registration
@@ -60,11 +61,16 @@ STEPS = {
     },
     "COMPANY_TURNOVER": {
         "step": step_iterator.current,
-        "prepare": prepare_resident_urbanius_club,
+        "prepare": prepare_company_number_of_employees,
         "self_prepare": prepare_company_turnover,
         "next": next(step_iterator)
     },
-
+    "COMPANY_NUMBER_OF_EMPLOYESS": {
+        "step": step_iterator.current,
+        "prepare": prepare_resident_urbanius_club,
+        "self_prepare": prepare_company_number_of_employees,
+        "next": next(step_iterator)
+    },
     "RESIDENT_URBANIUS_CLUB": {
         "step": step_iterator.current,
         "prepare": prepare_business_club_member,
