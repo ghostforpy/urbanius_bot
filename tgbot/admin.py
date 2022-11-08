@@ -49,7 +49,8 @@ class UserAdmin(admin.ModelAdmin):
               ("verified_by_security", "random_coffe_on"),
               ('company', 'job', 'branch', 'inn'),
               ('citi', 'job_region', 'site'),
-              ('segment', 'company_turnover', 'number_of_employees'), 
+              ('segment', 'company_turnover'),
+              ('number_of_employees', 'business_needs'),
                'about',
                'sport',
                'hobby',
@@ -128,6 +129,10 @@ class StatusAdmin(admin.ModelAdmin):
     list_display = ("code", "name",) 
     list_display_links = ("name", ) 
     search_fields = ("name",)
+
+@admin.register(BusinessNeeds)
+class BusinessNeedsAdmin(admin.ModelAdmin):
+    pass
 
 @admin.register(tgGroups)
 class tgGroupsAdmin(admin.ModelAdmin) :

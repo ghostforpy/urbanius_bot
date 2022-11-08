@@ -51,6 +51,13 @@ class AbstractTgUser(models.Model):
     site = models.CharField("Сайт", max_length=150, null=True, blank=True)
     resident_urbanius_club = models.BooleanField("Член клуба URBANIUS CLUB", default=False)
     business_club_member = models.CharField("Членство в бизнес клубах", max_length=150, null=True, blank=True)
+    business_needs = models.ManyToManyField(
+        "BusinessNeeds",
+        verbose_name=_("Потребности бизнеса"),
+        related_name="%(app_label)s_%(class)s_related",
+        related_query_name="%(app_label)s_%(class)ss",
+        blank=True
+    )
     # turnover =  models.IntegerField("Оборот компании",default=0 , null=True, blank=True)
     number_of_employees = models.CharField(
         _("Численность сотрудников"),
@@ -64,6 +71,7 @@ class AbstractTgUser(models.Model):
         default="under 50 millions",
         choices=COMPANY_TURNOVERS_CHOISES
     )
+
     # О себе:
     about = models.TextField("О себе", null=True, blank=True)
 
@@ -82,6 +90,12 @@ class AbstractTgUser(models.Model):
         return res
 
 class NewUser(AbstractTgUser):
+    # business_needs = models.ManyToManyField(
+    #     "business_needs",
+    #     verbose_name=_("Потребност бизнеса"),
+    #     related_name="new_users",
+    #     blank=True,
+    # )
     class Meta:
         verbose_name = 'Новый пользователь'
         verbose_name_plural = 'Новые пользователи'
@@ -98,6 +112,12 @@ class User(AbstractTgUser):
     random_coffe_on = models.BooleanField("Подключено Random coffee",default=False)
     verified_by_security = models.BooleanField("Проверен службой безопасности",default=False)
     # Бизнес инфо:
+    # business_needs = models.ManyToManyField(
+    #     "business_needs",
+    #     verbose_name=_("Потребност бизнеса"),
+    #     related_name="users",
+    #     blank=True,
+    # )
     inn = models.CharField("ИНН", max_length=12, null=True, blank=True)
     segment = models.CharField("Сегмент", max_length=150, null=True, blank=True)
     # turnover =  models.IntegerField("Оборот компании",default=0 , null=True, blank=True)
