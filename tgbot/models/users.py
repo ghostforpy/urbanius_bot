@@ -16,6 +16,13 @@ from .social_nets import SocialNets
 
 
 class AbstractTgUser(models.Model):
+    COMPANY_TURNOVERS_CHOISES = [
+        ("under 50 millions", "До 50 млн. руб."),
+        ("from 50 to 350 millions", "От 50 до 350 млн. руб."),
+        ("from 350 millions to 1 billion", "От 350 млн. до 1 млрд. руб."),
+        ("from 1 to 5 billions", "От 1 до 5 млрд. руб."),
+        ("more then 5 billions", "Свыше 5 млрд. руб."),
+    ]
     # Личная инфо:
     user_id = models.BigIntegerField(primary_key=True)
     username = models.CharField("Телеграм логин",max_length=32, null=True, blank=True)
@@ -37,6 +44,13 @@ class AbstractTgUser(models.Model):
     site = models.CharField("Сайт", max_length=150, null=True, blank=True)
     resident_urbanius_club = models.BooleanField("Член клуба URBANIUS CLUB", default=False)
     business_club_member = models.CharField("Членство в бизнес клубах", max_length=150, null=True, blank=True)
+    # turnover =  models.IntegerField("Оборот компании",default=0 , null=True, blank=True)
+    company_turnover = models.CharField(
+        _("Оборот компании в год"),
+        max_length=50,
+        default="under 50 millions",
+        choices=COMPANY_TURNOVERS_CHOISES
+    )
     # О себе:
     about = models.TextField("О себе", null=True, blank=True)
 
@@ -73,7 +87,7 @@ class User(AbstractTgUser):
     # Бизнес инфо:
     inn = models.CharField("ИНН", max_length=12, null=True, blank=True)
     segment = models.CharField("Сегмент", max_length=150, null=True, blank=True)
-    turnover =  models.IntegerField("Оборот компании",default=0 , null=True, blank=True)
+    # turnover =  models.IntegerField("Оборот компании",default=0 , null=True, blank=True)
     
     # О себе:
     sport = models.TextField("Спорт", null=True, blank=True)
