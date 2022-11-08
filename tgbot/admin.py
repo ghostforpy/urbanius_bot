@@ -49,7 +49,7 @@ class UserAdmin(admin.ModelAdmin):
               ("verified_by_security", "random_coffe_on"),
               ('company', 'job', 'branch', 'inn'),
               ('citi', 'job_region', 'site'),
-              ('segment', 'turnover'), 
+              ('segment', 'company_turnover'), 
                'about',
                'sport',
                'hobby',
