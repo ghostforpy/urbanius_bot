@@ -65,6 +65,13 @@ class AbstractTgUser(models.Model):
         related_query_name="%(app_label)s_%(class)ss",
         blank=True
     )
+    business_branches = models.ManyToManyField(
+        "BusinessBranches",
+        verbose_name=_("Отрасли бизнеса"),
+        related_name="%(app_label)s_%(class)s_related",
+        related_query_name="%(app_label)s_%(class)ss",
+        blank=True
+    )
     # turnover =  models.IntegerField("Оборот компании",default=0 , null=True, blank=True)
     number_of_employees = models.CharField(
         _("Численность сотрудников"),
