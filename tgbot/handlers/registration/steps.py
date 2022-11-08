@@ -15,7 +15,7 @@ from .prepares import (
     prepare_company_number_of_employees,
     prepare_company_business_needs,
     prepare_company_business_benefits,
-    prepare_company_business_branches
+    prepare_ask_first_name
 )
 from .utils import counter
 from .saveuser import end_registration
@@ -25,6 +25,7 @@ STEPS = {
     "FIRSTNAME": {
         "step": step_iterator.current,
         "prepare": prepare_ask_surname,
+        "self_prepare": prepare_ask_first_name,
         "next": next(step_iterator)
     },
     "SURNAME": { # отчество

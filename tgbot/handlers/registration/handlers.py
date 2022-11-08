@@ -29,7 +29,7 @@ from tgbot.models import (
 )
 # from sheduler.models import MessageTemplates
 
-from tgbot.handlers.utils import send_message, send_mess_by_tmplt
+# from tgbot.handlers.utils import send_message, send_mess_by_tmplt
 from tgbot.handlers.keyboard import make_keyboard
 # from tgbot.handlers.main.answers import get_start_menu
 # from tgbot.handlers.main.messages import get_start_mess
@@ -39,7 +39,7 @@ from tgbot.handlers.utils import send_message
 from .steps import STEPS
 from .saveuser import end_registration
 # from .utils import counter
-from .prepares import prepare_ask_first_name
+# from .prepares import prepare_ask_first_name
 
 
 def stop_conversation(update: Update, context: CallbackContext):
@@ -57,7 +57,9 @@ def start_conversation(update: Update, context: CallbackContext):
         stop_conversation(update, context)
         return ConversationHandler.END
     update.message.reply_text(WELCOME_REG)
-    prepare_ask_first_name(update, new_user)
+    # prepare_ask_first_name(update, new_user)
+    f = STEPS["FIRSTNAME"]["self_prepare"]
+    f(update, None)
     # update.message.reply_text(WELCOME_REG, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
     return STEPS["FIRSTNAME"]["step"]
 
