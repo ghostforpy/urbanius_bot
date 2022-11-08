@@ -84,4 +84,4 @@ MAX_BUSINESS_BRANCHES = 5
 
 ASK_COMPANY_COMPANY_BUSINESS_BRANCHES = "Выберите сегменты вашего бизнеса (не более {})".format(MAX_BUSINESS_BRANCHES)
 
-CHECK_ICON = "✔️ ☑️ "
+CHECK_ICON = "☑️ "
