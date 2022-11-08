@@ -1,9 +1,5 @@
 from .prepares import (
     prepare_ask_phone,
-    prepare_ask_about,
-    # prepare_ask_fio,
-    prepare_ask_birthday,
-    # prepare_ask_email,
     prepare_ask_citi,
     prepare_ask_company,
     prepare_ask_job,
@@ -19,14 +15,9 @@ from .prepares import (
 from .utils import counter
 from .saveuser import end_registration
 
-# Шаги диалога
-# SITE->BUSINESS_BRANCH->MONEY_TURNOVER->TAGS->BUISNESS_NEEDS->USER_BENEFIT->RESEDENT_URBANIUS_CLUB->
-# BUSINESS_CLUB_MEMBER->HOBBY->FIND_OUT->SOCIAL_NETS->REFERRER->PHONE->PHOTO->END
-# EMAIL not need
-#APROVAL,COMPANY,CITI,JOB,FIO,BIRHTDAY,ABOUT,SITE,PHONE = range(9)
 step_iterator = counter(1)
 STEPS = {
-    "USERNAME": {
+    "FIRSTNAME": {
         "step": step_iterator.current,
         "prepare": prepare_ask_surname,
         "next": next(step_iterator)
