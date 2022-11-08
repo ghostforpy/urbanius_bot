@@ -28,15 +28,15 @@ step_iterator = counter(1)
 STEPS = {
     "USERNAME": {
         "step": step_iterator.current,
+        "prepare": prepare_ask_surname,
+        "next": next(step_iterator)
+    },
+    "SURNAME": { # отчество
+        "step": step_iterator.current,
         "prepare": prepare_ask_lastname,
         "next": next(step_iterator)
     },
     "LASTNAME": {
-        "step": step_iterator.current,
-        "prepare": prepare_ask_surname,
-        "next": next(step_iterator)
-    },
-    "SURNAME": {
         "step": step_iterator.current,
         "prepare": prepare_ask_citi,
         "next": next(step_iterator)
