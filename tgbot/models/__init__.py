@@ -9,3 +9,4 @@ from .config import Config
 from .utils import get_model_text, get_model_dict
 from .users import User, NewUser, AbstractTgUser
 from .business_needs import BusinessNeeds
+from .business_benefits import BusinessBenefits
