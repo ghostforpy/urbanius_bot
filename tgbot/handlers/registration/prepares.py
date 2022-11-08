@@ -17,7 +17,7 @@ from .answers import *
 from tgbot.handlers.main.messages import NO_ADMIN_GROUP
 from tgbot.models import (
     Status, User, UsertgGroups,
-    tgGroups, UserReferrers, NewUser, AbstractTgUser, BusinessNeeds
+    tgGroups, UserReferrers, NewUser, AbstractTgUser, BusinessNeeds, BusinessBranches
 )
 from sheduler.models import MessageTemplates
 
@@ -142,6 +142,34 @@ def prepare_company_business_benefits(update: Update, new_user: NewUser):
             ASK_COMPANY_COMPANY_BUSINESS_BENEFITS,
             reply_markup=make_keyboard(
                 company_business_benefits,
+                "inline",
+                1,
+                footer_buttons=footer_buttons
+            )
+        )
+
+def prepare_company_business_branches(update: Update, new_user: NewUser):
+    company_business_branches = dict()
+    for n in BusinessBranches.objects.all():
+        company_business_branches[str(n.id)] = n.title
+        if n in new_user.business_branches.all():
+            company_business_branches[str(n.id)] = CHECK_ICON + company_business_branches[str(n.id)]
+    footer_buttons = NEXT if new_user.business_branches.count() > 0 else []
+    if update.message is not None:
+        update.message.reply_text(
+            ASK_COMPANY_COMPANY_BUSINESS_BRANCHES,
+            reply_markup=make_keyboard(
+                company_business_branches,
+                "inline",
+                1,
+                footer_buttons=footer_buttons
+            )
+        )
+    elif update.callback_query is not None:
+        update.callback_query.edit_message_text(
+            ASK_COMPANY_COMPANY_BUSINESS_BRANCHES,
+            reply_markup=make_keyboard(
+                company_business_branches,
                 "inline",
                 1,
                 footer_buttons=footer_buttons

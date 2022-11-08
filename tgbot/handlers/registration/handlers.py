@@ -9,6 +9,7 @@ from telegram.ext import (
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from tgbot.models.business_benefits import BusinessBenefits
+from tgbot.models.business_branches import BusinessBranches
 from tgbot.models.business_needs import BusinessNeeds
 
 from tgbot.my_telegram import ConversationHandler
@@ -238,6 +239,43 @@ def processing_company_business_needs(update: Update, context: CallbackContext):
                 reply_markup=make_keyboard({},"inline",1)
             )
         f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
+        f(update, new_user)
+        return
+
+def processing_company_business_branches(update: Update, context: CallbackContext):
+    if update.message is not None:
+        update.message.reply_text(
+            "Используйте предложенные варианты.",
+            reply_markup=make_keyboard({},"usual",2)
+        )
+        f = STEPS["COMPANY_BUSINESS_BRANCHES"]["self_prepare"]
+        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+        f(update, new_user)
+        return
+    new_user = NewUser.objects.get(user_id = update.callback_query.from_user.id)
+    query = update.callback_query
+    variant = query.data
+    query.answer()
+    if variant == "next":
+        f = STEPS["COMPANY_BUSINESS_BRANCHES"]["prepare"]
+        f(update, new_user)
+        return STEPS["COMPANY_BUSINESS_BRANCHES"]["next"]
+    branch = BusinessBranches.objects.get(id=variant)
+    if branch in new_user.business_branches.all():
+        new_user.business_branches.remove(branch)
+        f = STEPS["COMPANY_BUSINESS_BRANCHES"]["self_prepare"]
+        f(update, new_user)
+        return
+    else:
+        if new_user.business_branches.count() < MAX_BUSINESS_BRANCHES:
+            new_user.business_branches.add(branch)
+        else:
+            send_message(
+                user_id=update.callback_query.from_user.id,
+                text="Не допускается выбрать более {} вариантов".format(MAX_BUSINESS_BRANCHES),
+                reply_markup=make_keyboard({},"inline",1)
+            )
+        f = STEPS["COMPANY_BUSINESS_BRANCHES"]["self_prepare"]
         f(update, new_user)
         return
 
@@ -706,6 +744,10 @@ def setup_dispatcher_conv(dp: Dispatcher):
             STEPS["COMPANY_BUSINESS_BENEFITS"]["step"]: [
                 CallbackQueryHandler(processing_company_business_benefits),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_benefits)
+                ],
+            STEPS["COMPANY_BUSINESS_BRANCHES"]["step"]: [
+                CallbackQueryHandler(processing_company_business_branches),
+                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_branches)
                 ],
 
             STEPS["RESIDENT_URBANIUS_CLUB"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_resident_urbanius_club)],
