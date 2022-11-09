@@ -216,6 +216,9 @@ class User(AbstractTgUser):
             Q(tags__icontains = keywords)| \
             Q(needs__icontains = keywords)| \
             Q(about__icontains = keywords)| \
+            Q(business_benefits__title__icontains = keywords)| \
+            Q(business_needs__title__icontains = keywords)| \
+            Q(business_branches__title__icontains = keywords)| \
             Q(comment__icontains = keywords)| \
             Q(job_region__icontains = keywords)| \
             Q(branch__icontains = keywords)| \
@@ -255,32 +258,62 @@ class User(AbstractTgUser):
 
     def full_profile(self)->str:
         res = "<b>Пользователь:</b> \n"
-        res += str(self)        
-        res += "\n<b>Личная информация:</b> "
-        res += "\n  <b>e-mail:</b> " + mystr(self.email)
-        res += "\n  <b>Телефон:</b> " + mystr(self.telefon)
-        res += "\n  <b>Дата рождения:</b> " + mystr(self.date_of_birth)
-        res += "\n  <b>Статус:</b> " + mystr(self.status)
-        res += "\n  <b>Рейтинг:</b> " + mystr(self.rating)
-        res += "\n  <b>Группы:</b>\n    " + get_model_text(UsertgGroups,["group"], self).replace("\n", "\n    ")
-        res += "\n<b>Бизнес информация:</b> "
-        res += "\n  <b>Компания:</b> " + mystr(self.company)
-        res += "\n  <b>Сегмент:</b>  " + mystr(self.segment) 
-        res += "\n  <b>Оборот:</b>  " + mystr(self.get_company_turnover_display()) 
-        res += "\n  <b>Должность:</b> " + mystr(self.job)
-        res += "\n  <b>Отрасль:</b> " + mystr(self.branch)
-        res += "\n  <b>Город:</b> " + mystr(self.citi)
-        res += "\n  <b>Регион:</b> " + mystr(self.job_region)
-        res += "\n  <b>Сайт:</b> " + mystr(self.site) + "\n"
-        res += "\n<b>Информация о себе:</b> "
-        res += "\n  <b>О себе:</b> " + mystr(self.about)
-        res += "\n  <b>Спорт:</b> " + mystr(self.sport)
-        res += "\n  <b>Хобби:</b> " + mystr(self.hobby)
-        res += "\n  <b>Соцсети:</b>\n    " + get_model_text(SocialNets,["soc_net_site","link"], self).replace("\n", "\n    ")
-        res = res[:-2] + "<b>Тэги:</b> " + mystr(self.tags)
-        res += "\n<b>Предложения:</b>\n" + get_model_text(Offers,["NN","offer","image"], self)
-        res += "<b>Потребности:</b>\n" + mystr(self.needs)
-        res += "\n<b>Рекомендатели:</b>\n" + get_model_text(UserReferrers,["NN","referrer"], self)  
+        # res += str(self)
+        res += f'@{self.username}\n' if self.username is not None else f'{self.user_id}\n'
+        res += " ".join([str(self.first_name), str(self.sur_name), str(self.last_name)])
+        res += "\n<b>Статус в сообществе:</b> " + mystr(self.status)
+        res += "\n<b>Город:</b> " + mystr(self.citi)
+        res += "\n<b>Компания:</b> " + mystr(self.company)
+        res += "\n<b>Должность:</b> " + mystr(self.job)
+        res += "\n<b>Сайт:</b> " + mystr(self.site)
+        res += "\n<b>Регионы присутствия вашего бизнеса:</b> " + mystr(self.job_region)
+        res += "\n<b>Обороты:</b>  " + mystr(self.get_company_turnover_display()) 
+        res += "\n<b>Количество сотрудников:</b>  " + mystr(self.get_number_of_employees_display()) 
+
+        # res += "\n<b>Личная информация:</b> "
+        # res += "\n  <b>e-mail:</b> " + mystr(self.email)
+        # res += "\n  <b>Телефон:</b> " + mystr(self.telefon)
+        res += "\n<b>Сегмент бизнеса:</b> " + "/".join(
+            [i.title for i in self.business_branches.all()]
+            )
+        res += "\n<b>Потребности:</b> " + "/".join(
+            [i.title for i in self.business_needs.all()]
+            )
+        res += "\n<b>Предложения:</b> " + "/".join(
+            [i.title for i in self.business_benefits.all()]
+            )
+        resident = "Резидент" if self.resident_urbanius_club else ""
+        res += "\n<b>URBANIUS CLUB статус:</b> " + resident
+        refferers = list()
+        for refferer in self.userreferrers_set.all():
+            if refferer.referrer.username is not None:
+                username = f'@{refferer.referrer.username}'
+            else:
+                username = f'{refferer.referrer.user_id}'
+            refferers.append(
+                " ".join([
+                    username,
+                    str(refferer.referrer.first_name),
+                    str(refferer.referrer.sur_name), 
+                    str(refferer.referrer.last_name)
+                    ])
+            )
+        res += "\n<b>Рекомендатель:</b> {}".format(", ".join(refferers))
+        
+        # res += "\n  <b>Рейтинг:</b> " + mystr(self.rating)
+        # res += "\n  <b>Группы:</b>\n    " + get_model_text(UsertgGroups,["group"], self).replace("\n", "\n    ")
+        # res += "\n<b>Бизнес информация:</b> "
+        # res += "\n  <b>Сегмент:</b>  " + mystr(self.segment) 
+        # res += "\n  <b>Отрасль:</b> " + mystr(self.branch)
+        # res += "\n<b>Информация о себе:</b> "
+        # res += "\n  <b>О себе:</b> " + mystr(self.about)
+        # res += "\n  <b>Спорт:</b> " + mystr(self.sport)
+        # res += "\n  <b>Хобби:</b> " + mystr(self.hobby)
+        # res += "\n  <b>Соцсети:</b>\n    " + get_model_text(SocialNets,["soc_net_site","link"], self).replace("\n", "\n    ")
+        # res = res[:-2] + "<b>Тэги:</b> " + mystr(self.tags)
+        # res += "\n<b>Предложения:</b>\n" + get_model_text(Offers,["NN","offer","image"], self)
+        # res += "<b>Потребности:</b>\n" + mystr(self.needs)
+        # res += "\n<b>Рекомендатели:</b>\n" + get_model_text(UserReferrers,["NN","referrer"], self)  
         return res
 
     def get_users_rating(self):
