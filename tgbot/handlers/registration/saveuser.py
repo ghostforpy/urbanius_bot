@@ -73,11 +73,13 @@ def end_registration(update:Update, context: CallbackContext, new_user: NewUser)
         fill_file_id(user, "main_photo")
     # photo = user.main_photo.path
     photo_id = user.main_photo_id
-    send_photo(user.user_id, photo_id)
     profile_txt = user.full_profile()
+
+    send_photo(user.user_id, photo_id, caption=profile_txt)
+    
     # reply_markup = make_keyboard_start_menu()
-    send_message(user_id = user.user_id, text = profile_txt, 
-                 disable_web_page_preview=True)
+    # send_message(user_id = user.user_id, text = profile_txt, 
+    #              disable_web_page_preview=True)
 
     reply_markup = make_keyboard(START,"usual",1)
     mess_template = MessageTemplates.objects.get(code=MessageTemplatesCode.WAIT_APPOVE_MESSAGE)
