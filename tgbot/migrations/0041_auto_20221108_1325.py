@@ -6,12 +6,13 @@ def create_business_needs(apps, schema_editor):
     BusinessNeeds = apps.get_model('tgbot', 'BusinessNeeds')
     needs = list()
     NEEDS = [
-        "Взаимодействие с представителями власти",
+        "Взаимодействие с властью",
         "Поиск поставщиков и подрядчиков",
         "Поиск клиентов и заказчиков",
         "Участие в тендерах и электронных торгах",
         "Подбор квалифицированных кадров"
     ]
+
     for need in NEEDS:
         needs.append(
             BusinessNeeds(title=need)
