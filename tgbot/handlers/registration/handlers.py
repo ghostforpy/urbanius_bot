@@ -225,18 +225,6 @@ def processing_company_number_of_employess(update: Update, context: CallbackCont
     f(update, new_user)
     return STEPS["COMPANY_NUMBER_OF_EMPLOYESS"]["next"]
 
-def processing_create_business_need(update: Update, context: CallbackContext):
-    if update.message is not None:
-        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-        if update.message.text != CANCEL_CREATE["cancel"]:
-            new_need = BusinessNeeds.objects.create(
-                title=update.message.text[0].upper() + update.message.text[1:]
-            )
-            new_user.business_needs.add(new_need)
-        f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
-        f(update, new_user)
-        return STEPS["COMPANY_BUSINESS_NEEDS"]["step"]
-
 def processing_company_business_needs(update: Update, context: CallbackContext):
     if update.message is not None:
         update.message.reply_text(
@@ -304,17 +292,65 @@ def processing_company_business_branches(update: Update, context: CallbackContex
         f(update, new_user)
         return
 
-def processing_create_business_benefit(update: Update, context: CallbackContext):
+def processing_create_business_need_message(update: Update, context: CallbackContext):
     if update.message is not None:
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-        if update.message.text != CANCEL_CREATE["cancel"]:
-            new_need = BusinessBenefits.objects.create(
+        new_need = BusinessNeeds.objects.filter(
+            title__iexact=update.message.text
+        )
+        if new_need.exists():
+            new_need = BusinessNeeds.objects.filter(
+                title__iexact=update.message.text
+            ).get()
+        else:
+            new_need = BusinessNeeds.objects.create(
                 title=update.message.text[0].upper() + update.message.text[1:]
             )
-            new_user.business_benefits.add(new_need)
+        new_user.business_needs.add(new_need)
+        f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
+        f(update, new_user)
+        return STEPS["COMPANY_BUSINESS_NEEDS"]["step"]
+
+def processing_create_business_need_callback_query(update: Update, context: CallbackContext):
+    new_user = NewUser.objects.get(user_id = update.callback_query.from_user.id)
+    query = update.callback_query
+    variant = query.data
+    query.answer()
+    if variant == "cancel":
+        f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
+        f(update, new_user)
+        return STEPS["COMPANY_BUSINESS_NEEDS"]["step"]
+
+
+def processing_create_business_benefit_message(update: Update, context: CallbackContext):
+    if update.message is not None:
+        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+        new_benefit = BusinessBenefits.objects.filter(
+            title__iexact=update.message.text
+        )
+        if new_benefit.exists():
+            new_benefit = BusinessBenefits.objects.filter(
+                title__iexact=update.message.text
+            ).get()
+        else:
+            new_benefit = BusinessBenefits.objects.create(
+                title=update.message.text[0].upper() + update.message.text[1:]
+            )
+        new_user.business_benefits.add(new_benefit)
         f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
         f(update, new_user)
         return STEPS["COMPANY_BUSINESS_BENEFITS"]["step"]
+
+def processing_create_business_benefit_callback_query(update: Update, context: CallbackContext):
+    new_user = NewUser.objects.get(user_id = update.callback_query.from_user.id)
+    query = update.callback_query
+    variant = query.data
+    query.answer()
+    if variant == "cancel":
+            f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
+            f(update, new_user)
+            return STEPS["COMPANY_BUSINESS_BENEFITS"]["step"]
+
 
 def processing_company_business_benefits(update: Update, context: CallbackContext):
     if update.message is not None:
@@ -774,14 +810,20 @@ def setup_dispatcher_conv(dp: Dispatcher):
                 CallbackQueryHandler(processing_company_business_needs),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_needs)
                 ],
-            "create_business_need": [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_create_business_need)],
+            "create_business_need": [
+                CallbackQueryHandler(processing_create_business_need_callback_query),
+                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_create_business_need_message)
+            ],
             STEPS["TAGS"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_tags)],
 
             STEPS["COMPANY_BUSINESS_BENEFITS"]["step"]: [
                 CallbackQueryHandler(processing_company_business_benefits),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_benefits)
                 ],
-            "create_business_benefit": [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_create_business_benefit)],
+            "create_business_benefit": [
+                CallbackQueryHandler(processing_create_business_benefit_callback_query),
+                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_create_business_benefit_message)
+            ],
             STEPS["COMPANY_BUSINESS_BRANCHES"]["step"]: [
                 CallbackQueryHandler(processing_company_business_branches),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_branches)

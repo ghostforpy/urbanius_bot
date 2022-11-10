@@ -113,7 +113,7 @@ def prepare_create_business_needs(update:Update):
         "text": ASK_CREATE_COMPANY_BUSINESS_NEEDS,
         "reply_markup": make_keyboard(
                 CANCEL_CREATE,
-                "usial",
+                "inline",
                 1,
             )
     }
@@ -173,7 +173,7 @@ def prepare_create_business_benefits(update:Update):
         "text": ASK_CREATE_COMPANY_BUSINESS_BENEFITS,
         "reply_markup": make_keyboard(
                 CANCEL_CREATE,
-                "usial",
+                "inline",
                 1,
             )
     }
