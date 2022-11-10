@@ -88,6 +88,7 @@ class AbstractTgUser(models.Model):
 
     # О себе:
     about = models.TextField("О себе", null=True, blank=True)
+    tags = models.TextField("Тэги",  null=True, blank=True)
 
     # Дополнительные поля
     created_at = models.DateTimeField("Создан", auto_now_add=True)
@@ -139,7 +140,6 @@ class User(AbstractTgUser):
     # О себе:
     sport = models.TextField("Спорт", null=True, blank=True)
     hobby = models.TextField("Хобби", null=True, blank=True)
-    tags = models.TextField("Тэги",  null=True, blank=True)
     needs = models.TextField("Потребности", null=True, blank=True)
     comment = models.TextField("комментарий", null=True, blank=True)
 
@@ -282,6 +282,7 @@ class User(AbstractTgUser):
         res += "\n<b>Предложения:</b> " + "/".join(
             [i.title for i in self.business_benefits.all()]
             )
+        res += "\n<b>Теги:</b> " + mystr(self.tags)
         resident = "Резидент" if self.resident_urbanius_club else ""
         res += "\n<b>URBANIUS CLUB статус:</b> " + resident
         refferers = list()
