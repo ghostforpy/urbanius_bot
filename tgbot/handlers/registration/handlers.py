@@ -126,6 +126,15 @@ def processing_surname(update: Update, context: CallbackContext):
     # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
     return STEPS["SURNAME"]["next"]
 
+
+def processing_tags(update: Update, context: CallbackContext):
+    new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+    new_user.tags = update.message.text
+    new_user.save()
+    f = STEPS["TAGS"]["prepare"]
+    f(update, new_user)
+    return STEPS["TAGS"]["next"]
+
 def processing_aproval(update: Update, context: CallbackContext):
     if update.message.text not in [APPROVAL_ANSWERS[i] for i in APPROVAL_ANSWERS]:
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
@@ -758,6 +767,8 @@ def setup_dispatcher_conv(dp: Dispatcher):
                 CallbackQueryHandler(processing_company_business_needs),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_needs)
                 ],
+            STEPS["TAGS"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_tags)],
+
             STEPS["COMPANY_BUSINESS_BENEFITS"]["step"]: [
                 CallbackQueryHandler(processing_company_business_benefits),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_benefits)

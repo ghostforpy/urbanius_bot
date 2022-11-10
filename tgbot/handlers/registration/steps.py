@@ -17,7 +17,8 @@ from .prepares import (
     prepare_company_business_benefits,
     prepare_company_business_branches,
     prepare_ask_photo,
-    prepare_ask_first_name
+    prepare_ask_first_name,
+    prepare_tags
 )
 from .utils import counter
 from .saveuser import end_registration
@@ -85,8 +86,14 @@ STEPS = {
     },
     "COMPANY_BUSINESS_NEEDS": {
         "step": step_iterator.current,
-        "prepare": prepare_company_business_benefits,
+        "prepare": prepare_tags,
         "self_prepare": prepare_company_business_needs,
+        "next": next(step_iterator)
+    },
+    "TAGS": {
+        "step": step_iterator.current,
+        "prepare": prepare_company_business_benefits,
+        "self_prepare": prepare_tags,
         "next": next(step_iterator)
     },
     "COMPANY_BUSINESS_BENEFITS": {
@@ -147,11 +154,7 @@ STEPS = {
     # },
 
 
-#     "TAGS": {
-    #     "step": step_iterator.current,
-    #     "prepare": prepare_ask_business_needs,
-    #     "next": next(step_iterator)
-    # },
+
 
 
     # "HOBBY": {

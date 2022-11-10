@@ -47,6 +47,7 @@ def end_registration(update:Update, context: CallbackContext, new_user: NewUser)
     user.business_club_member = new_user.business_club_member
     user.company_turnover = new_user.company_turnover
     user.number_of_employees = new_user.number_of_employees
+    user.tags = new_user.tags
     user.main_photo = new_user.main_photo
     user.main_photo_id = new_user.main_photo_id
     user.status = Status.objects.get(code = StatusCode.APPLICANT)

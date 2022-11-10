@@ -60,6 +60,19 @@ def prepare_job_region(update: Update, new_user: NewUser):
         reply_markup=make_keyboard({},"usual",2)
     )
 
+def prepare_tags(update: Update, new_user: NewUser):
+    if update.message is not None:
+        update.message.reply_text(
+            ASK_TAGS,
+            reply_markup=ReplyKeyboardRemove()
+        )
+    elif update.callback_query is not None:
+        send_message(
+            user_id=update.callback_query.from_user.id,
+            text=ASK_TAGS,
+            reply_markup=ReplyKeyboardRemove()
+        )
+
 def prepare_deep_link(update: Update, new_user: NewUser):
     update.message.reply_text(
         ASK_DEEP_LINK,
