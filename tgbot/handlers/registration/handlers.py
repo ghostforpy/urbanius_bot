@@ -781,7 +781,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
                 CallbackQueryHandler(processing_company_business_benefits),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_benefits)
                 ],
-            "create_business_benefit": [MessageHandler(Filters.text & FilterPrivateNoCommand, prepare_create_business_benefits)],
+            "create_business_benefit": [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_create_business_benefit)],
             STEPS["COMPANY_BUSINESS_BRANCHES"]["step"]: [
                 CallbackQueryHandler(processing_company_business_branches),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_branches)
