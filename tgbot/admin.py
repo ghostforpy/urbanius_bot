@@ -133,15 +133,18 @@ class StatusAdmin(admin.ModelAdmin):
 
 @admin.register(BusinessNeeds)
 class BusinessNeedsAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("title", "order_number") 
+    list_editable =("order_number",)
 
 @admin.register(BusinessBenefits)
 class BusinessBenefitsAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("title", "order_number") 
+    list_editable =("order_number",)
 
 @admin.register(BusinessBranches)
 class BusinessBranchesAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("title", "order_number") 
+    list_editable =("order_number",)
 
 @admin.register(tgGroups)
 class tgGroupsAdmin(admin.ModelAdmin) :
