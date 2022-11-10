@@ -226,10 +226,17 @@ def processing_company_number_of_employess(update: Update, context: CallbackCont
 
 def processing_company_business_needs(update: Update, context: CallbackContext):
     if update.message is not None:
-        update.message.reply_text(
-            "Используйте предложенные варианты.",
-            reply_markup=make_keyboard({},"usual",2)
+        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+        if new_user.business_needs.count() >= MAX_BUSINESS_NEEDS:
+            update.message.reply_text(
+                "Не допускается выбрать более {} вариантов".format(MAX_BUSINESS_NEEDS),
+                reply_markup=make_keyboard({},"usual",1)
+            )
+            return
+        new_need = BusinessNeeds.objects.create(
+            title=update.message.text[0].upper() + update.message.text[1:]
         )
+        new_user.business_needs.add(new_need)
         f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
         f(update, new_user)
@@ -300,10 +307,17 @@ def processing_company_business_branches(update: Update, context: CallbackContex
 
 def processing_company_business_benefits(update: Update, context: CallbackContext):
     if update.message is not None:
-        update.message.reply_text(
-            "Используйте предложенные варианты.",
-            reply_markup=make_keyboard({},"usual",2)
-        )
+        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+        if new_user.business_benefits.count() >= MAX_BUSINESS_BENEFITS:
+            update.message.reply_text(
+                "Не допускается выбрать более {} вариантов".format(MAX_BUSINESS_BENEFITS),
+                reply_markup=make_keyboard({},"usual",1)
+            )
+            return
+        new_benefit = BusinessBenefits.objects.create(
+            title=update.message.text[0].upper() + update.message.text[1:]
+            )
+        new_user.business_benefits.add(new_benefit)
         f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
         f(update, new_user)

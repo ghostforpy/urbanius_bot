@@ -75,7 +75,7 @@ ASK_COMPANY_NUMBER_OF_EMPLOYESS = "10. Численность сотрудник
 
 MAX_BUSINESS_NEEDS = MAX_BUSINESS_BENEFITS = 3
 
-ASK_COMPANY_COMPANY_BUSINESS_NEEDS = "12. Регулярные потребности вашего бизнеса"
+ASK_COMPANY_COMPANY_BUSINESS_NEEDS = "12. Регулярные потребности вашего бизнеса (при необходимости введите свой вариант)"
 
 ASK_COMPANY_COMPANY_BUSINESS_BENEFITS = "14. Чем вы можете быть полезны участникам сообщества?"
 
