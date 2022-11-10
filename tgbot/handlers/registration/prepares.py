@@ -1,4 +1,5 @@
 # import logging
+import logging
 from telegram.update import Update
 from telegram import ReplyKeyboardRemove
 # from telegram.ext.callbackcontext import CallbackContext
@@ -107,33 +108,42 @@ def prepare_company_number_of_employees(update: Update, new_user: NewUser):
             )
         )
 
+def prepare_create_business_needs(update:Update):
+    kwargs = {
+        "text": ASK_CREATE_COMPANY_BUSINESS_NEEDS,
+        "reply_markup": make_keyboard(
+                CANCEL_CREATE,
+                "usial",
+                1,
+            )
+    }
+    if update.message is not None:
+        update.message.reply_text(**kwargs)
+    elif update.callback_query is not None:
+        update.callback_query.edit_message_text(**kwargs)
+
 def prepare_company_business_needs(update: Update, new_user: NewUser):
     company_business_needs = dict()
     for n in BusinessNeeds.objects.all():
         company_business_needs[str(n.id)] = n.title
         if n in new_user.business_needs.all():
             company_business_needs[str(n.id)] = CHECK_ICON + company_business_needs[str(n.id)]
-    footer_buttons = NEXT if new_user.business_needs.count() > 0 else []
+    footer_buttons = CREATE.copy()
+    if new_user.business_needs.count() > 0:
+        footer_buttons.update(NEXT)
+    kwargs = {
+        "text": ASK_COMPANY_BUSINESS_NEEDS,
+        "reply_markup": make_keyboard(
+                company_business_needs,
+                "inline",
+                1,
+                footer_buttons=footer_buttons
+            )
+    }
     if update.message is not None:
-        update.message.reply_text(
-            ASK_COMPANY_COMPANY_BUSINESS_NEEDS,
-            reply_markup=make_keyboard(
-                company_business_needs,
-                "inline",
-                1,
-                footer_buttons=footer_buttons
-            )
-        )
+        update.message.reply_text(**kwargs)
     elif update.callback_query is not None:
-        update.callback_query.edit_message_text(
-            ASK_COMPANY_COMPANY_BUSINESS_NEEDS,
-            reply_markup=make_keyboard(
-                company_business_needs,
-                "inline",
-                1,
-                footer_buttons=footer_buttons
-            )
-        )
+        update.callback_query.edit_message_text(**kwargs)
 
 def prepare_company_business_benefits(update: Update, new_user: NewUser):
     company_business_benefits = dict()
@@ -141,27 +151,36 @@ def prepare_company_business_benefits(update: Update, new_user: NewUser):
         company_business_benefits[str(n.id)] = n.title
         if n in new_user.business_benefits.all():
             company_business_benefits[str(n.id)] = CHECK_ICON + company_business_benefits[str(n.id)]
-    footer_buttons = NEXT if new_user.business_benefits.count() > 0 else []
+    footer_buttons = CREATE.copy()
+    if new_user.business_benefits.count() > 0:
+        footer_buttons.update(NEXT)
+    kwargs = {
+        "text": ASK_COMPANY_COMPANY_BUSINESS_BENEFITS,
+        "reply_markup": make_keyboard(
+                company_business_benefits,
+                "inline",
+                1,
+                footer_buttons=footer_buttons
+            )
+    }
     if update.message is not None:
-        update.message.reply_text(
-            ASK_COMPANY_COMPANY_BUSINESS_BENEFITS,
-            reply_markup=make_keyboard(
-                company_business_benefits,
-                "inline",
-                1,
-                footer_buttons=footer_buttons
-            )
-        )
+        update.message.reply_text(**kwargs)
     elif update.callback_query is not None:
-        update.callback_query.edit_message_text(
-            ASK_COMPANY_COMPANY_BUSINESS_BENEFITS,
-            reply_markup=make_keyboard(
-                company_business_benefits,
-                "inline",
+        update.callback_query.edit_message_text(**kwargs)
+
+def prepare_create_business_benefits(update:Update):
+    kwargs = {
+        "text": ASK_CREATE_COMPANY_BUSINESS_BENEFITS,
+        "reply_markup": make_keyboard(
+                CANCEL_CREATE,
+                "usial",
                 1,
-                footer_buttons=footer_buttons
             )
-        )
+    }
+    if update.message is not None:
+        update.message.reply_text(**kwargs)
+    elif update.callback_query is not None:
+        update.callback_query.edit_message_text(**kwargs)
 
 def prepare_company_business_branches(update: Update, new_user: NewUser):
     company_business_branches = dict()

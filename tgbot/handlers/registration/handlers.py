@@ -1,3 +1,4 @@
+import logging
 from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext import (
@@ -42,7 +43,7 @@ from tgbot.handlers.utils import send_message
 from .steps import STEPS
 from .saveuser import end_registration
 # from .utils import counter
-# from .prepares import prepare_ask_first_name
+from .prepares import prepare_create_business_needs, prepare_create_business_benefits
 
 
 def stop_conversation(update: Update, context: CallbackContext):
@@ -224,19 +225,24 @@ def processing_company_number_of_employess(update: Update, context: CallbackCont
     f(update, new_user)
     return STEPS["COMPANY_NUMBER_OF_EMPLOYESS"]["next"]
 
-def processing_company_business_needs(update: Update, context: CallbackContext):
+def processing_create_business_need(update: Update, context: CallbackContext):
     if update.message is not None:
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-        if new_user.business_needs.count() >= MAX_BUSINESS_NEEDS:
-            update.message.reply_text(
-                "Не допускается выбрать более {} вариантов".format(MAX_BUSINESS_NEEDS),
-                reply_markup=make_keyboard({},"usual",1)
+        if update.message.text != CANCEL_CREATE["cancel"]:
+            new_need = BusinessNeeds.objects.create(
+                title=update.message.text[0].upper() + update.message.text[1:]
             )
-            return
-        new_need = BusinessNeeds.objects.create(
-            title=update.message.text[0].upper() + update.message.text[1:]
+            new_user.business_needs.add(new_need)
+        f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
+        f(update, new_user)
+        return STEPS["COMPANY_BUSINESS_NEEDS"]["step"]
+
+def processing_company_business_needs(update: Update, context: CallbackContext):
+    if update.message is not None:
+        update.message.reply_text(
+            "Используйте предложенные варианты.",
+            reply_markup=make_keyboard({},"usual",2)
         )
-        new_user.business_needs.add(new_need)
         f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
         f(update, new_user)
@@ -245,6 +251,9 @@ def processing_company_business_needs(update: Update, context: CallbackContext):
     query = update.callback_query
     variant = query.data
     query.answer()
+    if variant == "create":
+        prepare_create_business_needs(update)
+        return "create_business_need"
     if variant == "next":
         f = STEPS["COMPANY_BUSINESS_NEEDS"]["prepare"]
         f(update, new_user)
@@ -252,21 +261,11 @@ def processing_company_business_needs(update: Update, context: CallbackContext):
     need = BusinessNeeds.objects.get(id=variant)
     if need in new_user.business_needs.all():
         new_user.business_needs.remove(need)
-        f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
-        f(update, new_user)
-        return
     else:
-        if new_user.business_needs.count() < MAX_BUSINESS_NEEDS:
-            new_user.business_needs.add(need)
-        else:
-            send_message(
-                user_id=update.callback_query.from_user.id,
-                text="Не допускается выбрать более {} вариантов".format(MAX_BUSINESS_NEEDS),
-                reply_markup=make_keyboard({},"inline",1)
-            )
-        f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
-        f(update, new_user)
-        return
+        new_user.business_needs.add(need)
+    f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
+    f(update, new_user)
+    return
 
 def processing_company_business_branches(update: Update, context: CallbackContext):
     if update.message is not None:
@@ -305,19 +304,24 @@ def processing_company_business_branches(update: Update, context: CallbackContex
         f(update, new_user)
         return
 
-def processing_company_business_benefits(update: Update, context: CallbackContext):
+def processing_create_business_benefit(update: Update, context: CallbackContext):
     if update.message is not None:
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-        if new_user.business_benefits.count() >= MAX_BUSINESS_BENEFITS:
-            update.message.reply_text(
-                "Не допускается выбрать более {} вариантов".format(MAX_BUSINESS_BENEFITS),
-                reply_markup=make_keyboard({},"usual",1)
+        if update.message.text != CANCEL_CREATE["cancel"]:
+            new_need = BusinessBenefits.objects.create(
+                title=update.message.text[0].upper() + update.message.text[1:]
             )
-            return
-        new_benefit = BusinessBenefits.objects.create(
-            title=update.message.text[0].upper() + update.message.text[1:]
-            )
-        new_user.business_benefits.add(new_benefit)
+            new_user.business_benefits.add(new_need)
+        f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
+        f(update, new_user)
+        return STEPS["COMPANY_BUSINESS_BENEFITS"]["step"]
+
+def processing_company_business_benefits(update: Update, context: CallbackContext):
+    if update.message is not None:
+        update.message.reply_text(
+            "Используйте предложенные варианты.",
+            reply_markup=make_keyboard({},"usual",2)
+        )
         f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
         f(update, new_user)
@@ -326,6 +330,9 @@ def processing_company_business_benefits(update: Update, context: CallbackContex
     query = update.callback_query
     variant = query.data
     query.answer()
+    if variant == "create":
+        prepare_create_business_benefits(update)
+        return "create_business_benefit"
     if variant == "next":
         f = STEPS["COMPANY_BUSINESS_BENEFITS"]["prepare"]
         f(update, new_user)
@@ -333,28 +340,13 @@ def processing_company_business_benefits(update: Update, context: CallbackContex
     benefit = BusinessBenefits.objects.get(id=variant)
     if benefit in new_user.business_benefits.all():
         new_user.business_benefits.remove(benefit)
-        f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
-        f(update, new_user)
-        return
     else:
-        if new_user.business_benefits.count() < MAX_BUSINESS_BENEFITS:
-            new_user.business_benefits.add(benefit)
-        else:
-            send_message(
-                user_id=update.callback_query.from_user.id,
-                text="Не допускается выбрать более {} вариантов".format(MAX_BUSINESS_BENEFITS),
-                reply_markup=make_keyboard({},"inline",1)
-            )
-        f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
-        f(update, new_user)
-        return
+        new_user.business_benefits.add(benefit)
+    f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
+    f(update, new_user)
+    return
 
 def processing_job_region(update: Update, context: CallbackContext):
-    new_user = None
-    # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
-    #    stop_conversation(update, context)
-    #    return ConversationHandler.END
-    # elif update.message.text != CANCEL_SKIP["skip"]:
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
     new_user.job_region = update.message.text
     new_user.save()
@@ -782,12 +774,14 @@ def setup_dispatcher_conv(dp: Dispatcher):
                 CallbackQueryHandler(processing_company_business_needs),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_needs)
                 ],
+            "create_business_need": [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_create_business_need)],
             STEPS["TAGS"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_tags)],
 
             STEPS["COMPANY_BUSINESS_BENEFITS"]["step"]: [
                 CallbackQueryHandler(processing_company_business_benefits),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_benefits)
                 ],
+            "create_business_benefit": [MessageHandler(Filters.text & FilterPrivateNoCommand, prepare_create_business_benefits)],
             STEPS["COMPANY_BUSINESS_BRANCHES"]["step"]: [
                 CallbackQueryHandler(processing_company_business_branches),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_branches)
