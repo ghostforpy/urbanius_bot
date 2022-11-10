@@ -2,7 +2,7 @@
 
 from django.db import migrations
 
-def create_business_branches(apps, schema_editor):
+def create_wait_approve_message_template(apps, schema_editor):
     MessageTemplates = apps.get_model('sheduler', 'MessageTemplates')
     MessageTemplates.objects.create(
         code="wait_approve_message",
@@ -19,5 +19,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(create_business_branches),
+        migrations.RunPython(create_wait_approve_message_template),
     ]

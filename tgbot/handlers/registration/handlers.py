@@ -15,11 +15,11 @@ from tgbot.models.business_needs import BusinessNeeds
 
 from tgbot.my_telegram import ConversationHandler
 
-# from dtb.constants import MessageTemplatesCode
-from dtb.constants import StatusCode
+from dtb.constants import StatusCode, MessageTemplatesCode
 from .messages import *
 from .answers import *
 # from tgbot.handlers.main.messages import NO_ADMIN_GROUP
+from sheduler.models import MessagesToSend
 from tgbot.models import (
     Status,
     User,
@@ -28,7 +28,7 @@ from tgbot.models import (
     # UserReferrers,
     NewUser
 )
-# from sheduler.models import MessageTemplates
+from sheduler.models import MessageTemplates
 
 # from tgbot.handlers.utils import send_message, send_mess_by_tmplt
 from tgbot.handlers.files import _get_file_id
@@ -746,8 +746,9 @@ def confirm_registration(update: Update, context: CallbackContext):
     new_user.status =  Status.objects.get(code = StatusCode.GROUP_MEMBER)
     new_user.comment = "Регистрация подтверждена"
     new_user.save()
-    text = "Ваша регистрация подтверждена. Наберите /start для обновления меню."
-    send_message(new_user_id, text)
+    text = MessageTemplates.objects.get(code=MessageTemplatesCode.WAIT_APPOVE_MESSAGE)
+    # text = "Ваша регистрация подтверждена. Наберите /start для обновления меню."
+    send_message(new_user_id, text.text)
     # query.edit_message_text("Подтверждение завершено", reply_markup=make_keyboard(EMPTY,"inline",1))
     query.delete_message()
     # query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
