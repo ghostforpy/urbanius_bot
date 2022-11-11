@@ -22,7 +22,25 @@ from tgbot.handlers.commands import command_start
 from tgbot.handlers.utils import send_message, send_photo, fill_file_id, get_no_foto_id, wrong_file_id
 from tgbot.utils import mystr, is_date, is_email, get_uniq_file_name
 from tgbot.handlers.files import _get_file_id
-
+from .busines_branches import processing_company_business_branches
+from .business_needs import (
+    processing_company_business_needs, 
+    processing_create_business_need_message,
+    processing_create_business_need_callback_query
+)
+from .business_benefits import (
+    processing_create_business_benefit_message,
+    processing_create_business_benefit_callback_query,
+    processing_company_business_benefits
+)
+from .prepares import (
+    prepare_manage_personal_info,
+    prepare_manage_busines_info,
+    prepare_company_business_branches,
+    prepare_go_start_conversation,
+    prepare_company_business_needs,
+    prepare_company_business_benefits
+)
 # Возврат к главному меню в исключительных ситуациях
 def stop_conversation(update: Update, context: CallbackContext):
     # Заканчиваем разговор.
@@ -68,21 +86,24 @@ def start_conversation(update: Update, context: CallbackContext):
     return "working"
 
 def go_start_conversation(update: Update, context: CallbackContext):
-    reply_markup = make_keyboard_start_menu()
-    update.message.reply_text(PROF_HELLO, reply_markup = reply_markup)
+    prepare_go_start_conversation(update, context)
+    # reply_markup = make_keyboard_start_menu()
+    # update.message.reply_text(PROF_HELLO, reply_markup = reply_markup)
     return "working"
 
 # Начало работы с персональной инфо
 def manage_personal_info(update: Update, context: CallbackContext):
-    reply_markup = make_keyboard_pers_menu()
-    update.message.reply_text(PERSONAL_START_MESSS, reply_markup = reply_markup)
+    prepare_manage_personal_info(update, context)
+    # reply_markup = make_keyboard_pers_menu()
+    # update.message.reply_text(PERSONAL_START_MESSS, reply_markup = reply_markup)
     return "working_personal_info"
 
 # Начало работы с бизнес инфо
 def manage_busines_info(update: Update, context: CallbackContext):
-    reply_markup = make_keyboard_busines_menu()
-    update.message.reply_text(BUSINES_START_MESSS, reply_markup = reply_markup)
-    return "working_busines_info"    
+    prepare_manage_busines_info(update, context)
+    # reply_markup = make_keyboard_busines_menu()
+    # update.message.reply_text(BUSINES_START_MESSS, reply_markup = reply_markup)
+    return "working_busines_info"
 
 # Начало работы с инфо о себе
 def manage_about_info(update: Update, context: CallbackContext):
@@ -90,7 +111,23 @@ def manage_about_info(update: Update, context: CallbackContext):
     update.message.reply_text(ABOUT_START_MESSS, reply_markup = reply_markup)
     return "working_about_info"
 
+# Обработчик сегмента бизнеса
+def business_branch(update: Update, context: CallbackContext):
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+    prepare_company_business_branches(update, user)
+    return "working_business_branches"
 
+# Обработчик потребностей бизнеса
+def business_needs(update: Update, context: CallbackContext):
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+    prepare_company_business_needs(update, user)
+    return "working_business_needs"
+
+# Обработчик предложений/пользы бизнеса
+def business_benefits(update: Update, context: CallbackContext):
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+    prepare_company_business_benefits(update, user)
+    return "working_business_benefits"
 #------------------------------------------- 
 # Обработчики персональной инфы
 #------------------------------------------- 
@@ -893,19 +930,41 @@ def setup_dispatcher_conv(dp: Dispatcher):
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
             "working":[
-                       
                        MessageHandler(Filters.text([START_MENU["personal_info"]]) & FilterPrivateNoCommand, manage_personal_info),
                        MessageHandler(Filters.text([START_MENU["busines_info"]]) & FilterPrivateNoCommand, manage_busines_info),
-                       MessageHandler(Filters.text([START_MENU["about_info"]]) & FilterPrivateNoCommand, manage_about_info),
-                       MessageHandler(Filters.text([START_MENU["needs"]]) & FilterPrivateNoCommand, manage_needs),
-                       MessageHandler(Filters.text([START_MENU["offers"]]) & FilterPrivateNoCommand, manage_offers),
-                       MessageHandler(Filters.text([START_MENU["referes"]]) & FilterPrivateNoCommand, manage_referes),                     
+                    #    MessageHandler(Filters.text([START_MENU["about_info"]]) & FilterPrivateNoCommand, manage_about_info),
+                       MessageHandler(Filters.text([START_MENU["needs"]]) & FilterPrivateNoCommand, business_needs),
+                       MessageHandler(Filters.text([START_MENU["offers"]]) & FilterPrivateNoCommand, business_benefits),
+                    #    MessageHandler(Filters.text([START_MENU["referes"]]) & FilterPrivateNoCommand, manage_referes),                     
                        MessageHandler(Filters.text([START_MENU["view_profile"]]) & FilterPrivateNoCommand, view_profile),
-                       MessageHandler(Filters.text([START_MENU["view_rating"]]) & FilterPrivateNoCommand, view_rating),
+                    #    MessageHandler(Filters.text([START_MENU["view_profile"]]) & FilterPrivateNoCommand, view_profile),
+                       MessageHandler(Filters.text([START_MENU["business_branch"]]) & FilterPrivateNoCommand, business_branch),
+                    #    MessageHandler(Filters.text([START_MENU["view_rating"]]) & FilterPrivateNoCommand, view_rating),
                        MessageHandler(Filters.text(BACK["back"]) & FilterPrivateNoCommand, stop_conversation),
-                       MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
+                       MessageHandler(Filters.text & FilterPrivateNoCommand, blank),
+
                       ],
-            
+            "working_business_branches":[
+                CallbackQueryHandler(processing_company_business_branches),
+                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_branches)
+            ],
+            "working_business_needs": [
+                CallbackQueryHandler(processing_company_business_needs),
+                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_needs)
+                ],
+            "create_business_need": [
+                CallbackQueryHandler(processing_create_business_need_callback_query),
+                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_create_business_need_message)
+            ],
+            "working_business_benefits": [
+                CallbackQueryHandler(processing_company_business_benefits),
+                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_benefits)
+                ],
+            "create_business_benefit": [
+                CallbackQueryHandler(processing_create_business_benefit_callback_query),
+                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_create_business_benefit_message)
+            ],
+
             "working_personal_info":[
                     MessageHandler(Filters.text([PERSONAL_MENU["fio"]]) & FilterPrivateNoCommand, manage_fio),
                     MessageHandler(Filters.text([PERSONAL_MENU["email"]]) & FilterPrivateNoCommand, manage_email),

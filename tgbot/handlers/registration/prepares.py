@@ -9,7 +9,7 @@ from telegram import ReplyKeyboardRemove
 #     Filters,
 #    # ConversationHandler,
 # )
-from tgbot.models.business_benefits import BusinessBenefits
+# from tgbot.models.business_benefits import BusinessBenefits
 # from tgbot.my_telegram import ConversationHandler
 
 # from dtb.constants import MessageTemplatesCode
@@ -20,7 +20,7 @@ from .answers import *
 from tgbot.models import (
     # Status, User, UsertgGroups,
     # tgGroups, UserReferrers, 
-    NewUser, AbstractTgUser, BusinessNeeds, BusinessBranches
+    NewUser, AbstractTgUser, BusinessNeeds, BusinessBranches, BusinessBenefits
 )
 # from sheduler.models import MessageTemplates
 
