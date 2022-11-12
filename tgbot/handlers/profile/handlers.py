@@ -391,6 +391,50 @@ def manage_segment_action(update: Update, context: CallbackContext):
     update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
     return "working_busines_info"
 #-------------------------------------------  
+# Обработчик количества сотрудников компании
+def manage_employess_number(update: Update, context: CallbackContext):
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+    company_number_of_employees = {
+        item[0]: item[1] for item in mymodels.User.COMPANY_NUMBER_OF_EMPLOYESS_CHOISES
+    }
+    company_number_of_employees["skip"] = "Пропустить"
+    update.message.reply_text(
+        ASK_EMPLOYESS_NUMBER.format(user.get_number_of_employees_display()),
+        reply_markup=make_keyboard({},"usual",1)
+    )
+    send_message(
+        update.message.from_user.id,
+        ASK_EMPLOYESS_NUMBER_SELECT,
+        reply_markup=make_keyboard(company_number_of_employees,"inline",1)
+    )
+    return "choose_action_employess_number"
+
+def manage_employess_number_action_message(update: Update, context: CallbackContext):
+    if update.message is not None:
+        update.message.reply_text(
+            "Используйте предложенные варианты.",
+            reply_markup=make_keyboard({},"usual",2)
+        )
+        return manage_employess_number(update, context)
+
+def manage_employess_number_action_callback_query(update: Update, context: CallbackContext):
+    query = update.callback_query
+    variant = query.data
+    query.answer()
+    if variant == "skip":
+        text = "Количество сотрудников компании не изменено"
+    else:    
+        user = mymodels.User.objects.get(user_id = update.callback_query.from_user.id)
+        user.number_of_employees = variant
+        user.save()
+        text = "Количество сотрудников компании изменено"
+    send_message(
+        update.callback_query.from_user.id,
+        text,
+        reply_markup=make_keyboard_busines_menu()
+    )
+    return "working_busines_info"
+#-------------------------------------------  
 # Обработчик Оборот
 def manage_turnover(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
@@ -1089,8 +1133,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
             "working_busines_info":[                    
                     MessageHandler(Filters.text([BUSINES_MENU["company"]]) & FilterPrivateNoCommand, manage_company),
                     # MessageHandler(Filters.text([BUSINES_MENU["segment"]]) & FilterPrivateNoCommand, manage_segment),
-        ####            # MessageHandler(Filters.text([BUSINES_MENU["tags"]]) & FilterPrivateNoCommand, manage_segment),
-         ####           # MessageHandler(Filters.text([BUSINES_MENU["employess_number"]]) & FilterPrivateNoCommand, manage_segment),
+                    MessageHandler(Filters.text([BUSINES_MENU["employess_number"]]) & FilterPrivateNoCommand, manage_employess_number),
                     MessageHandler(Filters.text([BUSINES_MENU["turnover"]]) & FilterPrivateNoCommand, manage_turnover),
                     MessageHandler(Filters.text([BUSINES_MENU["job"]]) & FilterPrivateNoCommand, manage_job),
                     # MessageHandler(Filters.text([BUSINES_MENU["branch"]]) & FilterPrivateNoCommand, manage_branch),
@@ -1122,6 +1165,10 @@ def setup_dispatcher_conv(dp: Dispatcher):
             "choose_action_turnover":[
                 MessageHandler(Filters.text & FilterPrivateNoCommand, manage_turnover_action_message),
                 CallbackQueryHandler(manage_turnover_action_callback_query)
+            ],
+            "choose_action_employess_number":[
+                MessageHandler(Filters.text & FilterPrivateNoCommand, manage_employess_number_action_message),
+                CallbackQueryHandler(manage_employess_number_action_callback_query)
             ],
             "choose_action_job":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_job_action)],
             "choose_action_site":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_site_action)],

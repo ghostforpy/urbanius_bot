@@ -48,7 +48,7 @@ BUSINES_MENU ={
                 "job_region":"Регионы присутствия",#
                 # "segment":"Сегмент", #
                 "turnover":"Обороты", #
-                "empoyess_number":"Количество сотрудников", #
+                "employess_number":"Количество сотрудников", #
                 "tags":"Теги", #
                 # "branch":"Отрасль", #
                 # "inn":"ИНН", #
