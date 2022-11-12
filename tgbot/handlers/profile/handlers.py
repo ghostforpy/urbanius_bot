@@ -131,18 +131,78 @@ def business_benefits(update: Update, context: CallbackContext):
 #------------------------------------------- 
 # Обработчики персональной инфы
 #------------------------------------------- 
-# Обработчик фамилиии
-def manage_fio(update: Update, context: CallbackContext):
+# Обработчик имени
+def manage_first_name(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-    fio = " ".join([mystr(user.last_name), mystr(user.first_name), mystr(user.sur_name)])
-    update.message.reply_text(ASK_FIO.format(fio), reply_markup=make_keyboard(SKIP,"usual",1))
-    return "choose_action_fio"
-  
+    first_name = mystr(user.first_name)
+    update.message.reply_text(
+        ASK_FIRST_NAME.format(first_name), 
+        reply_markup=make_keyboard(SKIP,"usual",1)
+    )
+    return "choose_action_first_name"
+
+def manage_first_name_action(update: Update, context: CallbackContext):
+    text = ""
+    if update.message.text != SKIP["skip"]:
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+        user.first_name = update.message.text
+        user.save()
+        text = "Имя изменено"
+    else:
+        text = "Имя не изменено"
+    update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
+    return "working_personal_info"
+
+# Обработчик отчества
+def manage_sur_name(update: Update, context: CallbackContext):
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+    sur_name = mystr(user.sur_name)
+    update.message.reply_text(
+        ASK_SUR_NAME.format(sur_name),
+        reply_markup=make_keyboard(SKIP,"usual",1)
+    )
+    return "choose_action_sur_name"
+
+def manage_sur_name_action(update: Update, context: CallbackContext):
+    text = ""
+    if update.message.text != SKIP["skip"]:
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+        user.sur_name = update.message.text
+        user.save()
+        text = "Отчество изменено"
+    else:
+        text = "Отчество не изменено"
+    update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
+    return "working_personal_info"
+
+# Обработчик фамилии
+def manage_last_name(update: Update, context: CallbackContext):
+    user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+    last_name = mystr(user.last_name)
+    update.message.reply_text(
+        ASK_FIO.format(last_name),
+        reply_markup=make_keyboard(SKIP,"usual",1)
+    )
+    return "choose_action_last_name"
+
+def manage_last_name_action(update: Update, context: CallbackContext):
+    text = ""
+    if update.message.text != SKIP["skip"]:
+        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+        user.last_name = update.message.text
+        user.save()
+        text = "Фамилия изменена"
+    else:
+        text = "Фамилия не изменена"
+    update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
+    return "working_personal_info"
+
+
 def manage_fio_action(update: Update, context: CallbackContext):
     text = ""
-    if update.message.text != SKIP["skip"]:        
+    if update.message.text != SKIP["skip"]:
         user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+        # user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
         fio = update.message.text.split()
         len_fio = len(fio)
         if len_fio == 1:
@@ -220,7 +280,7 @@ def manage_date_of_birth_action(update: Update, context: CallbackContext):
     if update.message.text == SKIP["skip"]:        
         text = "День рождения не изменен"
     elif not(date): # ввели неверную дату
-        update.message.reply_text(BAD_DATE, make_keyboard(SKIP,"usual",1))
+        update.message.reply_text(BAD_DATE, reply_markup=make_keyboard(SKIP,"usual",1))
         return 
     else:
         user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
@@ -500,7 +560,8 @@ def manage_sport_action(update: Update, context: CallbackContext):
 # Обработчик Хобби
 def manage_hobby(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-    update.message.reply_text(ASK_HOBBY.format(user.hobby), reply_markup=make_keyboard(SKIP,"usual",1))
+    hobby = user.hobby if user.hobby is not None else ""
+    update.message.reply_text(ASK_HOBBY.format(hobby), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_hobby"
 
 def manage_hobby_action(update: Update, context: CallbackContext):
@@ -511,8 +572,8 @@ def manage_hobby_action(update: Update, context: CallbackContext):
         text = "Виды хобби изменены"
     else:
         text = "Виды хобби не изменены"
-    update.message.reply_text(text, reply_markup=make_keyboard_about_menu())
-    return "working_about_info"   
+    update.message.reply_text(text, reply_markup=make_keyboard_pers_menu())
+    return "working_personal_info"   
 #-------------------------------------------  
 # Обработчик Соцсетей
 def manage_social_nets(update: Update, context: CallbackContext):
@@ -966,13 +1027,16 @@ def setup_dispatcher_conv(dp: Dispatcher):
             ],
 
             "working_personal_info":[
-                    MessageHandler(Filters.text([PERSONAL_MENU["fio"]]) & FilterPrivateNoCommand, manage_fio),
-                    MessageHandler(Filters.text([PERSONAL_MENU["email"]]) & FilterPrivateNoCommand, manage_email),
-                    MessageHandler(Filters.text([PERSONAL_MENU["telefon"]]) & FilterPrivateNoCommand, manage_phone),
+                    MessageHandler(Filters.text([PERSONAL_MENU["first_name"]]) & FilterPrivateNoCommand, manage_first_name),
+                    MessageHandler(Filters.text([PERSONAL_MENU["sur_name"]]) & FilterPrivateNoCommand, manage_sur_name),
+                    MessageHandler(Filters.text([PERSONAL_MENU["last_name"]]) & FilterPrivateNoCommand, manage_last_name),
+                    # MessageHandler(Filters.text([PERSONAL_MENU["email"]]) & FilterPrivateNoCommand, manage_email),
+                    # MessageHandler(Filters.text([PERSONAL_MENU["telefon"]]) & FilterPrivateNoCommand, manage_phone),
                     MessageHandler(Filters.text([PERSONAL_MENU["date_of_birth"]]) & FilterPrivateNoCommand, manage_date_of_birth),
                     MessageHandler(Filters.text([PERSONAL_MENU["main_photo"]]) & FilterPrivateNoCommand, manage_main_photo),
-                    MessageHandler(Filters.text([PERSONAL_MENU["status"]]) & FilterPrivateNoCommand, manage_status),
-                    MessageHandler(Filters.text([PERSONAL_MENU["groups"]]) & FilterPrivateNoCommand, manage_groups),
+                    MessageHandler(Filters.text([PERSONAL_MENU["hobby"]]) & FilterPrivateNoCommand, manage_hobby),
+                    # MessageHandler(Filters.text([PERSONAL_MENU["status"]]) & FilterPrivateNoCommand, manage_status),
+                    # MessageHandler(Filters.text([PERSONAL_MENU["groups"]]) & FilterPrivateNoCommand, manage_groups),
                     MessageHandler(Filters.text([BACK_PROF["back"]]) & FilterPrivateNoCommand, go_start_conversation),
                     ],
             
@@ -998,9 +1062,11 @@ def setup_dispatcher_conv(dp: Dispatcher):
                     MessageHandler(Filters.text([BACK_PROF["back"]]) & FilterPrivateNoCommand, go_start_conversation),
                     ],
 
-            "choose_action_fio":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_fio_action)],
-            "choose_action_phone":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_phone_action)],
-            "choose_action_about":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_about_action)],
+            "choose_action_first_name":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_first_name_action)],
+            "choose_action_sur_name":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_sur_name_action)],
+            "choose_action_last_name":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_last_name_action)],
+            # "choose_action_phone":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_phone_action)],
+            # "choose_action_about":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_about_action)],
             "choose_action_citi":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_citi_action)],
             "choose_action_company":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_company_action)],
             "choose_action_segment":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_segment_action)],

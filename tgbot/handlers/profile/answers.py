@@ -29,13 +29,16 @@ START_MENU = {
             }
 
 PERSONAL_MENU ={
-                "fio":"Ф.И.О", #
-                "email":"e-mail", #
-                "telefon":"Телефон", #
+                "first_name":"Имя", #
+                "sur_name":"Отчество", #
+                "last_name":"Фамилия", #
+                # "email":"e-mail", #
+                # "telefon":"Телефон", #
                 "date_of_birth":"Дата рождения",  # 
                 "main_photo":"Фотография",
-                "status":"Статус",#
-                "groups":"Группы",#
+                "hobby":"Хобби",
+                # "status":"Статус",#
+                # "groups":"Группы",#
                 }
 BUSINES_MENU ={
                 "company":"Компания", #
