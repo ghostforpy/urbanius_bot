@@ -10,7 +10,8 @@ from telegram.ext import (
     ConversationHandler,
 )
 from telegram import InputMediaDocument, MessageEntity
-
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from .messages import *
 from .answers import *
@@ -393,20 +394,57 @@ def manage_segment_action(update: Update, context: CallbackContext):
 # Обработчик Оборот
 def manage_turnover(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-    update.message.reply_text(ASK_TURNOVER.format(user.turnover), reply_markup=make_keyboard(SKIP,"usual",1))
+    company_turnovers = {
+        item[0]: item[1] for item in mymodels.User.COMPANY_TURNOVERS_CHOISES
+    }
+    company_turnovers["skip"] = "Пропустить"
+    update.message.reply_text(
+        ASK_TURNOVER.format(user.get_company_turnover_display()),
+        reply_markup=make_keyboard({},"usual",1)
+    )
+    send_message(
+        update.message.from_user.id,
+        ASK_TURNOVER_SELECT,
+        reply_markup=make_keyboard(company_turnovers,"inline",1)
+    )
+    # update.message.reply_text(ASK_TURNOVER.format(user.turnover), reply_markup=make_keyboard(SKIP,"usual",1))
     return "choose_action_turnover"
 
-def manage_turnover_action(update: Update, context: CallbackContext):
-    text = ""
-    if update.message.text != SKIP["skip"]:        
-        user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-        user.turnover = update.message.text
+def manage_turnover_action_message(update: Update, context: CallbackContext):
+    if update.message is not None:
+        update.message.reply_text(
+            "Используйте предложенные варианты.",
+            reply_markup=make_keyboard({},"usual",2)
+        )
+        return manage_turnover(update, context)
+
+def manage_turnover_action_callback_query(update: Update, context: CallbackContext):
+    query = update.callback_query
+    variant = query.data
+    query.answer()
+    if variant == "skip":
+        text = "Оборот не изменен"
+    else:    
+        user = mymodels.User.objects.get(user_id = update.callback_query.from_user.id)
+        user.company_turnover = variant
         user.save()
         text = "Оборот изменен"
-    else:
-        text = "Оборот не изменен"
-    update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
+    send_message(
+        update.callback_query.from_user.id,
+        text,
+        reply_markup=make_keyboard_busines_menu()
+    )
     return "working_busines_info"
+    # text = ""
+    # if update.message.text != SKIP["skip"]:
+    #     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
+    #     user.turnover = update.message.text
+    #     user.save()
+    #     text = "Оборот изменен"
+    # else:
+    #     text = "Оборот не изменен"
+    # update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
+    # return "working_busines_info"
 
 #-------------------------------------------  
 # Обработчик Должность
@@ -492,7 +530,15 @@ def manage_site_action(update: Update, context: CallbackContext):
     text = ""
     if update.message.text != SKIP["skip"]:        
         user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
-        user.site = update.message.text
+
+        validate = URLValidator()
+        site = update.message.text
+        try:
+            validate(site)
+        except ValidationError:
+            update.message.reply_text(BAD_SITE, reply_markup=make_keyboard(SKIP,"usual",2))
+            return
+        user.site = site
         user.save()
         text = "Сайт изменен"
     else:
@@ -681,8 +727,8 @@ def manage_tags_action(update: Update, context: CallbackContext):
         text = "Теги изменены"
     else:
         text = "Теги  не изменены"
-    update.message.reply_text(text, reply_markup=make_keyboard_about_menu())
-    return "working_about_info"
+    update.message.reply_text(text, reply_markup=make_keyboard_busines_menu())
+    return "working_busines_info"
 
 #-------------------------------------------  
 # Обработчики основного меню профиля        
@@ -1042,14 +1088,17 @@ def setup_dispatcher_conv(dp: Dispatcher):
             
             "working_busines_info":[                    
                     MessageHandler(Filters.text([BUSINES_MENU["company"]]) & FilterPrivateNoCommand, manage_company),
-                    MessageHandler(Filters.text([BUSINES_MENU["segment"]]) & FilterPrivateNoCommand, manage_segment),
+                    # MessageHandler(Filters.text([BUSINES_MENU["segment"]]) & FilterPrivateNoCommand, manage_segment),
+        ####            # MessageHandler(Filters.text([BUSINES_MENU["tags"]]) & FilterPrivateNoCommand, manage_segment),
+         ####           # MessageHandler(Filters.text([BUSINES_MENU["employess_number"]]) & FilterPrivateNoCommand, manage_segment),
                     MessageHandler(Filters.text([BUSINES_MENU["turnover"]]) & FilterPrivateNoCommand, manage_turnover),
                     MessageHandler(Filters.text([BUSINES_MENU["job"]]) & FilterPrivateNoCommand, manage_job),
-                    MessageHandler(Filters.text([BUSINES_MENU["branch"]]) & FilterPrivateNoCommand, manage_branch),
+                    # MessageHandler(Filters.text([BUSINES_MENU["branch"]]) & FilterPrivateNoCommand, manage_branch),
+                    MessageHandler(Filters.text([BUSINES_MENU["tags"]]) & FilterPrivateNoCommand, manage_tags),
                     MessageHandler(Filters.text([BUSINES_MENU["citi"]]) & FilterPrivateNoCommand, manage_citi),
                     MessageHandler(Filters.text([BUSINES_MENU["job_region"]]) & FilterPrivateNoCommand, manage_job_region),
                     MessageHandler(Filters.text([BUSINES_MENU["site"]]) & FilterPrivateNoCommand, manage_site),
-                    MessageHandler(Filters.text([BUSINES_MENU["inn"]]) & FilterPrivateNoCommand, manage_inn),
+                    # MessageHandler(Filters.text([BUSINES_MENU["inn"]]) & FilterPrivateNoCommand, manage_inn),
                     MessageHandler(Filters.text([BACK_PROF["back"]]) & FilterPrivateNoCommand, go_start_conversation),
                     ],
             
@@ -1070,7 +1119,10 @@ def setup_dispatcher_conv(dp: Dispatcher):
             "choose_action_citi":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_citi_action)],
             "choose_action_company":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_company_action)],
             "choose_action_segment":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_segment_action)],
-            "choose_action_turnover":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_turnover_action)],
+            "choose_action_turnover":[
+                MessageHandler(Filters.text & FilterPrivateNoCommand, manage_turnover_action_message),
+                CallbackQueryHandler(manage_turnover_action_callback_query)
+            ],
             "choose_action_job":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_job_action)],
             "choose_action_site":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_site_action)],
             "choose_action_inn":[MessageHandler(Filters.text & FilterPrivateNoCommand, manage_inn_action)],

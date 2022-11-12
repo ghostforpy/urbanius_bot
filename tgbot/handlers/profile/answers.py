@@ -41,15 +41,17 @@ PERSONAL_MENU ={
                 # "groups":"Группы",#
                 }
 BUSINES_MENU ={
-                "company":"Компания", #
-                "segment":"Сегмент", #
-                "turnover":"Оборот", #
-                "job":"Должность", #
-                "branch":"Отрасль", #
-                "inn":"ИНН", #
                 "citi":"Город", #
-                "job_region":"Регион присутствия",#
+                "company":"Компания", #
+                "job":"Должность", #
                 "site":"Web сайт", #
+                "job_region":"Регионы присутствия",#
+                # "segment":"Сегмент", #
+                "turnover":"Обороты", #
+                "empoyess_number":"Количество сотрудников", #
+                "tags":"Теги", #
+                # "branch":"Отрасль", #
+                # "inn":"ИНН", #
 }
 ABOUT_MENU ={
                 "about":"Коротко себе", #
