@@ -50,7 +50,8 @@ class UserAdmin(admin.ModelAdmin):
               ('company', 'job', 'branch', 'inn'),
               ('citi', 'job_region', 'site', 'number_of_employees'),
               ('segment', 'company_turnover'),
-              ('business_needs', 'business_benefits'),
+              ('business_needs', 'created_business_needs'),
+              ('business_benefits', 'created_business_benefits'),
               ('business_branches'),
                'about',
                'sport',
@@ -133,13 +134,25 @@ class StatusAdmin(admin.ModelAdmin):
 
 @admin.register(BusinessNeeds)
 class BusinessNeedsAdmin(admin.ModelAdmin):
-    list_display = ("title", "order_number") 
-    list_editable =("order_number",)
+    list_display = ("title", "order_number", "admin_aprooved",)
+    list_editable =("order_number", "admin_aprooved",)
+    fields = (
+        "title", "order_number",
+        "admin_aprooved", 
+        # "creators_tgbot_users", 
+        # "tgbot_user_related", "creators_tgbot_newuser_related", "tgbot_newuser_related"
+        )
 
 @admin.register(BusinessBenefits)
 class BusinessBenefitsAdmin(admin.ModelAdmin):
-    list_display = ("title", "order_number") 
-    list_editable =("order_number",)
+    list_display = ("title", "order_number", "admin_aprooved",)
+    list_editable =("order_number", "admin_aprooved",)
+    fields = (
+        "title", "order_number",
+        "admin_aprooved", 
+        # "creators_tgbot_user_related", 
+        # "tgbot_user_related", "creators_tgbot_newuser_related", "tgbot_newuser_related"
+        )
 
 @admin.register(BusinessBranches)
 class BusinessBranchesAdmin(admin.ModelAdmin):

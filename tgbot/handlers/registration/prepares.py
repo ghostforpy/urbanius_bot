@@ -124,7 +124,8 @@ def prepare_create_business_needs(update:Update):
 
 def prepare_company_business_needs(update: Update, new_user: NewUser):
     company_business_needs = dict()
-    for n in BusinessNeeds.objects.all():
+    for n in BusinessNeeds.get_needs_by_user(new_user):
+    # for n in BusinessNeeds.objects.all():
         company_business_needs[str(n.id)] = n.title
         if n in new_user.business_needs.all():
             company_business_needs[str(n.id)] = CHECK_ICON + company_business_needs[str(n.id)]
@@ -147,7 +148,8 @@ def prepare_company_business_needs(update: Update, new_user: NewUser):
 
 def prepare_company_business_benefits(update: Update, new_user: NewUser):
     company_business_benefits = dict()
-    for n in BusinessBenefits.objects.all():
+    # for n in BusinessBenefits.objects.all():
+    for n in BusinessBenefits.get_benefits_by_user(new_user):
         company_business_benefits[str(n.id)] = n.title
         if n in new_user.business_benefits.all():
             company_business_benefits[str(n.id)] = CHECK_ICON + company_business_benefits[str(n.id)]

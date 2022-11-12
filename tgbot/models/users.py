@@ -58,11 +58,25 @@ class AbstractTgUser(models.Model):
         related_query_name="%(app_label)s_%(class)ss",
         blank=True
     )
+    created_business_needs = models.ManyToManyField(
+        "BusinessNeeds",
+        verbose_name=_("Созданные пользователем потребности бизнеса"),
+        related_name="creators_%(app_label)s_%(class)s_related",
+        related_query_name="creators_%(app_label)s_%(class)ss",
+        blank=True
+    )
     business_benefits = models.ManyToManyField(
         "BusinessBenefits",
         verbose_name=_("Пользы бизнеса"),
         related_name="%(app_label)s_%(class)s_related",
         related_query_name="%(app_label)s_%(class)ss",
+        blank=True
+    )
+    created_business_benefits = models.ManyToManyField(
+        "BusinessBenefits",
+        verbose_name=_("Созданные пользователем пользы бизнеса"),
+        related_name="creators_%(app_label)s_%(class)s_related",
+        related_query_name="creators_%(app_label)s_%(class)ss",
         blank=True
     )
     business_branches = models.ManyToManyField(

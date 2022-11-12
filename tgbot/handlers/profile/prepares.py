@@ -53,7 +53,8 @@ def prepare_company_business_branches(update: Update, user: User):
 
 def prepare_company_business_needs(update: Update, user: User):
     company_business_needs = dict()
-    for n in BusinessNeeds.objects.all():
+    for n in BusinessNeeds.get_needs_by_user(user):
+    # for n in BusinessNeeds.objects.all():
         company_business_needs[str(n.id)] = n.title
         if n in user.business_needs.all():
             company_business_needs[str(n.id)] = CHECK_ICON + company_business_needs[str(n.id)]
@@ -125,7 +126,8 @@ def prepare_manage_busines_info(update: Update, context: CallbackContext):
 
 def prepare_company_business_benefits(update: Update, user: User):
     company_business_benefits = dict()
-    for n in BusinessBenefits.objects.all():
+    # for n in BusinessBenefits.objects.all():
+    for n in BusinessBenefits.get_benefits_by_user(user):
         company_business_benefits[str(n.id)] = n.title
         if n in user.business_benefits.all():
             company_business_benefits[str(n.id)] = CHECK_ICON + company_business_benefits[str(n.id)]

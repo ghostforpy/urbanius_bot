@@ -51,6 +51,7 @@ def processing_create_business_need_message(update: Update, context: CallbackCon
                 title=update.message.text[0].upper() + update.message.text[1:]
             )
         user.business_needs.add(new_need)
+        user.created_business_needs.add(new_need)
         prepare_company_business_needs(update, user)
         return "working_business_needs"
 

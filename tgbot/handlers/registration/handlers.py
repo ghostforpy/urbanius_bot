@@ -307,6 +307,7 @@ def processing_create_business_need_message(update: Update, context: CallbackCon
                 title=update.message.text[0].upper() + update.message.text[1:]
             )
         new_user.business_needs.add(new_need)
+        new_user.created_business_needs.add(new_need)
         f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
         f(update, new_user)
         return STEPS["COMPANY_BUSINESS_NEEDS"]["step"]
@@ -337,6 +338,7 @@ def processing_create_business_benefit_message(update: Update, context: Callback
                 title=update.message.text[0].upper() + update.message.text[1:]
             )
         new_user.business_benefits.add(new_benefit)
+        new_user.created_business_benefits.add(new_benefit)
         f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
         f(update, new_user)
         return STEPS["COMPANY_BUSINESS_BENEFITS"]["step"]
