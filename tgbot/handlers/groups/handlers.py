@@ -83,10 +83,10 @@ def manage_find(update: Update, context: CallbackContext):
         if group.file != "":
             thumb_url = "http://bot.urbanius.club:8000" + group.file.url
             group_res_str.thumb_url = thumb_url
-            group_res_str.thumb_width = 50
-            group_res_str.thumb_height = 50
+            group_res_str.thumb_width = 25
+            group_res_str.thumb_height = 25
         results.append(group_res_str)
-    update.inline_query.answer(results)
+    update.inline_query.answer(results, cache_time=10)
     # return "working"
 
 def show_group(update: Update, context: CallbackContext):
