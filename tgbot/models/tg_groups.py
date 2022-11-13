@@ -1,5 +1,5 @@
 from django.db import models
-
+from tgbot.handlers.utils import fill_file_id
 
 class tgGroups(models.Model):
     name = models.CharField("Группа пользователей",unique=False, max_length=150, blank=False)
@@ -13,6 +13,10 @@ class tgGroups(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs) -> None:
+        fill_file_id(self, "file", text = "send_mess_by_tmplt")
+        return super().save(*args, **kwargs)
 
     @classmethod
     def get_group_by_name(cls, gr_name: str) -> "tgGroups":
@@ -28,6 +32,7 @@ class UsertgGroups(models.Model):
     user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
     def __str__(self):
         return str(self.group)
+
     class Meta:
         verbose_name_plural = 'Группы пользователя' 
         verbose_name = 'Группа пользователя' 
