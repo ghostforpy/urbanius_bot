@@ -1,5 +1,5 @@
 from django.db import models
-from tgbot.handlers import fill_file_id
+# from tgbot.handlers import fill_file_id
 
 class tgGroups(models.Model):
     name = models.CharField("Группа пользователей",unique=False, max_length=150, blank=False)
