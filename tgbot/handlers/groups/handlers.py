@@ -72,7 +72,7 @@ def manage_find(update: Update, context: CallbackContext):
     # users_set = users_set.exclude(user_id = update.inline_query.from_user.id)
     results = []
     for group in tg_groups:
-        logging.info("1111111111\n{}".format(os.getenv("WEB_DOMAIN") + group.file.url))
+        # logging.info("1111111111\n{}".format(os.getenv("WEB_DOMAIN") + group.file.url))
         group_res_str = InlineQueryResultArticle(
             id=str(group.chat_id),
             title=str(group.name),
