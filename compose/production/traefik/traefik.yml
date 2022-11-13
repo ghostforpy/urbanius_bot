@@ -70,7 +70,7 @@ http:
     nginx-media:
       loadBalancer:
         servers:
-          - url: http://0.0.0.0:8000
+          - url: http://nginx-media
 
 providers:
   # https://docs.traefik.io/master/providers/file/

@@ -9,7 +9,7 @@ services:
       context: .
       dockerfile: ./compose/production/traefik/Dockerfile
     image: urbanius_bot_production_traefik
-    network_mode: host
+    # network_mode: host
     volumes:
       - production_traefik:/etc/traefik/acme:z
     ports:
