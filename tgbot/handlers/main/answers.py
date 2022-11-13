@@ -15,15 +15,15 @@ TO_ADMINS = {"to_admins":"Сообщение администраторам"}
 
 START_MENU_FULL = {
         "random_coffee":"Random Coffee",
-        "events_mnu":"Мероприятия",
+        # "events_mnu":"Мероприятия",
         "find_members":"Найти участников",
         "profile":"Профиль пользователя",
         #"messages":"Сообщения",
         #"affiliate":"Стать рекомендателем",
         # "payment":"Оплатить", # тестирование возмржности платежа
         "groups":"Группы",
-        "packages":"Пакеты участия",
-        "spec_offers":"Спец предложения партнеров",
+        # "packages":"Пакеты участия",
+        # "spec_offers":"Спец предложения партнеров",
         #"my_requests": "Мои заявки",
     }
 
