@@ -80,7 +80,7 @@ def manage_find(update: Update, context: CallbackContext):
             input_message_content = InputTextMessageContent("Выбрана группа"),
             description = group.text,
         )
-        if group.file is not None:
+        if group.file != "":
             thumb_url = "http://bot.urbanius.club:8000" + group.file.url
             group_res_str.thumb_url = thumb_url
         results.append(group_res_str)
