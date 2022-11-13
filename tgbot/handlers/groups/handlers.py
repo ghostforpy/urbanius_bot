@@ -81,7 +81,7 @@ def manage_find(update: Update, context: CallbackContext):
             description = group.text,
         )
         if group.file != "":
-            thumb_url = "http://bot.urbanius.club:8000" + group.file.url
+            thumb_url = "https://bot.urbanius.club" + group.file.url
             group_res_str.thumb_url = thumb_url
             group_res_str.thumb_width = 25
             group_res_str.thumb_height = 25
