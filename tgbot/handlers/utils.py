@@ -288,7 +288,7 @@ def  send_mess_by_tmplt(user_id, mess_template, reply_markup = None, head_text =
     elif mess_template.file:
         if not mess_template.file_id:
             fill_file_id(mess_template, "file", text = "send_mess_by_tmplt")
-        if mess_template.file.name[-3:] in ["jpg","bmp","png"]:# в сообщении картинка
+        if mess_template.file.name[-3:] in ["jpeg","jpg","bmp","png"]:# в сообщении картинка
             if os.path.exists(mess_template.file.path):
                 success = send_photo(
                     user_id,
