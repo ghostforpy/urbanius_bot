@@ -30,7 +30,7 @@ from tgbot.handlers.keyboard import make_keyboard
 # from tgbot.handlers.main.messages import get_start_mess
 from tgbot import utils
 # from tgbot.handlers.filters import FilterPrivateNoCommand
-from tgbot.handlers.utils import send_message
+from tgbot.utils import send_message
 
 
 def prepare_approval(update: Update, new_user: NewUser):

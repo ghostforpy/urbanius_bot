@@ -16,7 +16,8 @@ from .answers import *
 from tgbot.models import tgGroups
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand, FilterGroupNoCommand
-from tgbot.handlers.utils import send_message, send_mess_by_tmplt
+from tgbot.handlers.utils import send_mess_by_tmplt
+from tgbot.utils import send_message
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
 

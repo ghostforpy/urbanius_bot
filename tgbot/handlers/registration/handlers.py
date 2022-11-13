@@ -1,4 +1,3 @@
-import logging
 from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext import (
@@ -32,14 +31,14 @@ from tgbot.models import (
 from sheduler.models import MessageTemplates
 
 # from tgbot.handlers.utils import send_message, send_mess_by_tmplt
-from tgbot.handlers.files import _get_file_id
+from tgbot.utils import _get_file_id
 
 from tgbot.handlers.keyboard import make_keyboard
 # from tgbot.handlers.main.answers import get_start_menu
 # from tgbot.handlers.main.messages import get_start_mess
 from tgbot import utils
 from tgbot.handlers.filters import FilterPrivateNoCommand
-from tgbot.handlers.utils import send_message
+from tgbot.utils import send_message
 from .steps import STEPS
 from .saveuser import end_registration
 # from .utils import counter

@@ -16,7 +16,8 @@ from .answers import *
 import tgbot.models as mymodels
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
-from tgbot.handlers.utils import send_message, send_photo, get_no_foto_id, fill_file_id
+from tgbot.utils import send_message, send_photo, fill_file_id
+from tgbot.handlers.utils import get_no_foto_id
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
 

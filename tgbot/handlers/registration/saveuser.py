@@ -16,13 +16,14 @@ from tgbot.handlers.main.messages import NO_ADMIN_GROUP
 from tgbot.models import Status, User, UsertgGroups, tgGroups, UserReferrers, NewUser
 from sheduler.models import MessageTemplates
 
-from tgbot.handlers.utils import send_message, send_mess_by_tmplt
+from tgbot.handlers.utils import send_mess_by_tmplt
 from tgbot.handlers.keyboard import make_keyboard
 # from tgbot.handlers.main.answers import get_start_menu
 # from tgbot.handlers.main.messages import get_start_mess
 from tgbot import utils
 # from tgbot.handlers.filters import FilterPrivateNoCommand
-from tgbot.handlers.utils import send_message, fill_file_id, send_photo
+from tgbot.handlers.utils import fill_file_id, send_photo
+
 
 def end_registration(update:Update, context: CallbackContext, new_user: NewUser):
     user = User(user_id=new_user.user_id)
@@ -96,6 +97,6 @@ def end_registration(update:Update, context: CallbackContext, new_user: NewUser)
         bn = {f"manage_new_user-{user.user_id}":"Посмотреть пользователя"}
         reply_markup =  make_keyboard(bn,"inline",1)
         text =f"Зарегистрирован новый пользователь @{utils.mystr(user.username)} {user.first_name} {utils.mystr(user.last_name)}"
-        send_message(group.chat_id, text, reply_markup =  reply_markup)
+        utils.send_message(group.chat_id, text, reply_markup =  reply_markup)
     context.user_data.clear()   
     return ConversationHandler.END

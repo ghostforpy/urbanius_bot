@@ -2,7 +2,7 @@ from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.models import User, BusinessBranches
-from tgbot.handlers.utils import send_message #, send_photo, fill_file_id, get_no_foto_id, wrong_file_id
+from tgbot.utils import send_message #, send_photo, fill_file_id, get_no_foto_id, wrong_file_id
 from .messages import MAX_BUSINESS_BRANCHES
 from .prepares import prepare_company_business_branches, prepare_go_start_conversation
 

@@ -7,7 +7,7 @@ from tgbot.models import (
     # tgGroups, UserReferrers, 
     User, BusinessNeeds, BusinessBranches, BusinessBenefits
 )
-from tgbot.handlers.utils import send_message
+from tgbot.utils import send_message
 
 from .messages import *
 from .answers import *

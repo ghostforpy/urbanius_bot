@@ -18,7 +18,8 @@ from dtb.constants import StatusCode, EventTypeCode
 
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
-from tgbot.handlers.utils import send_message, send_photo, send_video, fill_file_id, wrong_file_id
+from tgbot.utils import send_message, send_photo, send_video, fill_file_id
+from tgbot.handlers.utils import wrong_file_id
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
 

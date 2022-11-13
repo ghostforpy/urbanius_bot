@@ -15,7 +15,7 @@ from .models import *
 
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
-from tgbot.handlers.utils import send_message
+from tgbot.utils import send_message
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
 from payments.payments_proc import send_invois_to_tg, manage_precheckout_callback, finish_payment

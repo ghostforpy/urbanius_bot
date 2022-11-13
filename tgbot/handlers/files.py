@@ -36,20 +36,20 @@
 
 import telegram
 from tgbot.models import User
+from tgbot.utils import _get_file_id
+# ALL_TG_FILE_TYPES = ["document", "video_note", "voice", "sticker", "audio", "video", "animation", "photo"]
 
-ALL_TG_FILE_TYPES = ["document", "video_note", "voice", "sticker", "audio", "video", "animation", "photo"]
+# def _get_file_id(m):
+#     """ extract file_id from message (and file type?) """
 
-def _get_file_id(m):
-    """ extract file_id from message (and file type?) """
+#     for doc_type in ALL_TG_FILE_TYPES:
+#         if (m[doc_type] != None) and (doc_type != "photo"):
+#             return m[doc_type]["file_id"], m[doc_type]["file_name"]
 
-    for doc_type in ALL_TG_FILE_TYPES:
-        if (m[doc_type] != None) and (doc_type != "photo"):
-            return m[doc_type]["file_id"], m[doc_type]["file_name"]
-
-    if len(m["photo"]) > 0:
-        best_photo = m["photo"][-1]
-        return best_photo["file_id"], "userfoto.jpg"
-    return None, None
+#     if len(m["photo"]) > 0:
+#         best_photo = m["photo"][-1]
+#         return best_photo["file_id"], "userfoto.jpg"
+#     return None, None
 
 
 def show_file_id(update, context):

@@ -13,8 +13,7 @@ from tgbot.models import User, tgGroups
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
 from tgbot.handlers.commands import command_start
-from tgbot.handlers.utils import send_message
-from tgbot.utils import extract_user_data_from_update
+from tgbot.utils import extract_user_data_from_update, send_message
 import tgbot.models as mymodels
 # Обработка отправки сообщений
 def stop_conversation(update: Update, context: CallbackContext):

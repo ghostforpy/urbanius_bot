@@ -10,7 +10,7 @@ from tgbot.models import User, Status
 from payments.models import Payments
  
 from tgbot.handlers.keyboard import make_keyboard
-from tgbot.handlers.utils import send_message
+from tgbot.utils import send_message
 from tgbot.utils import extract_user_data_from_update
 
 

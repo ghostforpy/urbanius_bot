@@ -16,7 +16,7 @@ from events.models import EventRequests
 from .models import *
 from .messages import *
 from .answers import *
-from tgbot.handlers.utils import send_message, send_photo, send_mess_by_tmplt, _get_file_id
+from tgbot.handlers.utils import send_mess_by_tmplt, _get_file_id
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
@@ -37,11 +37,11 @@ def use_partner_spec_offer (update: Update, context: CallbackContext):
     so_discount = offer.specialoffersdiscounts_set.filter(for_status = user.status).first()
     if not so_discount:
         text = f"Для вашего статуса '{user.status}' данное предложение не действует"
-        send_message(user_id=user_id, text = text)
+        utils.send_message(user_id=user_id, text = text)
         return       
     so_user_reqwest = SOUserRequests.objects.filter(offer = offer,user = user).first()
     if so_user_reqwest:
-        send_message(user_id=user_id, text = REQWEST_EXIST)
+        utils.send_message(user_id=user_id, text = REQWEST_EXIST)
         return
     so_user_reqwest = SOUserRequests()
     so_user_reqwest.offer = offer
@@ -65,11 +65,11 @@ def use_partner_spec_offer (update: Update, context: CallbackContext):
     if offer.user:
         if offer.user.email:
             send_mail(subject, message, settings.EMAIL_HOST_USER, [offer.user.email])
-    send_message(offer.user.user_id, message)
+    utils.send_message(offer.user.user_id, message)
     kontrag = str(offer.user) if offer.user else offer.partner.full_name
     text = f"Вы получили скидку {so_discount.discount}% у партнера '{kontrag}' " \
            f"на предложение '{offer}'. Для получения скидки сообщите партнеру ее номер '{so_user_reqwest.pk}'"
-    send_message(user_id=user_id, text = text)
+    utils.send_message(user_id=user_id, text = text)
 
 
 # Диалог работы со спец предложениями
@@ -86,8 +86,8 @@ def stop_conversation(update: Update, context: CallbackContext):
 
     user = User.get_user_by_username_or_user_id(user_id)
 
-    send_message(user_id=user_id, text=SO_FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
-    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
+    utils.send_message(user_id=user_id, text=SO_FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
+    utils.send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
     return ConversationHandler.END
 
 # Временная заглушка
@@ -208,7 +208,7 @@ def add_spec_offer(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
     keyboard = make_keyboard(CANCEL,"usual",1)
-    send_message(user_id, ASK_SO_NAME, reply_markup=keyboard)
+    utils.send_message(user_id, ASK_SO_NAME, reply_markup=keyboard)
     return "ask_so_name"
 
 def rem_so_name(update: Update, context: CallbackContext):
@@ -274,7 +274,7 @@ def rem_so_image(update: Update, context: CallbackContext):
     else:
         text = f"Зарегистрировано спецпредложение от пользователя {user} Тема: {so.name}"
         reply_markup = make_keyboard(EMPTY,"inline",1)
-        send_message(group.chat_id, text, reply_markup = reply_markup)
+        utils.send_message(group.chat_id, text, reply_markup = reply_markup)
 
     return ConversationHandler.END
 

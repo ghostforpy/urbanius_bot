@@ -1,5 +1,6 @@
 from django.db import models
-# from tgbot.handlers import fill_file_id
+from django.conf import settings
+from tgbot.utils import fill_file_id, send_photo, _get_file_id
 
 class tgGroups(models.Model):
     name = models.CharField("Группа пользователей",unique=False, max_length=150, blank=False)
@@ -14,9 +15,20 @@ class tgGroups(models.Model):
     def __str__(self):
         return self.name
 
-    # def save(self, *args, **kwargs) -> None:
-    #     fill_file_id(self, "file", text = "send_mess_by_tmplt")
-    #     return super().save(*args, **kwargs)
+    def save(self, *args, **kwargs) -> None:
+        file_ext = self.file.name.split(".")[-1]
+        if file_ext in ["jpg","jpeg","png","gif","tif","tiff","bmp"]:
+            mess = send_photo(
+                settings.TRASH_GROUP,
+                self.file,
+                caption = ""
+            )
+            file_id, _ = _get_file_id(mess)
+            self.file_id = file_id
+        else:
+            self.file_id = ""
+            self.file = ""
+        return super().save(*args, **kwargs)
 
     @classmethod
     def get_group_by_name(cls, gr_name: str) -> "tgGroups":

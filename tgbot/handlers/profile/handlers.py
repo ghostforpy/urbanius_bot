@@ -20,9 +20,8 @@ import tgbot.models as mymodels
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
 from tgbot.handlers.commands import command_start
-from tgbot.handlers.utils import send_message, send_photo, fill_file_id, get_no_foto_id, wrong_file_id
-from tgbot.utils import mystr, is_date, is_email, get_uniq_file_name
-from tgbot.handlers.files import _get_file_id
+from tgbot.handlers.utils import send_photo, fill_file_id, get_no_foto_id, wrong_file_id
+from tgbot.utils import mystr, is_date, is_email, get_uniq_file_name, _get_file_id, send_message
 from .busines_branches import processing_company_business_branches
 from .business_needs import (
     processing_company_business_needs, 
