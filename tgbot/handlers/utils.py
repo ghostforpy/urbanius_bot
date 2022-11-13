@@ -291,9 +291,21 @@ def  send_mess_by_tmplt(user_id, mess_template, reply_markup = None, head_text =
             fill_file_id(mess_template, "file", text = "send_mess_by_tmplt")
         if mess_template.file.name[-3:] in ["jpg","bmp","png"]:# в сообщении картинка
             if os.path.exists(mess_template.file.path):
-                success = send_photo(user_id, mess_template.file_id)    
-            success = send_message(user_id = user_id, text = mess_text, 
-                                    parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True, reply_markup = reply_markup)
+                success = send_photo(
+                    user_id,
+                    mess_template.file_id,
+                    parse_mode=telegram.ParseMode.HTML,
+                    caption=mess_text,
+                    reply_markup=reply_markup
+                )
+            else:
+                success = send_message(
+                    user_id=user_id,
+                    text=mess_text,
+                    parse_mode=telegram.ParseMode.HTML,
+                    disable_web_page_preview=True,
+                    reply_markup=reply_markup
+                    )
         else:
             if os.path.exists(mess_template.file.path):
                 success = send_document(user_id, mess_template.file_id)

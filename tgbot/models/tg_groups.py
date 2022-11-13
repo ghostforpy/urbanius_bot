@@ -9,6 +9,7 @@ class tgGroups(models.Model):
     for_all_users = models.BooleanField("Для всех пользователей", default=False)
     file = models.FileField("Фото/Видео", blank=True, null=True, upload_to="events")
     file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
+    show_for_users = models.BooleanField("Показывать пользователям", default=False)
 
     def __str__(self):
         return self.name
