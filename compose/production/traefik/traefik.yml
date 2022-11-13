@@ -65,7 +65,7 @@ http:
     django:
       loadBalancer:
         servers:
-          - url: http://0.0.0.0:8001
+          - url: http://django:8001
 
     nginx-media:
       loadBalancer:

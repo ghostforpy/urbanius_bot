@@ -2,6 +2,9 @@ version: '3'
 
 volumes:
   production_traefik: {}
+  production_nginx_media: {}
+  production_postgres_data: {}
+  production_postgres_data_backups: {}
 
 services:
   traefik:
@@ -22,6 +25,33 @@ services:
     ports:
       - "8000:80"
     volumes:
-      - ./media:/usr/share/nginx/html/media:ro
+      - production_nginx_media:/usr/share/nginx/html/media:ro
     restart: unless-stopped
 
+  django:
+    build:
+      context: .
+      dockerfile: ./compose/production/django/Dockerfile
+    image: urbanius_bot_production_django
+    volumes:
+      - production_nginx_media:/app/media:z
+    depends_on:
+    #   # - pgbouncer
+      - postgres
+    #   - redis
+    # env_file:
+      # - ./.envs/.production/.django
+      # - ./.envs/.production/.postgres
+    command: /start
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: urbanius_bot_production_postgres
+    volumes:
+      - production_postgres_data:/var/lib/postgresql/data:Z
+      - production_postgres_data_backups:/backups:z
+    env_file:
+      - ./.env
+      # - ./.envs/.production/.postgres
