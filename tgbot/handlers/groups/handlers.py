@@ -1,4 +1,3 @@
-import logging
 from telegram import (
     Update, ParseMode,
     InlineQueryResultArticle, InputTextMessageContent
@@ -81,6 +80,9 @@ def manage_find(update: Update, context: CallbackContext):
             input_message_content = InputTextMessageContent("Выбрана группа"),
             description = group.text,
         )
+        if group.file is not None:
+            thumb_url = "http://bot.urbanius.club:8000" + group.file.url
+            group_res_str.thumb_url = thumb_url
         results.append(group_res_str)
     update.inline_query.answer(results)
     # return "working"
