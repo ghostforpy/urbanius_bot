@@ -19,6 +19,10 @@ services:
 
   nginx-media:
     image: "nginx:latest"
+    ports:
+      - "0.0.0.0:8000:80"
     volumes:
       - ./media:/usr/share/nginx/html/media:ro
     restart: unless-stopped
+    network_mode: host
+
