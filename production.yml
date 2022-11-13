@@ -44,6 +44,7 @@ services:
       # - ./.envs/.production/.django
       # - ./.envs/.production/.postgres
     command: /start
+    restart: unless-stopped
 
   postgres:
     build:
@@ -56,3 +57,4 @@ services:
     env_file:
       - .env
       # - ./.envs/.production/.postgres
+    restart: unless-stopped
