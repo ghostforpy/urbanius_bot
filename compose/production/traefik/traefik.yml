@@ -39,22 +39,20 @@ http:
       middlewares:
         - csrf
       service: django
-      #priority: 2
+      priority: 1
       tls:
         # https://docs.traefik.io/master/routing/routers/#certresolver
         certResolver: letsencrypt
     
-    # web-secure-reverse_proxy-router:
-    #   rule: "Host(`bot.urbanius.club`) || Host(`www.bot.urbanius.club`)"
-    #   entryPoints:
-    #     - web-secure
-    #   middlewares:
-    #     - csrf
-    #   service: reverse_proxy
-    #   priority: 1
-    #   tls:
-    #     # https://docs.traefik.io/master/routing/routers/#certresolver
-    #     certResolver: letsencrypt
+    media-router:
+      rule: "Host(`bot.urbanius.club`) && PathPrefix(`/media`)"
+      entryPoints:
+        - web-secure
+      service: nginx-media
+      priority: 2
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
 
   middlewares:
     csrf:
@@ -68,6 +66,11 @@ http:
       loadBalancer:
         servers:
           - url: http://0.0.0.0:8001
+
+    nginx-media:
+      loadBalancer:
+        servers:
+          - url: http://nginx-media
 
 providers:
   # https://docs.traefik.io/master/providers/file/
