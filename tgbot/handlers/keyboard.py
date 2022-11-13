@@ -54,7 +54,20 @@ def build_menu_inline(keys: dict, columns: int):
             btn_txt = keys[key]
             btn_type = None
         if btn_type == "switch_inline":
-            btn = InlineKeyboardButton(btn_txt, switch_inline_query_current_chat = "")
+            if keys[key].get("switch_inline_query_current_chat"):
+                switch_inline_query_current_chat = keys[key].get("switch_inline_query_current_chat")
+            else:
+                switch_inline_query_current_chat = ""
+            if keys[key].get("url"):
+                url = keys[key].get("url")
+            else:
+                url = ""
+            btn = InlineKeyboardButton(
+                btn_txt,
+                switch_inline_query_current_chat=switch_inline_query_current_chat,
+                url=url
+            )
+            # switch_inline_query_current_chat - автозаполнение поиска
         else:
             btn = InlineKeyboardButton(btn_txt,callback_data=key)
         keys_row.append(btn)
