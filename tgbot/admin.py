@@ -40,7 +40,7 @@ class UserAdmin(admin.ModelAdmin):
     ]
     list_display_links = ['user_id', 'username', 'first_name', 'last_name']
     list_filter = ["is_blocked_bot", "is_banned", "random_coffe_on", "status",] 
-    search_fields = ('username', 'user_id', 'last_name')
+    search_fields = ('username', 'user_id', 'first_name', 'last_name', 'sur_name')
     fields = [('user_id', 'username', 'deep_link'), 
               ('last_name', 'first_name', 'sur_name', 'date_of_birth'), 
               ('avatar_tag', 'main_photo', 'telefon', 'email'),
