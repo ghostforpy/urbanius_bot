@@ -24,5 +24,4 @@ services:
     volumes:
       - ./media:/usr/share/nginx/html/media:ro
     restart: unless-stopped
-    network_mode: host
 
