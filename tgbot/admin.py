@@ -161,8 +161,9 @@ class BusinessBranchesAdmin(admin.ModelAdmin):
 
 @admin.register(tgGroups)
 class tgGroupsAdmin(admin.ModelAdmin) :
-    list_display = ("name", "chat_id", "link") 
-    list_display_links = ("name", ) 
+    list_display = ("name", "chat_id", "link", "show_for_users") 
+    list_display_links = ("name", )
+    list_editable =("show_for_users",)
     search_fields = ("name",)
     readonly_fields = ["file_id"]
     
