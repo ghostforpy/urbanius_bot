@@ -1043,13 +1043,20 @@ def view_profile(update: Update, context: CallbackContext):
         photo = user.main_photo.path
         photo_id = user.main_photo_id
 
-    if os.path.exists(photo):
-        send_photo(user.user_id, photo_id)
-    else:
-        send_message(user_id = user.user_id,text = NOT_FOTO)
     profile_txt = user.full_profile()
     reply_markup = make_keyboard_start_menu()
-    update.message.reply_text(profile_txt, reply_markup = reply_markup, 
+    if os.path.exists(photo):
+        # send_photo(user.user_id, photo_id)
+        send_photo(
+            user.user_id,
+            photo_id,
+            caption=profile_txt,
+            reply_markup=reply_markup,
+            parse_mode = telegram.ParseMode.HTML
+        )
+    else:
+        send_message(user_id = user.user_id,text = NOT_FOTO)
+        update.message.reply_text(profile_txt, reply_markup = reply_markup, 
                    parse_mode = telegram.ParseMode.HTML, disable_web_page_preview=True)
     return "working"
 
