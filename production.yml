@@ -22,8 +22,8 @@ services:
 
   nginx-media:
     image: "nginx:latest"
-    ports:
-      - "8000:80"
+    # ports:
+    #   - "8000:80"
     volumes:
       - ./media:/usr/share/nginx/html/media:ro
     restart: unless-stopped
