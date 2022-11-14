@@ -40,9 +40,8 @@ services:
       - postgres
     #   - redis
     env_file:
-      - .env
-      # - ./.envs/.production/.django
-      # - ./.envs/.production/.postgres
+      # - .env
+      - ./.envs/.production/.env
     command: /start
     restart: unless-stopped
 
@@ -55,6 +54,6 @@ services:
       - production_postgres_data:/var/lib/postgresql/data:Z
       - production_postgres_data_backups:/backups:z
     env_file:
-      - .env
-      # - ./.envs/.production/.postgres
+      # - .env
+      - ./.envs/.production/.env
     restart: unless-stopped
