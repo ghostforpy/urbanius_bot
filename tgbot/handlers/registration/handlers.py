@@ -559,6 +559,9 @@ def processing_site(update: Update, context: CallbackContext):
     # else:
     validate = URLValidator()
     site = update.message.text
+    site = site.lower()
+    if not site.startswith("https://") and not site.startswith("http://"):
+        site = "http://" + site
     try:
         validate(site)
     except ValidationError:
