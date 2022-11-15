@@ -51,7 +51,7 @@ def start_conversation(update: Update, context: CallbackContext):
     query = update.callback_query
     query.answer()
     query.edit_message_text(text=HELLO_MESS_2, reply_markup=make_keyboard(FIND,"inline",1,None,BACK))
-
+    logging.info("22222222 start conv")
     return "working"
 
 # Обработчик поиска
@@ -90,7 +90,7 @@ def manage_chosen_user(update: Update, context: CallbackContext):
     manage_usr_btn = make_manage_usr_btn(chosen_user_id)
 
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
-    text = chosen_user.short_profile()        
+    text = chosen_user.short_profile()
 
     if os.path.exists(photo):
         send_photo(user_id, photo_id)
@@ -107,6 +107,22 @@ def show_full_profile(update: Update, context: CallbackContext):
     manage_usr_btn = make_manage_usr_btn(found_user_id)
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
     query.edit_message_text(text=profile_text, reply_markup=reply_markup)
+    logging.info("1111111111111 show full profile")
+    return "working"
+
+def handle_show_full_profile(update: Update, context: CallbackContext):
+    query = update.callback_query
+    user_id = query.from_user.id
+    query.answer()
+    data = query.data.split("_")
+    found_user_id = int(data[-1])
+    found_user = User.get_user_by_username_or_user_id(found_user_id)
+    profile_text = found_user.full_profile()
+    manage_usr_btn = make_manage_usr_btn(found_user_id)
+    reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
+    send_message(query.from_user.id, text=profile_text, reply_markup=reply_markup)
+    # query.edit_message_text(text=profile_text, reply_markup=reply_markup)
+    logging.info("1111111111111 show full profile")
     return "working"
 
 def back_to_user(update: Update, context: CallbackContext):
@@ -160,7 +176,7 @@ def set_rating_comment(update: Update, context: CallbackContext):
 
     return "set_rating_comment"
 
-def store_rating (update: Update, context: CallbackContext):
+def store_rating(update: Update, context: CallbackContext):
     # Сохраняем оценку       
     user_rating = mymodels.UsersRatings()
     user_rating.rating = int(context.user_data["rating"])
@@ -170,7 +186,7 @@ def store_rating (update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
 
     context.user_data["search_started"] = False
-    manage_usr_btn = make_manage_usr_btn(context.user_data["rated_user"].user_id)
+    manage_usr_btn = make_manage_usr_btn(context.user_data["rated_user"].user_id, show_full_profile=True)
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
     send_message(user_id=user_id, text=FIN_RATING,reply_markup=reply_markup)
     return "working" 
@@ -181,6 +197,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
         # точка входа в разговор      
         entry_points=[CallbackQueryHandler(start_conversation, pattern="^find_members$"),
                       CallbackQueryHandler(show_full_profile, pattern="^full_profile_"),
+                      CallbackQueryHandler(handle_show_full_profile, pattern="^handle_full_profile_"),
                       CallbackQueryHandler(set_rating, pattern="^setuserrating_"),
                      ],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
