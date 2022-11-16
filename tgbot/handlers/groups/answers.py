@@ -1,7 +1,3 @@
-
-from tgbot.models import User
-from tgbot.handlers.keyboard import make_keyboard
-
 EMPTY = {}
 CANCEL = {"back-from-groups": "Назад"}
 CANCEL_SKIP = {"cancel":"Отмена","skip":"Пропустить"}

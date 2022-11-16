@@ -13,7 +13,7 @@ from telegram.ext.filters import Filters as F
 from django.conf import settings
 from .messages import *
 from .answers import *
-from tgbot.models import tgGroups
+from tgbot.models import tgGroups, User
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand, FilterGroupNoCommand
 from tgbot.handlers.utils import send_mess_by_tmplt
