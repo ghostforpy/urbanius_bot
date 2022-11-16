@@ -27,18 +27,29 @@ def stop_conversation(update: Update, context: CallbackContext):
     if update.message:
         user_id = update.message.from_user.id
         user = User.get_user_by_username_or_user_id(user_id)
+        update.message.reply_text(
+            text=get_start_mess(user), reply_markup=get_start_menu(user)
+        )
     else:
         update.callback_query.answer()
         user_id = update.callback_query.from_user.id
         user = User.get_user_by_username_or_user_id(user_id)
+        update.callback_query.edit_message_text(text=get_start_mess(user), reply_markup=get_start_menu(user))
     # send_message(user_id=user_id, text=GROUP_FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
-    send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
+    # send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
 
     return ConversationHandler.END
 
 # Временная заглушка
 def blank(update: Update, context: CallbackContext):
     update.message.reply_text(ASK_REENTER)
+
+def echo_blank(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    reply_markup=make_keyboard(BACK,"inline",1)
+    # update.message.reply_text(ECHO, reply_markup=reply_markup)
+    query.edit_message_text(ECHO, reply_markup=reply_markup)
 
 def bad_callback_enter(update: Update, context: CallbackContext):
     update.message.reply_text(ASK_REENTER)
@@ -126,39 +137,40 @@ def show_group_list(update: Update, context: CallbackContext):
 
 def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
-    conv_handler = ConversationHandler( 
-        # точка входа в разговор      
-        entry_points=[CallbackQueryHandler(start_conversation, pattern="^groups$"),
-                    CallbackQueryHandler(start_conversation, pattern="^find_groups$"),
-                      ],      
-        # этапы разговора, каждый со своим списком обработчиков сообщений
-        states={
-            "working":[
-                       InlineQueryHandler(manage_find),
-                      # ChosenInlineResultHandler(manage_chosen_user),             
+    # conv_handler = ConversationHandler( 
+    #     # точка входа в разговор      
+    #     entry_points=[CallbackQueryHandler(start_conversation, pattern="^groups$"),
+    #                 CallbackQueryHandler(start_conversation, pattern="^find_groups$"),
+    #                   ],      
+    #     # этапы разговора, каждый со своим списком обработчиков сообщений
+    #     states={
+    #         "working":[
+    #                    InlineQueryHandler(manage_find),
+    #                   # ChosenInlineResultHandler(manage_chosen_user),             
 
-                       CallbackQueryHandler(stop_conversation, pattern="^back$"),
-                    #    CallbackQueryHandler(show_group),
-                       MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
-                      ],
-       "manage_group":[CallbackQueryHandler(show_group_list, pattern="^cancel$"),            
-                       MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
-                      ],
-        },
-        # точка выхода из разговора
-        fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
-                   CommandHandler('start', stop_conversation, Filters.chat_type.private)]        
-    )
-    # dp.add_handler(conv_handler)
-    dp.add_handler(InlineQueryHandler(manage_find, pattern="^chats")),
-    dp.add_handler(ChosenInlineResultHandler(show_group))
-    dp.add_handler(
-        MessageHandler(
-            F.regex(r"Выбрана группа") & FilterPrivateNoCommand,
-            handle_chose_group
-            )
-    )
-    dp.add_handler(CallbackQueryHandler(stop_conversation, pattern="^back-from-groups$"),)
+    #                    CallbackQueryHandler(stop_conversation, pattern="^back$"),
+    #                 #    CallbackQueryHandler(show_group),
+    #                    MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
+    #                   ],
+    #    "manage_group":[CallbackQueryHandler(show_group_list, pattern="^cancel$"),            
+    #                    MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
+    #                   ],
+    #     },
+    #     # точка выхода из разговора
+    #     fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
+    #                CommandHandler('start', stop_conversation, Filters.chat_type.private)]        
+    # )
+    # # dp.add_handler(conv_handler)
+    # dp.add_handler(InlineQueryHandler(manage_find, pattern="^chats")),
+    # dp.add_handler(ChosenInlineResultHandler(show_group))
+    # dp.add_handler(
+    #     MessageHandler(
+    #         F.regex(r"Выбрана группа") & FilterPrivateNoCommand,
+    #         handle_chose_group
+    #         )
+    # )
+    dp.add_handler(CallbackQueryHandler(stop_conversation, pattern="^back-from-advertisement$"),)
+    dp.add_handler(CallbackQueryHandler(echo_blank, pattern="^affiliate$"),)
 
 
 
