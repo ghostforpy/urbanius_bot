@@ -26,6 +26,7 @@ from tgbot.handlers.groups.handlers import setup_dispatcher_conv as setup_dispat
 from statistic.handlers import setup_dispatcher_group as setup_dispatcher_tg_group
 from subscribe.handlers import setup_dispatcher_conv as setup_dispatcher_pkgs
 from advert.handlers import setup_dispatcher_conv as setup_dispatcher_advert
+from tgbot.handlers.advertisement.handlers import setup_dispatcher_conv as setup_dispatcher_advertisement
 # from advert.handlers_reqw import setup_dispatcher_conv as setup_dispatcher_reqw
 from sheduler.tasks import restarts_tasks
 
@@ -58,8 +59,9 @@ def setup_dispatcher(dp: Dispatcher):
     setup_dispatcher_events(dp) #заполнение обработчиков работы с мероприятиями
     setup_dispatcher_groups(dp) #заполнение обработчиков работы с группами пользователей
     setup_dispatcher_pkgs(dp) #заполнение обработчиков работы с пакетами участия
-    setup_dispatcher_advert(dp) #заполнение обработчиков работы с рекламными рассылками
+    # setup_dispatcher_advert(dp) #заполнение обработчиков работы с рекламными рассылками
     #setup_dispatcher_reqw(dp) #заполнение обработчиков работы с разными заявками
+    setup_dispatcher_advertisement(dp) # временная echo заглушка рекламных размещений
 
     setup_dispatcher_tg_group(dp) #заполнение обработчиков сообщений в группах(каналах) телеграм
 

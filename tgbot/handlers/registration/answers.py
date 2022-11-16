@@ -18,3 +18,10 @@ CANCEL_SKIP_REQUEST_PHONE = {"reg_start":{"label":"Отправить телеф
 NEXT = {"next": "💾 Готово"}
 CREATE = {"create": "Другое"}
 
+FIND_MEMB = {
+    "find_members_registration":
+        {"label":"Найти пользователя","type":"switch_inline"},
+    "skip": "Пропустить"
+    }
+
+INPUT_NEXT_MSG_CONTENT_CHOSEN_MEMBER = "Выбран пользователь"

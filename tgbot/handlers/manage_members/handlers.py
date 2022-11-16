@@ -1,4 +1,3 @@
-import logging
 import os
 from telegram import (
     InlineQueryResultArticle,  
@@ -51,7 +50,6 @@ def start_conversation(update: Update, context: CallbackContext):
     query = update.callback_query
     query.answer()
     query.edit_message_text(text=HELLO_MESS_2, reply_markup=make_keyboard(FIND,"inline",1,None,BACK))
-    logging.info("22222222 start conv")
     return "working"
 
 # Обработчик поиска
@@ -91,10 +89,10 @@ def manage_chosen_user(update: Update, context: CallbackContext):
 
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
     text = chosen_user.short_profile()
-
     if os.path.exists(photo):
-        send_photo(user_id, photo_id)
-    send_message(user_id=user_id, text = text, reply_markup=reply_markup)
+        send_photo(user_id, photo_id, caption=text, reply_markup=reply_markup)
+    else:
+        send_message(user_id=user_id, text = text, reply_markup=reply_markup)
     return "working"
 
 def show_full_profile(update: Update, context: CallbackContext):
@@ -107,7 +105,6 @@ def show_full_profile(update: Update, context: CallbackContext):
     manage_usr_btn = make_manage_usr_btn(found_user_id)
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
     query.edit_message_text(text=profile_text, reply_markup=reply_markup)
-    logging.info("1111111111111 show full profile")
     return "working"
 
 def handle_show_full_profile(update: Update, context: CallbackContext):
@@ -122,7 +119,12 @@ def handle_show_full_profile(update: Update, context: CallbackContext):
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
     send_message(query.from_user.id, text=profile_text, reply_markup=reply_markup)
     # query.edit_message_text(text=profile_text, reply_markup=reply_markup)
-    logging.info("1111111111111 show full profile")
+    try:
+        # профиль с фотографией
+        query.edit_message_caption(caption=profile_text, reply_markup=reply_markup)
+    except:
+        # профиль без фотографии
+        query.edit_message_text(text=profile_text, reply_markup=reply_markup)
     return "working"
 
 def back_to_user(update: Update, context: CallbackContext):
@@ -145,7 +147,7 @@ def set_rating(update: Update, context: CallbackContext):
     user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
     data = query.data.split("_")
-    rated_user_id = int(data[-1])   
+    rated_user_id = int(data[-1])
 
     rated_user = User.get_user_by_username_or_user_id(rated_user_id)
     context.user_data["rated_user"] = rated_user

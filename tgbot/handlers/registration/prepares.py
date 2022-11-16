@@ -1,5 +1,3 @@
-# import logging
-import logging
 from telegram.update import Update
 from telegram import ReplyKeyboardRemove
 # from telegram.ext.callbackcontext import CallbackContext
@@ -34,7 +32,24 @@ from tgbot.utils import send_message
 
 
 def prepare_approval(update: Update, new_user: NewUser):
-    update.message.reply_text(ASK_APPROVAL, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
+    kwargs = {
+        "text": ASK_APPROVAL,
+        "reply_markup": make_keyboard(APPROVAL_ANSWERS,"usual",2)
+    }
+    if update.message is not None:
+        update.message.reply_text(
+            **kwargs
+        )
+    elif update.callback_query:
+        send_message(
+            user_id=update.callback_query.from_user.id,
+            **kwargs
+        )
+    elif update.chosen_inline_result:
+        send_message(
+            user_id=update.chosen_inline_result.from_user.id,
+            **kwargs
+        )
 
 def prepare_resident_urbanius_club(update: Update, new_user: NewUser):
     if update.message is not None:
@@ -77,7 +92,7 @@ def prepare_tags(update: Update, new_user: NewUser):
 def prepare_deep_link(update: Update, new_user: NewUser):
     update.message.reply_text(
         ASK_DEEP_LINK,
-        reply_markup=make_keyboard(SKIP,"usual",2)
+        reply_markup=make_keyboard(FIND_MEMB,"inline",1)
     )
 
 def prepare_company_turnover(update: Update, new_user: NewUser):
