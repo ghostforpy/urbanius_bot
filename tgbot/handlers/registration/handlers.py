@@ -3,9 +3,12 @@ from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext import (
     Dispatcher, CommandHandler,
     MessageHandler, CallbackQueryHandler,
-    Filters,
+    Filters,ChosenInlineResultHandler,
+    InlineQueryHandler,
    # ConversationHandler,
 )
+from telegram.ext.filters import Filters as F
+from telegram import InlineQueryResultArticle, InputTextMessageContent, ReplyKeyboardRemove
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from django.conf import settings
@@ -396,18 +399,67 @@ def processing_deep_link(update: Update, context: CallbackContext):
     # if update.message.text == CANCEL_SKIP["cancel"]: # решили прервать регистрацию
     #    stop_conversation(update, context)
     #    return ConversationHandler.END
-    if update.message.text != SKIP["skip"]:
-        # проверяем наличие пользователя в базе
-        if not User.get_user_by_username_or_user_id(update.message.text.replace("@","")):
-            update.message.reply_text(
-                ASK_DEEP_LINK_NO_USER,
-                reply_markup=make_keyboard(SKIP,"usual",2)
-            )
-            return
-        new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-        new_user.deep_link = update.message.text.replace("@","")
+    if update.callback_query:
+        query = update.callback_query
+        variant = query.data
+        query.answer()
+        if variant == "skip":
+            f = STEPS["DEEP_LINK"]["prepare"]
+            f(update, new_user)
+            return STEPS["DEEP_LINK"]["next"]
+    else:
+        update.message.reply_text(
+            "Используйте предложенные варианты.",
+            reply_markup=ReplyKeyboardRemove()
+        )
+        f = STEPS["DEEP_LINK"]["self_prepare"]
+        f(update, new_user)
+        return STEPS["DEEP_LINK"]["step"]
+    # if update.message.text != SKIP["skip"]:
+    #     # проверяем наличие пользователя в базе
+    #     if not User.get_user_by_username_or_user_id(update.message.text.replace("@","")):
+    #         update.message.reply_text(
+    #             ASK_DEEP_LINK_NO_USER,
+    #             reply_markup=make_keyboard(SKIP,"usual",2)
+    #         )
+    #         return
+    #     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
+    #     new_user.deep_link = update.message.text.replace("@","")
 
-        new_user.save()
+    #     new_user.save()
+    # f = STEPS["DEEP_LINK"]["prepare"]
+    # f(update, new_user)
+    # return STEPS["DEEP_LINK"]["next"]
+def deep_link_handle_chose_member(update: Update, context: CallbackContext):
+    pass
+
+def deep_link_manage_find(update: Update, context: CallbackContext):
+    query = update.inline_query.query.strip()
+    # if len(query) < 3:
+    #     return
+    query = query.lower()
+    query = query.replace("@","")
+    users_set = User.objects.filter(username__icontains=query)
+    users_set = users_set.exclude(user_id = update.inline_query.from_user.id)
+    results = []
+    for user in users_set:
+        user_res_str = InlineQueryResultArticle(
+            id=str(user.user_id),
+            title=str(user),
+            input_message_content = InputTextMessageContent(INPUT_NEXT_MSG_CONTENT_CHOSEN_MEMBER),
+            description = user.username,
+        )
+        results.append(user_res_str)
+    update.inline_query.answer(results)
+    return STEPS["DEEP_LINK"]["step"]
+
+def deep_link_manage_chosen_user(update: Update, context: CallbackContext):
+    chosen_user_id = update.chosen_inline_result.result_id
+    chosen_user = User.get_user_by_username_or_user_id(chosen_user_id)
+    user_id = update.chosen_inline_result.from_user.id
+    new_user = NewUser.objects.get(user_id=user_id)
+    new_user.deep_link = chosen_user.username
+    new_user.save()
     f = STEPS["DEEP_LINK"]["prepare"]
     f(update, new_user)
     return STEPS["DEEP_LINK"]["next"]
@@ -831,16 +883,25 @@ def setup_dispatcher_conv(dp: Dispatcher):
             STEPS["COMPANY_BUSINESS_BRANCHES"]["step"]: [
                 CallbackQueryHandler(processing_company_business_branches),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_company_business_branches)
-                ],
+            ],
             STEPS["RESIDENT_URBANIUS_CLUB"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_resident_urbanius_club)],
             STEPS["BUSINESS_CLUB_MEMBER"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_business_club_member)],
-            STEPS["DEEP_LINK"]["step"]: [MessageHandler(Filters.text & FilterPrivateNoCommand, processing_deep_link)],
+            STEPS["DEEP_LINK"]["step"]: [
+                InlineQueryHandler(deep_link_manage_find),
+                ChosenInlineResultHandler(deep_link_manage_chosen_user),
+                CallbackQueryHandler(processing_deep_link),
+                MessageHandler(
+                    F.regex(INPUT_NEXT_MSG_CONTENT_CHOSEN_MEMBER) & FilterPrivateNoCommand,
+                    deep_link_handle_chose_member
+                ),
+                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_deep_link),
+            ],
             STEPS["APROVAL"]["step"]:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_aproval)],
             STEPS["PHONE"]["step"]: [MessageHandler((Filters.contact | Filters.text) & FilterPrivateNoCommand, processing_phone)],
             STEPS["PHOTO"]["step"]:[
                 MessageHandler(Filters.photo & FilterPrivateNoCommand, processing_photo),
                 MessageHandler(Filters.text & FilterPrivateNoCommand, processing_photo_txt)
-                ],
+            ],
         },
         # точка выхода из разговора
         fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),

@@ -115,6 +115,7 @@ STEPS = {
     "DEEP_LINK": {
         "step": step_iterator.current,
         "prepare": prepare_approval,
+        "self_prepare": prepare_deep_link,
         "next": next(step_iterator)
     },
     "APROVAL": {
