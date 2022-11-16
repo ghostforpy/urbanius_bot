@@ -1,4 +1,3 @@
-import logging
 import os
 from telegram import (
     InlineQueryResultArticle,  
@@ -90,11 +89,11 @@ def manage_chosen_user(update: Update, context: CallbackContext):
     manage_usr_btn = make_manage_usr_btn(chosen_user_id)
 
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
-    text = chosen_user.short_profile()        
-
+    text = chosen_user.short_profile()
     if os.path.exists(photo):
-        send_photo(user_id, photo_id)
-    send_message(user_id=user_id, text = text, reply_markup=reply_markup)
+        send_photo(user_id, photo_id, caption=text, reply_markup=reply_markup)
+    else:
+        send_message(user_id=user_id, text = text, reply_markup=reply_markup)
     return "working"
 
 def show_full_profile(update: Update, context: CallbackContext):
@@ -106,7 +105,12 @@ def show_full_profile(update: Update, context: CallbackContext):
     profile_text = found_user.full_profile()
     manage_usr_btn = make_manage_usr_btn(found_user_id)
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
-    query.edit_message_text(text=profile_text, reply_markup=reply_markup)
+    try:
+        # профиль с фотографией
+        query.edit_message_caption(caption=profile_text, reply_markup=reply_markup)
+    except:
+        # профиль без фотографии
+        query.edit_message_text(text=profile_text, reply_markup=reply_markup)
     return "working"
 
 def back_to_user(update: Update, context: CallbackContext):
@@ -129,7 +133,7 @@ def set_rating(update: Update, context: CallbackContext):
     user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
     data = query.data.split("_")
-    rated_user_id = int(data[-1])   
+    rated_user_id = int(data[-1])
 
     rated_user = User.get_user_by_username_or_user_id(rated_user_id)
     context.user_data["rated_user"] = rated_user
