@@ -439,7 +439,7 @@ def deep_link_manage_find(update: Update, context: CallbackContext):
     #     return
     query = query.lower()
     query = query.replace("@","")
-    users_set = User.objects.filter(username__icontains=query)
+    users_set = User.objects.filter(username__icontains=query).exclude(is_blocked_bot=True).exclude(is_banned=True)
     users_set = users_set.exclude(user_id = update.inline_query.from_user.id)
     results = []
     for user in users_set:

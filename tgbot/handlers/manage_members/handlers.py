@@ -58,7 +58,7 @@ def manage_find(update: Update, context: CallbackContext):
     query = update.inline_query.query.strip()
     if len(query) < 3:
         return
-    users_set = mymodels.User.find_users_by_keywords(query)
+    users_set = mymodels.User.find_users_by_keywords(query).exclude(is_blocked_bot=True).exclude(is_banned=True)
     users_set = users_set.exclude(user_id = update.inline_query.from_user.id)
     results = []
     for user in users_set:
