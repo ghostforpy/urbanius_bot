@@ -835,7 +835,6 @@ def confirm_registration(update: Update, context: CallbackContext):
     query.delete_message()
 
 
-    # вот здесь должно быть отправлено сообщение
     groups = tgGroups.objects.filter(for_all_users=True)
     if groups.count() == 0:
         update.message.reply_text(NO_FOR_ALL_USERS_GROUPS)
@@ -844,8 +843,9 @@ def confirm_registration(update: Update, context: CallbackContext):
             bn = {f"handle_full_profile_{new_user.user_id}":"Посмотреть пользователя"}
             reply_markup =  make_keyboard(bn,"inline",1)
             # reply_markup =  make_keyboard(bn,"inline",1)
-            text =f"Познакомьтесь с новым участником группы\n @{utils.mystr(new_user.username)} {new_user.first_name} {utils.mystr(new_user.last_name)}"
-            utils.send_message(group.chat_id, text, reply_markup =  reply_markup)
+            text = new_user.new_user_notification()
+            # text =f"Познакомьтесь с новым участником группы\n @{utils.mystr(new_user.username)} {new_user.first_name} {utils.mystr(new_user.last_name)}"
+            utils.send_message(group.chat_id, text, reply_markup=reply_markup)
 
 
 

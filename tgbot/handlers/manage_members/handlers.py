@@ -117,14 +117,29 @@ def handle_show_full_profile(update: Update, context: CallbackContext):
     profile_text = found_user.full_profile()
     manage_usr_btn = make_manage_usr_btn(found_user_id)
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
-    send_message(query.from_user.id, text=profile_text, reply_markup=reply_markup)
+
+
+    if not(found_user.main_photo):
+        photo = settings.BASE_DIR / 'media/no_foto.jpg'
+        photo_id = get_no_foto_id()
+    else:
+        if not found_user.main_photo_id:
+            fill_file_id(found_user, "main_photo")
+        photo = found_user.main_photo.path
+        photo_id = found_user.main_photo_id
+    if os.path.exists(photo):
+        send_photo(user_id, photo_id, caption=profile_text, reply_markup=reply_markup)
+    else:
+        send_message(user_id=user_id, text = profile_text, reply_markup=reply_markup)
+
+    # send_message(query.from_user.id, text=profile_text, reply_markup=reply_markup)
     # query.edit_message_text(text=profile_text, reply_markup=reply_markup)
-    try:
-        # профиль с фотографией
-        query.edit_message_caption(caption=profile_text, reply_markup=reply_markup)
-    except:
-        # профиль без фотографии
-        query.edit_message_text(text=profile_text, reply_markup=reply_markup)
+    # try:
+    #     # профиль с фотографией
+    #     query.edit_message_caption(caption=profile_text, reply_markup=reply_markup)
+    # except:
+    #     # профиль без фотографии
+    #     query.edit_message_text(text=profile_text, reply_markup=reply_markup)
     return "working"
 
 def back_to_user(update: Update, context: CallbackContext):
