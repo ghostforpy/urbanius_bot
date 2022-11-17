@@ -280,7 +280,7 @@ class User(AbstractTgUser):
         res += "\n<b>Компания:</b> " + mystr(self.company)
         res += "\n<b>Должность:</b> " + mystr(self.job)
         res += "\n<b>Сайт:</b> " + mystr(self.site)
-        res += "\n<b>Регионы присутствия вашего бизнеса:</b> " + mystr(self.job_region)
+        res += "\n<b>Регионы присутствия:</b> " + mystr(self.job_region)
         res += "\n<b>Обороты:</b>  " + mystr(self.get_company_turnover_display()) 
         res += "\n<b>Количество сотрудников:</b>  " + mystr(self.get_number_of_employees_display()) 
 

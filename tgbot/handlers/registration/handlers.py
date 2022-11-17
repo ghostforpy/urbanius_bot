@@ -830,7 +830,8 @@ def confirm_registration(update: Update, context: CallbackContext):
     new_user.status =  Status.objects.get(code = StatusCode.GROUP_MEMBER)
     new_user.comment = "Регистрация подтверждена"
     new_user.save()
-    text = MessageTemplates.objects.get(code=MessageTemplatesCode.WAIT_APPOVE_MESSAGE)
+    text = MessageTemplates.objects.get(code=MessageTemplatesCode.PROFILE_APPROVED)
+    # text = "Ваша регистрация подтверждена. Наберите /start для обновления меню."
     send_message(new_user_id, text.text)
     query.delete_message()
 
