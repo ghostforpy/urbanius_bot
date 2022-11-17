@@ -86,7 +86,8 @@ RUN chmod +x /start
 
 
 # copy application code to WORKDIR
-COPY --chown=django:django . ${APP_HOME}
+COPY --chown=django:django . ${APP_HOME} \
+  && chmod -R 777 ./media
 
 # make django owner of the WORKDIR directory as well.
 RUN chown django:django ${APP_HOME}
