@@ -34,7 +34,7 @@ services:
       dockerfile: ./compose/production/django/Dockerfile
     image: urbanius_bot_production_django
     volumes:
-      - .production_nginx_media:/app/media:z
+      - production_nginx_media:/app/media:z
     depends_on:
     #   # - pgbouncer
       - postgres
