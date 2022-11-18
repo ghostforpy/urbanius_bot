@@ -795,7 +795,7 @@ def manage_new_user(update: Update, context: CallbackContext):
     user_id = query.from_user.id
     user = User.get_user_by_username_or_user_id(user_id)
     if (not user) or (not user.is_admin):
-        text ="Нет прав администратора"
+        text ="{}, у Вас нет прав администратора".format(query.from_user.full_name)
         send_message(update.callback_query.message.chat_id, text)
         return
     query_data = query.data.split("-")
