@@ -54,6 +54,28 @@ http:
         # https://docs.traefik.io/master/routing/routers/#certresolver
         certResolver: letsencrypt
 
+    web-secure-api-router-stage:
+      rule: "Host(`stage-bot.urbanius.club`)"
+      entryPoints:
+        - web-secure
+      middlewares:
+        - csrf
+      service: django-stage
+      priority: 1
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
+    
+    media-router-stage:
+      rule: "Host(`stage-bot.urbanius.club`) && PathPrefix(`/media`)"
+      entryPoints:
+        - web-secure
+      service: nginx-media-stage
+      priority: 2
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
+
   middlewares:
     csrf:
       # https://docs.traefik.io/master/middlewares/headers/#hostsproxyheaders
@@ -71,6 +93,16 @@ http:
       loadBalancer:
         servers:
           - url: http://nginx-media
+
+    django-stage:
+      loadBalancer:
+        servers:
+          - url: http://django-stage:8001
+
+    nginx-media-stage:
+      loadBalancer:
+        servers:
+          - url: http://nginx-media-stage
 
 providers:
   # https://docs.traefik.io/master/providers/file/
