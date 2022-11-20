@@ -33,8 +33,8 @@ from tgbot.models import (
 )
 from sheduler.models import MessageTemplates
 
-# from tgbot.handlers.utils import send_message, send_mess_by_tmplt
 from tgbot.utils import _get_file_id
+from tgbot.handlers.utils import send_photo
 
 from tgbot.handlers.keyboard import make_keyboard
 # from tgbot.handlers.main.answers import get_start_menu
@@ -806,8 +806,12 @@ def manage_new_user(update: Update, context: CallbackContext):
                       f"uncofirm_reg-{new_user_id}":"Отклонить регистрацию",
                       f"back_from_user_confirm-{new_user_id}":"Отмена обработки",
                      }
+
+    photo_id = user.main_photo_id
     reply_markup=make_keyboard(manage_usr_btn,"inline",1)
-    send_message(user_id = user_id, text=profile_text, reply_markup=reply_markup)
+    send_photo(user_id=user_id, photo=photo_id, caption=profile_text, reply_markup=reply_markup)
+    
+    # send_message(user_id = user_id, text=profile_text, reply_markup=reply_markup)
 
     bn = {f"manage_new_user-{new_user.user_id}":"Посмотреть пользователя"}
     reply_markup =  make_keyboard(bn,"inline",1)       
