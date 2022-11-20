@@ -807,7 +807,7 @@ def manage_new_user(update: Update, context: CallbackContext):
                       f"back_from_user_confirm-{new_user_id}":"Отмена обработки",
                      }
 
-    photo_id = user.main_photo_id
+    photo_id = new_user.main_photo_id
     reply_markup=make_keyboard(manage_usr_btn,"inline",1)
     send_photo(user_id=user_id, photo=photo_id, caption=profile_text, reply_markup=reply_markup)
     
