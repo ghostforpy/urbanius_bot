@@ -5,6 +5,7 @@ volumes:
   production_nginx_media: {}
   production_postgres_data: {}
   production_postgres_data_backups: {}
+  production_django_media_backups: {}
 
 services:
   traefik:
@@ -35,6 +36,7 @@ services:
     image: urbanius_bot_production_django
     volumes:
       - production_nginx_media:/app/media:z
+      - production_django_media_backups:/app/backups_media:z
     depends_on:
     #   # - pgbouncer
       - postgres
