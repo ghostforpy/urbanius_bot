@@ -12,7 +12,8 @@ from tgbot.handlers.utils import fill_file_id, get_no_foto_id,send_mess_by_tmplt
 from tgbot.utils import get_uniq_file_name
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.manage_members.answers import make_manage_usr_btn
-from dtb import settings
+# from dtb import settings
+from django.conf import settings
 from dtb.constants import TaskCode, MessageTemplatesCode
 
 def remove_job_if_exists(name: str, jq: JobQueue):
@@ -319,8 +320,8 @@ def send_confirm_event(context: CallbackContext):
         new_mess = MessagesToSend()
         new_mess.receiver = request.user 
         img,text = request.get_qr_code()
-        filename = get_uniq_file_name(settings.BASE_DIR / "media/qr_codes","qr_code","png")
-        img.save(settings.BASE_DIR / ("media/qr_codes/"+filename))
+        filename = get_uniq_file_name(settingsa.BASE_DIR / "media/qr_codes","qr_code","png")
+        img.save(settingsa.BASE_DIR / ("media/qr_codes/"+filename))
         new_mess.file = "qr_codes/"+filename
         new_mess.text = text
         new_mess.save()
