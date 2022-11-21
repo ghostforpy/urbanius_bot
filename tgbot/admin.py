@@ -7,7 +7,8 @@ from django.shortcuts import render
 from django.forms import TextInput, Textarea, NumberInput
 from dtb.constants import StatusCode
 
-from dtb.settings import DEBUG
+# from dtb.settingsa import DEBUG
+# from django.conf import settings
 
 from .models import *
 from tgbot.forms import BroadcastForm

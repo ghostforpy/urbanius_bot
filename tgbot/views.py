@@ -5,7 +5,7 @@ from django.views import View
 from django.http import JsonResponse
 from django.shortcuts import render
 
-from dtb.settings import DEBUG
+from django.conf import settings
 
 from tgbot.handlers.dispatcher import process_telegram_event, TELEGRAM_BOT_USERNAME
 
