@@ -2,7 +2,7 @@ import logging
 import telegram
 import os
 from functools import wraps
-from dtb.settings import ENABLE_DECORATOR_LOGGING, TELEGRAM_TOKEN
+# from dtb.settings import ENABLE_DECORATOR_LOGGING, TELEGRAM_TOKEN
 from django.utils import timezone
 from tgbot.models import UserActionLog, User, Config, tgGroups
 from tgbot.utils import extract_user_data_from_update, _get_file_id, send_message, send_photo, send_video, send_document
@@ -38,7 +38,7 @@ def handler_logging(action_name=None):
             if user != None:
                 UserActionLog.objects.create(user_id=user.user_id, action=action, text=text, created_at=timezone.now())
             return func(update, context, *args, **kwargs)
-        return handler if ENABLE_DECORATOR_LOGGING else func
+        return handler if settings.ENABLE_DECORATOR_LOGGING else func
     return decor
 
 
@@ -218,7 +218,7 @@ def get_no_foto_id():
     Получает ИД фотографии заглушки, для тех у кого нет фото
     """
     config_set = Config.objects.filter(param_name = "no_foto_id")
-    bot = telegram.Bot(TELEGRAM_TOKEN)
+    bot = telegram.Bot(settings.TELEGRAM_TOKEN)
     photo = settings.BASE_DIR / 'media/no_foto.jpg'
     if len(config_set) == 0:
         message = bot.send_photo(settings.TRASH_GROUP, open(photo, 'rb'), caption="no_foto")
@@ -262,7 +262,7 @@ def fill_file_id(obj, file_field: str, text: str = ""):
         setattr(obj, file_field + "_id", file_id)
         obj.save() 
 
-def wrong_file_id(file_id: str, tg_token=TELEGRAM_TOKEN):
+def wrong_file_id(file_id: str, tg_token=settings.TELEGRAM_TOKEN):
     bot = telegram.Bot(tg_token)
     try:
         file = bot.get_file(file_id)

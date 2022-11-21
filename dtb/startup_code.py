@@ -4,7 +4,8 @@ from events.models import EventTypes
 from subscribe.models import ClubPackages
 import datetime
 import os
-from dtb import settings
+from django.conf import settings
+
 from dtb.constants import *
 import traceback 
 
