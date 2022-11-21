@@ -5,6 +5,7 @@ volumes:
   production_nginx_media: {}
   production_postgres_data: {}
   production_postgres_data_backups: {}
+  production_django_media_backups: {}
 
 services:
   traefik:
@@ -25,7 +26,7 @@ services:
     # ports:
     #   - "8000:80"
     volumes:
-      - ./media:/usr/share/nginx/html/media:ro
+      - production_nginx_media:/usr/share/nginx/html/media:ro
     restart: unless-stopped
 
   django:
@@ -34,7 +35,8 @@ services:
       dockerfile: ./compose/production/django/Dockerfile
     image: urbanius_bot_production_django
     volumes:
-      - ./media:/app/media:z
+      - production_nginx_media:/app/media:z
+      - production_django_media_backups:/app/backups_media:z
     depends_on:
     #   # - pgbouncer
       - postgres
