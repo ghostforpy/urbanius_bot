@@ -208,6 +208,41 @@ def store_rating(update: Update, context: CallbackContext):
     send_message(user_id=user_id, text=FIN_RATING,reply_markup=reply_markup)
     return "working" 
 
+def handle_forwarded(update: Update, context: CallbackContext):
+    found_user = User.get_user_by_username_or_user_id(update.message.forward_from.id)
+    user_id = update.message.from_user.id
+    if found_user is not None:
+        profile_text = found_user.full_profile()
+        # manage_usr_btn = make_manage_usr_btn(found_user.id)
+        # reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
+        if not(found_user.main_photo):
+            photo = settings.BASE_DIR / 'media/no_foto.jpg'
+            photo_id = get_no_foto_id()
+        else:
+            if not found_user.main_photo_id:
+                fill_file_id(found_user, "main_photo")
+            photo = found_user.main_photo.path
+            photo_id = found_user.main_photo_id
+        if os.path.exists(photo):
+            send_photo(
+                user_id, 
+                photo_id, 
+                caption=profile_text, 
+                #reply_markup=reply_markup
+                )
+        else:
+            send_message(
+                user_id=user_id, 
+                text=profile_text, 
+                # reply_markup=reply_markup
+                )
+    else:
+        send_message(
+            user_id=user_id, 
+            text="Пользователь не найден",
+        )
+    return
+
 def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
     conv_handler = ConversationHandler( 
@@ -238,5 +273,10 @@ def setup_dispatcher_conv(dp: Dispatcher):
         # точка выхода из разговора
         fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
                    CommandHandler('start', stop_conversation, Filters.chat_type.private)]        
+    )
+    dp.add_handler(MessageHandler(
+        Filters.forwarded & Filters.private, 
+        handle_forwarded
+        )
     )
     dp.add_handler(conv_handler)  
