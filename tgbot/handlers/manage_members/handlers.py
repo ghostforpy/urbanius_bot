@@ -89,7 +89,8 @@ def manage_chosen_user(update: Update, context: CallbackContext):
     manage_usr_btn = make_manage_usr_btn(chosen_user_id)
 
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
-    text = chosen_user.short_profile()
+    text = chosen_user.full_profile()
+    # text = chosen_user.short_profile()
     if os.path.exists(photo):
         send_photo(user_id, photo_id, caption=text, reply_markup=reply_markup)
     else:
@@ -119,7 +120,8 @@ def back_to_user(update: Update, context: CallbackContext):
     data = query.data.split("_")
     found_user_id = int(data[-1])
     found_user = User.get_user_by_username_or_user_id(found_user_id)
-    profile_text = found_user.short_profile()
+    profile_text = found_user.full_profile()
+    # profile_text = found_user.short_profile()
     manage_usr_btn = make_manage_usr_btn(found_user_id)
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
     query.edit_message_text(text=profile_text, reply_markup=reply_markup)
