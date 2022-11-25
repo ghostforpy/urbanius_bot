@@ -1,0 +1,49 @@
+version: '3'
+
+volumes:
+  production_nginx_media-stage: {}
+  production_postgres_data-stage: {}
+  production_postgres_data_backups-stage: {}
+
+services:
+  nginx-media-stage:
+    image: "nginx:latest"
+    # ports:
+    #   - "8000:80"
+    volumes:
+      - production_nginx_media-stage:/usr/share/nginx/html/media:ro
+    restart: unless-stopped
+
+  django-stage:
+    build:
+      context: .
+      dockerfile: ./compose/production/django/Dockerfile
+    image: urbanius_bot_production_django
+    volumes:
+      - production_nginx_media-stage:/app/media:z
+    depends_on:
+    #   # - pgbouncer
+      - postgres-stage
+    #   - redis
+    env_file:
+      # - .env
+      - ./.envs/.production/.env.stage
+    command: /start
+    restart: unless-stopped
+
+  postgres-stage:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: urbanius_bot_production_postgres
+    volumes:
+      - production_postgres_data-stage:/var/lib/postgresql/data:Z
+      - production_postgres_data_backups-stage:/backups:z
+    env_file:
+      # - .env
+      - ./.envs/.production/.env.stage
+    restart: unless-stopped
+
+networks:
+  urbanius_bot_default:
+    external: true
