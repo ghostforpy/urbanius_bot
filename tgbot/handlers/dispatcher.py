@@ -94,11 +94,13 @@ def run_pooling():
 
 def process_telegram_event(update_json):
     update = telegram.Update.de_json(update_json,bot)
-    dispatcher.process_update(update)
+    # dispatcher.process_update(update)
+    update_queue.put(update)
+
 
 # Global variable - best way I found to init Telegram bot
 bot = telegram.Bot(settings.TELEGRAM_TOKEN)
-dispatcher = setup_dispatcher(Dispatcher(bot, None, workers=4, use_context=True))
+# dispatcher = setup_dispatcher(Dispatcher(bot, None, workers=4, use_context=True))
 TELEGRAM_BOT_USERNAME = bot.get_me()["username"]
 bot.set_my_commands(
     [
@@ -106,10 +108,24 @@ bot.set_my_commands(
         BotCommand("/start", "Начало"),
     ]
 )
+update_queue = None
+
 if not settings.DEBUG:
+    from queue import Queue
+    from threading import Thread
+
+    update_queue = Queue()
+
+    dispatcher = Dispatcher(bot, update_queue, workers=4, use_context=True)
+    dispatcher = setup_dispatcher(dispatcher)
+    thread = Thread(target=dispatcher.start, name="dispatcher")
+    thread.start()
+
     bot.set_webhook(
         url="https://api.telegram.org/bot{}/setWebhook?url={}".format(
             settings.TELEGRAM_TOKEN,
             settings.TELEGRAM_WEBHOOK_FULL
         )
     )
+else:
+    dispatcher = setup_dispatcher(Dispatcher(bot, None, workers=4, use_context=True))
