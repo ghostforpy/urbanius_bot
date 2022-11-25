@@ -13,6 +13,8 @@ services:
     volumes:
       - production_nginx_media-stage:/usr/share/nginx/html/media:ro
     restart: unless-stopped
+    networks:
+      urbanius_bot_default
 
   django-stage:
     build:
@@ -30,6 +32,8 @@ services:
       - ./.envs/.production/.env.stage
     command: /start
     restart: unless-stopped
+    networks:
+      urbanius_bot_default
 
   postgres-stage:
     build:
@@ -43,8 +47,9 @@ services:
       # - .env
       - ./.envs/.production/.env.stage
     restart: unless-stopped
+    networks:
+      urbanius_bot_default
 
 networks:
-  default:
-    name: urbanius_bot_default
+  urbanius_bot_default:
     external: true
