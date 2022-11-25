@@ -115,8 +115,9 @@ if not settings.DEBUG:
 
     update_queue = Queue()
 
-    dispatcher = setup_dispatcher(Dispatcher(bot, update_queue, workers=4, use_context=True))
-    thread = Thread(dispatcher.start)
+    dispatcher = Dispatcher(bot, update_queue, workers=4, use_context=True)
+    dispatcher = setup_dispatcher(dispatcher)
+    thread = Thread(dispatcher.start, None)
     thread.start()
 
     bot.set_webhook(
