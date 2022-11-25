@@ -311,6 +311,7 @@ def manage_main_photo(update: Update, context: CallbackContext):
 def manage_main_photo_action(update: Update, context: CallbackContext):
     user = mymodels.User.get_user_by_username_or_user_id(update.message.from_user.id)
     foto_id, filename_orig = _get_file_id(update.message)
+    filename_orig = str(user.user_id) + "-" + filename_orig
     filename_lst = filename_orig.split(".")
     newFile = context.bot.get_file(foto_id)
     filename = get_uniq_file_name(settings.BASE_DIR / "media/user_fotos",filename_lst[0],filename_lst[1])
