@@ -12,7 +12,7 @@ FINISH = {"finish":"Завершить"}
 YES_NO = {"yes":"Да", "no":"Нет"}
 CHANGE_SKIP = {"change":"Изменить", "skip":"Пропустить"}
 BACK = {"back":"Вернуться в основное меню"} 
-FIND = {"find_members":{"label":"Найти участников","type":"switch_inline"}}
+FIND = {"find_members":{"label":"Найти участника","type":"switch_inline"}}
 
 def make_manage_usr_btn(user_id):
     manage_usr_btn = {"setuserrating_"+ str(user_id):"Поставить оценку",

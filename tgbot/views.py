@@ -26,8 +26,9 @@ class TelegramBotWebhookView(View):
         #process_telegram_event(json.loads(request.body))
         #else:  # use ce in production
         #    process_telegram_event.delay(json.loads(request.body))
-        t = threading.Thread(target=process_telegram_event, args=(json.loads(request.body),))
-        t.start()
+        process_telegram_event(json.loads(request.body))
+        # t = threading.Thread(target=process_telegram_event, args=(json.loads(request.body),))
+        # t.start()
         # TODO: there is a great trick to send data in webhook response
         # e.g. remove buttons
         return JsonResponse({"ok": "POST request processed"})
