@@ -237,8 +237,8 @@ def handle_forwarded(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     if found_user is not None:
         profile_text = found_user.full_profile()
-        # manage_usr_btn = make_manage_usr_btn(found_user.id)
-        # reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
+        manage_usr_btn = make_manage_usr_btn(found_user.user_id)
+        reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
         if not(found_user.main_photo):
             photo = settings.BASE_DIR / 'media/no_foto.jpg'
             photo_id = get_no_foto_id()
@@ -252,20 +252,20 @@ def handle_forwarded(update: Update, context: CallbackContext):
                 user_id, 
                 photo_id, 
                 caption=profile_text, 
-                #reply_markup=reply_markup
+                reply_markup=reply_markup
                 )
         else:
             send_message(
                 user_id=user_id, 
                 text=profile_text, 
-                # reply_markup=reply_markup
+                reply_markup=reply_markup
                 )
     else:
         send_message(
             user_id=user_id, 
             text="Пользователь не найден",
         )
-    return
+    return "working"
 
 def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
@@ -275,6 +275,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
                       CallbackQueryHandler(show_full_profile, pattern="^full_profile_"),
                       CallbackQueryHandler(handle_show_full_profile, pattern="^handle_full_profile_"),
                       CallbackQueryHandler(set_rating, pattern="^setuserrating_"),
+                      MessageHandler(Filters.forwarded & Filters.private, handle_forwarded)
                      ],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
@@ -298,10 +299,5 @@ def setup_dispatcher_conv(dp: Dispatcher):
         # точка выхода из разговора
         fallbacks=[CommandHandler('cancel', stop_conversation, Filters.chat_type.private),
                    CommandHandler('start', stop_conversation, Filters.chat_type.private)]        
-    )
-    dp.add_handler(MessageHandler(
-        Filters.forwarded & Filters.private, 
-        handle_forwarded
-        )
     )
     dp.add_handler(conv_handler)  
