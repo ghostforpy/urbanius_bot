@@ -50,7 +50,7 @@ class AbstractTgUser(models.Model):
     job_region = models.CharField("Регион присутствия", max_length=150, null=True, blank=True)
     site = models.CharField("Сайт", max_length=150, null=True, blank=True)
     resident_urbanius_club = models.BooleanField("Член клуба URBANIUS CLUB", default=False)
-    business_club_member = models.CharField("Членство в бизнес клубах", max_length=150, null=True, blank=True)
+    business_club_member = models.CharField("Членство в бизнес клубах", max_length=750, null=True, blank=True)
     business_needs = models.ManyToManyField(
         "BusinessNeeds",
         verbose_name=_("Потребности бизнеса"),
