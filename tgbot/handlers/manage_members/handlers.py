@@ -69,9 +69,11 @@ def manage_find(update: Update, context: CallbackContext):
         )
         if user.main_photo != "":
             thumb_url = "https://bot.urbanius.club" + user.main_photo.url
-            user_res_str.thumb_url = thumb_url
-            user_res_str.thumb_width = 25
-            user_res_str.thumb_height = 25
+        else:
+            thumb_url = "https://bot.urbanius.club/media/no_foto.jpg"
+        user_res_str.thumb_url = thumb_url
+        user_res_str.thumb_width = 25
+        user_res_str.thumb_height = 25
         results.append(user_res_str)
     update.inline_query.answer(results)
     return "working"
