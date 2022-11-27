@@ -310,3 +310,34 @@ def fill_file_id(obj, file_field: str, text: str = ""):
         file_id, _ = _get_file_id(mess)
         setattr(obj, file_field + "_id", file_id)
         obj.save()
+
+def send_contact(user_id, phone_number=None, first_name=None, last_name=None,
+                 disable_notification=None,
+                 reply_to_message_id=None, reply_markup=None, timeout=None, contact=None, vcard=None,
+                 api_kwargs = None, tg_token=settings.TELEGRAM_TOKEN):
+    bot = telegram.Bot(tg_token)
+    try:
+        m = bot.send_contact(
+            chat_id=user_id,
+            phone_number=phone_number,
+            first_name=first_name,
+            last_name=last_name,
+            vcard=vcard,
+            contact=contact,
+            disable_notification=disable_notification,
+            timeout=timeout,
+            reply_markup=reply_markup,
+            reply_to_message_id=reply_to_message_id,
+            api_kwargs = api_kwargs
+        )
+    except telegram.error.Unauthorized:
+        print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
+        #User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
+        success = f"Can't send message to {user_id}. Reason: Bot was stopped."
+    except Exception as e:
+        print(f"Can't send message to {user_id}. Reason: {e}")
+        success = e
+    else:
+        success = m
+        #User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
+    return success

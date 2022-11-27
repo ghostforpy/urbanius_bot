@@ -15,7 +15,7 @@ from .answers import *
 import tgbot.models as mymodels
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
-from tgbot.utils import send_message, send_photo, fill_file_id
+from tgbot.utils import send_message, send_photo, fill_file_id, send_contact
 from tgbot.handlers.utils import get_no_foto_id
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
@@ -161,6 +161,21 @@ def back_to_user(update: Update, context: CallbackContext):
     query.edit_message_text(text=profile_text, reply_markup=reply_markup)
     return "working"
 
+# Запрос телефона
+def direct_communication(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    data = query.data.split("_")
+    choosen_user_id = int(data[-1])
+    choosen_user = User.get_user_by_username_or_user_id(choosen_user_id)
+    send_contact(
+        user_id=query.from_user.id,
+        phone_number=choosen_user.telefon,
+        first_name=choosen_user.first_name,
+        last_name=choosen_user.last_name
+    )
+    return
+
 # Установка оценки
 def set_rating(update: Update, context: CallbackContext):
     # Запрашиваем оценку
@@ -267,6 +282,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
                        CallbackQueryHandler(stop_conversation, pattern="^back$"),
                        CallbackQueryHandler(set_rating, pattern="^setuserrating_"),
                        CallbackQueryHandler(show_full_profile, pattern="^full_profile_"),
+                       CallbackQueryHandler(direct_communication, pattern="^direct_communication_"),
                        MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
                       ],
             "set_rating":[
