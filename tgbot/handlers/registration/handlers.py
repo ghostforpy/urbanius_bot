@@ -846,12 +846,18 @@ def confirm_registration(update: Update, context: CallbackContext):
         update.message.reply_text(NO_FOR_ALL_USERS_GROUPS)
     else:
         for group in groups:
-            bn = {f"handle_full_profile_{new_user.user_id}":"Посмотреть пользователя"}
+            bn = {f"handle_full_profile_{new_user.user_id}":"Познакомиться"}
             reply_markup =  make_keyboard(bn,"inline",1)
             # reply_markup =  make_keyboard(bn,"inline",1)
-            text = new_user.new_user_notification()
+            # text = new_user.new_user_notification()
             # text =f"Познакомьтесь с новым участником группы\n @{utils.mystr(new_user.username)} {new_user.first_name} {utils.mystr(new_user.last_name)}"
-            utils.send_message(group.chat_id, text, reply_markup=reply_markup)
+            # utils.send_message(group.chat_id, text, reply_markup=reply_markup)
+            utils.send_photo(
+                group.chat_id,
+                new_user.main_photo_id,
+                new_user.full_profile(),
+                reply_markup=reply_markup
+                )
 
 
 
