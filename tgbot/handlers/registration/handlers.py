@@ -27,7 +27,7 @@ from tgbot.models import (
     Status,
     User,
     # UsertgGroups,
-    # tgGroups,
+    tgGroups,
     # UserReferrers,
     NewUser
 )
@@ -838,12 +838,29 @@ def confirm_registration(update: Update, context: CallbackContext):
     text = MessageTemplates.objects.get(code=MessageTemplatesCode.PROFILE_APPROVED)
     # text = "Ваша регистрация подтверждена. Наберите /start для обновления меню."
     send_message(new_user_id, text.text)
-    # query.edit_message_text("Подтверждение завершено", reply_markup=make_keyboard(EMPTY,"inline",1))
     query.delete_message()
-    # query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
-    # send_message(user_id=user_id, text=FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
-    # send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
-    # return ConversationHandler.END
+
+
+    groups = tgGroups.objects.filter(for_all_users=True)
+    if groups.count() == 0:
+        update.message.reply_text(NO_FOR_ALL_USERS_GROUPS)
+    else:
+        for group in groups:
+            bn = {f"handle_full_profile_{new_user.user_id}":"Познакомиться"}
+            reply_markup =  make_keyboard(bn,"inline",1)
+            # reply_markup =  make_keyboard(bn,"inline",1)
+            # text = new_user.new_user_notification()
+            # text =f"Познакомьтесь с новым участником группы\n @{utils.mystr(new_user.username)} {new_user.first_name} {utils.mystr(new_user.last_name)}"
+            # utils.send_message(group.chat_id, text, reply_markup=reply_markup)
+            utils.send_photo(
+                group.chat_id,
+                new_user.main_photo_id,
+                new_user.full_profile(),
+                reply_markup=reply_markup
+                )
+
+
+
 
 def setup_dispatcher_conv(dp: Dispatcher):
     conv_handler_reg = ConversationHandler( # здесь строится логика разговора

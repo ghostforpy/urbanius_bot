@@ -15,7 +15,7 @@ from .answers import *
 import tgbot.models as mymodels
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.filters import FilterPrivateNoCommand
-from tgbot.utils import send_message, send_photo, fill_file_id
+from tgbot.utils import send_message, send_photo, fill_file_id, send_contact
 from tgbot.handlers.utils import get_no_foto_id
 from tgbot.handlers.main.answers import get_start_menu
 from tgbot.handlers.main.messages import get_start_mess
@@ -50,7 +50,6 @@ def start_conversation(update: Update, context: CallbackContext):
     query = update.callback_query
     query.answer()
     query.edit_message_text(text=HELLO_MESS_2, reply_markup=make_keyboard(FIND,"inline",1,None,BACK))
-
     return "working"
 
 # Обработчик поиска
@@ -70,9 +69,11 @@ def manage_find(update: Update, context: CallbackContext):
         )
         if user.main_photo != "":
             thumb_url = "https://bot.urbanius.club" + user.main_photo.url
-            user_res_str.thumb_url = thumb_url
-            user_res_str.thumb_width = 25
-            user_res_str.thumb_height = 25
+        else:
+            thumb_url = "https://bot.urbanius.club/media/no_foto.jpg"
+        user_res_str.thumb_url = thumb_url
+        user_res_str.thumb_width = 25
+        user_res_str.thumb_height = 25
         results.append(user_res_str)
     update.inline_query.answer(results)
     return "working"
@@ -111,12 +112,42 @@ def show_full_profile(update: Update, context: CallbackContext):
     profile_text = found_user.full_profile()
     manage_usr_btn = make_manage_usr_btn(found_user_id)
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
-    try:
-        # профиль с фотографией
-        query.edit_message_caption(caption=profile_text, reply_markup=reply_markup)
-    except:
-        # профиль без фотографии
-        query.edit_message_text(text=profile_text, reply_markup=reply_markup)
+    query.edit_message_text(text=profile_text, reply_markup=reply_markup)
+    return "working"
+
+def handle_show_full_profile(update: Update, context: CallbackContext):
+    query = update.callback_query
+    user_id = query.from_user.id
+    query.answer()
+    data = query.data.split("_")
+    found_user_id = int(data[-1])
+    found_user = User.get_user_by_username_or_user_id(found_user_id)
+    profile_text = found_user.full_profile()
+    manage_usr_btn = make_manage_usr_btn(found_user_id)
+    reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
+
+
+    if not(found_user.main_photo):
+        photo = settings.BASE_DIR / 'media/no_foto.jpg'
+        photo_id = get_no_foto_id()
+    else:
+        if not found_user.main_photo_id:
+            fill_file_id(found_user, "main_photo")
+        photo = found_user.main_photo.path
+        photo_id = found_user.main_photo_id
+    if os.path.exists(photo):
+        send_photo(user_id, photo_id, caption=profile_text, reply_markup=reply_markup)
+    else:
+        send_message(user_id=user_id, text = profile_text, reply_markup=reply_markup)
+
+    # send_message(query.from_user.id, text=profile_text, reply_markup=reply_markup)
+    # query.edit_message_text(text=profile_text, reply_markup=reply_markup)
+    # try:
+    #     # профиль с фотографией
+    #     query.edit_message_caption(caption=profile_text, reply_markup=reply_markup)
+    # except:
+    #     # профиль без фотографии
+    #     query.edit_message_text(text=profile_text, reply_markup=reply_markup)
     return "working"
 
 def back_to_user(update: Update, context: CallbackContext):
@@ -131,6 +162,21 @@ def back_to_user(update: Update, context: CallbackContext):
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
     query.edit_message_text(text=profile_text, reply_markup=reply_markup)
     return "working"
+
+# Запрос телефона
+def direct_communication(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    data = query.data.split("_")
+    choosen_user_id = int(data[-1])
+    choosen_user = User.get_user_by_username_or_user_id(choosen_user_id)
+    send_contact(
+        user_id=query.from_user.id,
+        phone_number=choosen_user.telefon,
+        first_name=choosen_user.first_name,
+        last_name=choosen_user.last_name
+    )
+    return
 
 # Установка оценки
 def set_rating(update: Update, context: CallbackContext):
@@ -171,7 +217,7 @@ def set_rating_comment(update: Update, context: CallbackContext):
 
     return "set_rating_comment"
 
-def store_rating (update: Update, context: CallbackContext):
+def store_rating(update: Update, context: CallbackContext):
     # Сохраняем оценку       
     user_rating = mymodels.UsersRatings()
     user_rating.rating = int(context.user_data["rating"])
@@ -181,10 +227,45 @@ def store_rating (update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
 
     context.user_data["search_started"] = False
-    manage_usr_btn = make_manage_usr_btn(context.user_data["rated_user"].user_id)
+    manage_usr_btn = make_manage_usr_btn(context.user_data["rated_user"].user_id, show_full_profile=True)
     reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
     send_message(user_id=user_id, text=FIN_RATING,reply_markup=reply_markup)
     return "working" 
+
+def handle_forwarded(update: Update, context: CallbackContext):
+    found_user = User.get_user_by_username_or_user_id(update.message.forward_from.id)
+    user_id = update.message.from_user.id
+    if found_user is not None:
+        profile_text = found_user.full_profile()
+        manage_usr_btn = make_manage_usr_btn(found_user.user_id)
+        reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
+        if not(found_user.main_photo):
+            photo = settings.BASE_DIR / 'media/no_foto.jpg'
+            photo_id = get_no_foto_id()
+        else:
+            if not found_user.main_photo_id:
+                fill_file_id(found_user, "main_photo")
+            photo = found_user.main_photo.path
+            photo_id = found_user.main_photo_id
+        if os.path.exists(photo):
+            send_photo(
+                user_id, 
+                photo_id, 
+                caption=profile_text, 
+                reply_markup=reply_markup
+                )
+        else:
+            send_message(
+                user_id=user_id, 
+                text=profile_text, 
+                reply_markup=reply_markup
+                )
+    else:
+        send_message(
+            user_id=user_id, 
+            text="Пользователь не найден",
+        )
+    return "working"
 
 def setup_dispatcher_conv(dp: Dispatcher):
     # Диалог отправки сообщения
@@ -192,7 +273,9 @@ def setup_dispatcher_conv(dp: Dispatcher):
         # точка входа в разговор      
         entry_points=[CallbackQueryHandler(start_conversation, pattern="^find_members$"),
                       CallbackQueryHandler(show_full_profile, pattern="^full_profile_"),
+                      CallbackQueryHandler(handle_show_full_profile, pattern="^handle_full_profile_"),
                       CallbackQueryHandler(set_rating, pattern="^setuserrating_"),
+                      MessageHandler(Filters.forwarded & Filters.private, handle_forwarded)
                      ],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
@@ -202,6 +285,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
                        CallbackQueryHandler(stop_conversation, pattern="^back$"),
                        CallbackQueryHandler(set_rating, pattern="^setuserrating_"),
                        CallbackQueryHandler(show_full_profile, pattern="^full_profile_"),
+                       CallbackQueryHandler(direct_communication, pattern="^direct_communication_"),
                        MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
                       ],
             "set_rating":[

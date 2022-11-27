@@ -1,3 +1,4 @@
+import logging
 from telegram import (
     Update, ParseMode,
     InlineQueryResultArticle, InputTextMessageContent
@@ -8,14 +9,19 @@ from telegram.ext import (
     Filters, CallbackContext, ConversationHandler, InlineQueryHandler,
     ChosenInlineResultHandler
 )
-import os
 from telegram.ext.filters import Filters as F
 from django.conf import settings
 from .messages import *
 from .answers import *
 from tgbot.models import tgGroups, User
 from tgbot.handlers.keyboard import make_keyboard
-from tgbot.handlers.filters import FilterPrivateNoCommand, FilterGroupNoCommand
+from tgbot.handlers.filters import (
+    FilterPrivateNoCommand,
+    FilterGroupNoCommand, 
+    BotAddedToGroupFilter, 
+    BotLeftFromGroupFilter,
+    MessageFromAdminsFilter
+)
 from tgbot.handlers.utils import send_mess_by_tmplt
 from tgbot.utils import send_message
 from tgbot.handlers.main.answers import get_start_menu
@@ -123,8 +129,16 @@ def show_group_list(update: Update, context: CallbackContext):
     send_message(user_id, ASK_SELECT_GROUP, reply_markup=make_keyboard(groups_menu,"inline",1,None,BACK))
     return "working"
 
+def handle_status_update_new_chat_members(update: Update, context: CallbackContext):
+    logging.info(111111111111)
+    logging.info(update)
+
+def handle_status_update_left_chat_member(update: Update, context: CallbackContext):
+    logging.info(2222222222)
+    logging.info(update)
 
 def setup_dispatcher_conv(dp: Dispatcher):
+    admin_users = [int(user.user_id) for user in User.objects.filter(is_admin=True)]
     # Диалог отправки сообщения
     conv_handler = ConversationHandler( 
         # точка входа в разговор      
@@ -157,6 +171,21 @@ def setup_dispatcher_conv(dp: Dispatcher):
             F.regex(r"Выбрана группа") & FilterPrivateNoCommand,
             handle_chose_group
             )
+    )
+    dp.add_handler(
+        MessageHandler(
+            F.status_update.new_chat_members & \
+                BotAddedToGroupFilter(dp.bot.id) & \
+                    MessageFromAdminsFilter(admin_users),
+            handle_status_update_new_chat_members
+        )
+    )
+    dp.add_handler(MessageHandler(
+            F.status_update.left_chat_member & \
+                BotLeftFromGroupFilter(dp.bot.id) & \
+                    MessageFromAdminsFilter(admin_users),
+            handle_status_update_left_chat_member
+        )
     )
     dp.add_handler(CallbackQueryHandler(stop_conversation, pattern="^back-from-groups$"),)
 
