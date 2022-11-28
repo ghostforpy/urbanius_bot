@@ -65,7 +65,7 @@ def start_conversation(update: Update, context: CallbackContext):
     update.message.reply_text(WELCOME_REG)
     # prepare_ask_first_name(update, new_user)
     f = STEPS["FIRSTNAME"]["self_prepare"]
-    f(update, None)
+    f(update, context, None)
     # update.message.reply_text(WELCOME_REG, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
     return STEPS["FIRSTNAME"]["step"]
 
@@ -76,7 +76,7 @@ def processing_firstname(update: Update, context: CallbackContext):
     #    return ConversationHandler.END
     # elif update.message.text == CANCEL_SKIP["skip"]:
     #     f = STEPS["FIRSTNAME"]["prepare"]
-    #     f(update, new_user)
+    #     f(update, context, new_user)
     #     # keyboard = make_keyboard(CANCEL,"usual",2)
     #     # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
     #     return STEPS["FIRSTNAME"]["next"]
@@ -84,7 +84,7 @@ def processing_firstname(update: Update, context: CallbackContext):
     new_user.first_name = update.message.text
     new_user.save()
     f = STEPS["FIRSTNAME"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     # keyboard = make_keyboard(CANCEL,"usual",2)
     # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
     return STEPS["FIRSTNAME"]["next"]
@@ -96,7 +96,7 @@ def processing_lastname(update: Update, context: CallbackContext):
     #    return ConversationHandler.END
     # elif update.message.text == CANCEL_SKIP["skip"]:
     #     f = STEPS["LASTNAME"]["prepare"]
-    #     f(update, new_user)
+    #     f(update, context, new_user)
     #     # keyboard = make_keyboard(CANCEL,"usual",2)
     #     # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
     #     return STEPS["LASTNAME"]["next"]
@@ -104,7 +104,7 @@ def processing_lastname(update: Update, context: CallbackContext):
     new_user.last_name = update.message.text
     new_user.save()
     f = STEPS["LASTNAME"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     # keyboard = make_keyboard(CANCEL,"usual",2)
     # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
     return STEPS["LASTNAME"]["next"]
@@ -116,7 +116,7 @@ def processing_surname(update: Update, context: CallbackContext):
     #    return ConversationHandler.END
     # elif update.message.text == CANCEL_SKIP["skip"]:
     #     f = STEPS["SURNAME"]["prepare"]
-    #     f(update, new_user)
+    #     f(update, context, new_user)
     #     # keyboard = make_keyboard(CANCEL,"usual",2)
     #     # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
     #     return STEPS["SURNAME"]["next"]
@@ -124,7 +124,7 @@ def processing_surname(update: Update, context: CallbackContext):
     new_user.sur_name = update.message.text
     new_user.save()
     f = STEPS["SURNAME"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     # keyboard = make_keyboard(CANCEL,"usual",2)
     # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
     return STEPS["SURNAME"]["next"]
@@ -135,21 +135,21 @@ def processing_tags(update: Update, context: CallbackContext):
     new_user.tags = update.message.text
     new_user.save()
     f = STEPS["TAGS"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     return STEPS["TAGS"]["next"]
 
 def processing_aproval(update: Update, context: CallbackContext):
     if update.message.text not in [APPROVAL_ANSWERS[i] for i in APPROVAL_ANSWERS]:
         update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard(APPROVAL_ANSWERS,"usual",2))
     f = STEPS["APROVAL"]["prepare"]
-    f(update, None)
+    f(update, context, None)
     return STEPS["APROVAL"]["next"]
     # if update.message.text == APPROVAL_ANSWERS["yes"]: # В этом поле хранится согласие
     #     # update.message.reply_text(ASK_PHONE,  reply_markup=make_keyboard(CANCEL,"usual",2,REQUEST_PHONE))
     #     # prepare_ask_phone(update)
     #     f = STEPS["APROVAL"]["prepare"]
     #     # new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-    #     f(update, None)
+    #     f(update, context, None)
     #     return STEPS["APROVAL"]["next"]
     # elif update.message.text == APPROVAL_ANSWERS["no"]: # В этом поле хранится отказ
     #     stop_conversation(update, context)
@@ -173,7 +173,7 @@ def processing_resident_urbanius_club(update: Update, context: CallbackContext):
         new_user.resident_urbanius_club = True
         new_user.save()
     f = STEPS["RESIDENT_URBANIUS_CLUB"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     return STEPS["RESIDENT_URBANIUS_CLUB"]["next"]
 
 def processing_business_club_member(update: Update, context: CallbackContext):
@@ -186,7 +186,7 @@ def processing_business_club_member(update: Update, context: CallbackContext):
         new_user.business_club_member = update.message.text
         new_user.save()
     f = STEPS["BUSINESS_CLUB_MEMBER"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     return STEPS["BUSINESS_CLUB_MEMBER"]["next"]
 
 def processing_company_turnover(update: Update, context: CallbackContext):
@@ -196,7 +196,7 @@ def processing_company_turnover(update: Update, context: CallbackContext):
             reply_markup=make_keyboard({},"usual",2)
         )
         f = STEPS["COMPANY_TURNOVER"]["self_prepare"]
-        f(update, None)
+        f(update, context, None)
         return
     query = update.callback_query
     variant = query.data
@@ -205,7 +205,7 @@ def processing_company_turnover(update: Update, context: CallbackContext):
     new_user.company_turnover = variant
     new_user.save()
     f = STEPS["COMPANY_TURNOVER"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     return STEPS["COMPANY_TURNOVER"]["next"]
 
 def processing_company_number_of_employess(update: Update, context: CallbackContext):
@@ -215,7 +215,7 @@ def processing_company_number_of_employess(update: Update, context: CallbackCont
             reply_markup=make_keyboard({},"usual",2)
         )
         f = STEPS["COMPANY_NUMBER_OF_EMPLOYESS"]["self_prepare"]
-        f(update, None)
+        f(update, context, None)
         return
     query = update.callback_query
     variant = query.data
@@ -224,7 +224,7 @@ def processing_company_number_of_employess(update: Update, context: CallbackCont
     new_user.number_of_employees = variant
     new_user.save()
     f = STEPS["COMPANY_NUMBER_OF_EMPLOYESS"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     return STEPS["COMPANY_NUMBER_OF_EMPLOYESS"]["next"]
 
 def processing_company_business_needs(update: Update, context: CallbackContext):
@@ -235,7 +235,7 @@ def processing_company_business_needs(update: Update, context: CallbackContext):
         )
         f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-        f(update, new_user)
+        f(update, context, new_user)
         return
     new_user = NewUser.objects.get(user_id = update.callback_query.from_user.id)
     query = update.callback_query
@@ -246,7 +246,7 @@ def processing_company_business_needs(update: Update, context: CallbackContext):
         return "create_business_need"
     if variant == "next":
         f = STEPS["COMPANY_BUSINESS_NEEDS"]["prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         return STEPS["COMPANY_BUSINESS_NEEDS"]["next"]
     need = BusinessNeeds.objects.get(id=variant)
     if need in new_user.business_needs.all():
@@ -254,7 +254,7 @@ def processing_company_business_needs(update: Update, context: CallbackContext):
     else:
         new_user.business_needs.add(need)
     f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     return
 
 def processing_company_business_branches(update: Update, context: CallbackContext):
@@ -265,7 +265,7 @@ def processing_company_business_branches(update: Update, context: CallbackContex
         )
         f = STEPS["COMPANY_BUSINESS_BRANCHES"]["self_prepare"]
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-        f(update, new_user)
+        f(update, context, new_user)
         return
     new_user = NewUser.objects.get(user_id = update.callback_query.from_user.id)
     query = update.callback_query
@@ -273,13 +273,13 @@ def processing_company_business_branches(update: Update, context: CallbackContex
     query.answer()
     if variant == "next":
         f = STEPS["COMPANY_BUSINESS_BRANCHES"]["prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         return STEPS["COMPANY_BUSINESS_BRANCHES"]["next"]
     branch = BusinessBranches.objects.get(id=variant)
     if branch in new_user.business_branches.all():
         new_user.business_branches.remove(branch)
         f = STEPS["COMPANY_BUSINESS_BRANCHES"]["self_prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         return
     else:
         if new_user.business_branches.count() < MAX_BUSINESS_BRANCHES:
@@ -291,7 +291,7 @@ def processing_company_business_branches(update: Update, context: CallbackContex
                 reply_markup=make_keyboard({},"inline",1)
             )
         f = STEPS["COMPANY_BUSINESS_BRANCHES"]["self_prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         return
 
 def processing_create_business_need_message(update: Update, context: CallbackContext):
@@ -311,7 +311,7 @@ def processing_create_business_need_message(update: Update, context: CallbackCon
         new_user.business_needs.add(new_need)
         new_user.created_business_needs.add(new_need)
         f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         return STEPS["COMPANY_BUSINESS_NEEDS"]["step"]
 
 def processing_create_business_need_callback_query(update: Update, context: CallbackContext):
@@ -321,7 +321,7 @@ def processing_create_business_need_callback_query(update: Update, context: Call
     query.answer()
     if variant == "cancel":
         f = STEPS["COMPANY_BUSINESS_NEEDS"]["self_prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         return STEPS["COMPANY_BUSINESS_NEEDS"]["step"]
 
 
@@ -342,7 +342,7 @@ def processing_create_business_benefit_message(update: Update, context: Callback
         new_user.business_benefits.add(new_benefit)
         new_user.created_business_benefits.add(new_benefit)
         f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         return STEPS["COMPANY_BUSINESS_BENEFITS"]["step"]
 
 def processing_create_business_benefit_callback_query(update: Update, context: CallbackContext):
@@ -352,7 +352,7 @@ def processing_create_business_benefit_callback_query(update: Update, context: C
     query.answer()
     if variant == "cancel":
             f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
-            f(update, new_user)
+            f(update, context, new_user)
             return STEPS["COMPANY_BUSINESS_BENEFITS"]["step"]
 
 
@@ -364,7 +364,7 @@ def processing_company_business_benefits(update: Update, context: CallbackContex
         )
         f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
-        f(update, new_user)
+        f(update, context, new_user)
         return
     new_user = NewUser.objects.get(user_id = update.callback_query.from_user.id)
     query = update.callback_query
@@ -375,7 +375,7 @@ def processing_company_business_benefits(update: Update, context: CallbackContex
         return "create_business_benefit"
     if variant == "next":
         f = STEPS["COMPANY_BUSINESS_BENEFITS"]["prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         return STEPS["COMPANY_BUSINESS_BENEFITS"]["next"]
     benefit = BusinessBenefits.objects.get(id=variant)
     if benefit in new_user.business_benefits.all():
@@ -383,7 +383,7 @@ def processing_company_business_benefits(update: Update, context: CallbackContex
     else:
         new_user.business_benefits.add(benefit)
     f = STEPS["COMPANY_BUSINESS_BENEFITS"]["self_prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     return
 
 def processing_job_region(update: Update, context: CallbackContext):
@@ -391,7 +391,7 @@ def processing_job_region(update: Update, context: CallbackContext):
     new_user.job_region = update.message.text
     new_user.save()
     f = STEPS["JOB_REGION"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     return STEPS["JOB_REGION"]["next"]
 
 def processing_deep_link(update: Update, context: CallbackContext):
@@ -405,7 +405,7 @@ def processing_deep_link(update: Update, context: CallbackContext):
         query.answer()
         if variant == "skip":
             f = STEPS["DEEP_LINK"]["prepare"]
-            f(update, new_user)
+            f(update, context, new_user)
             return STEPS["DEEP_LINK"]["next"]
     else:
         update.message.reply_text(
@@ -413,7 +413,7 @@ def processing_deep_link(update: Update, context: CallbackContext):
             reply_markup=ReplyKeyboardRemove()
         )
         f = STEPS["DEEP_LINK"]["self_prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         return STEPS["DEEP_LINK"]["step"]
     # if update.message.text != SKIP["skip"]:
     #     # проверяем наличие пользователя в базе
@@ -428,7 +428,7 @@ def processing_deep_link(update: Update, context: CallbackContext):
 
     #     new_user.save()
     # f = STEPS["DEEP_LINK"]["prepare"]
-    # f(update, new_user)
+    # f(update, context, new_user)
     # return STEPS["DEEP_LINK"]["next"]
 def deep_link_handle_chose_member(update: Update, context: CallbackContext):
     pass
@@ -461,7 +461,7 @@ def deep_link_manage_chosen_user(update: Update, context: CallbackContext):
     new_user.deep_link = chosen_user.username
     new_user.save()
     f = STEPS["DEEP_LINK"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     return STEPS["DEEP_LINK"]["next"]
 
 def processing_company(update: Update, context: CallbackContext):
@@ -471,7 +471,7 @@ def processing_company(update: Update, context: CallbackContext):
     #    return ConversationHandler.END
     # elif update.message.text == CANCEL_SKIP["skip"]:
     #     f = STEPS["COMPANY"]["prepare"]
-    #     f(update, new_user)
+    #     f(update, context, new_user)
     #     # keyboard = make_keyboard(CANCEL,"usual",2)
     #     # update.message.reply_text(ASK_JOB + f"\n Уже введено: '{utils.mystr(new_user.job)}'", reply_markup=keyboard)
     #     return STEPS["COMPANY"]["next"]
@@ -479,7 +479,7 @@ def processing_company(update: Update, context: CallbackContext):
     new_user.company = update.message.text
     new_user.save()
     f = STEPS["COMPANY"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     # keyboard = make_keyboard(CANCEL,"usual",2)
     # update.message.reply_text(ASK_JOB + f"\n Уже введено: '{utils.mystr(new_user.job)}'", reply_markup=keyboard)
     return STEPS["COMPANY"]["next"]
@@ -491,7 +491,7 @@ def processing_citi(update: Update, context: CallbackContext):
     #    return ConversationHandler.END
     # elif update.message.text == CANCEL_SKIP["skip"]:
     #     f = STEPS["CITI"]["prepare"]
-    #     f(update, new_user)
+    #     f(update, context, new_user)
     #     # keyboard = make_keyboard(CANCEL,"usual",2)
     #     # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
     #     return STEPS["CITI"]["next"]
@@ -499,7 +499,7 @@ def processing_citi(update: Update, context: CallbackContext):
     new_user.citi = update.message.text
     new_user.save()
     f = STEPS["CITI"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     # keyboard = make_keyboard(CANCEL,"usual",2)
     # update.message.reply_text(ASK_COMPANY + f"\n Уже введено: '{utils.mystr(new_user.company)}'", reply_markup=keyboard)
     return STEPS["CITI"]["next"]
@@ -511,7 +511,7 @@ def processing_job(update: Update, context: CallbackContext):
     #    return ConversationHandler.END
     # elif update.message.text == CANCEL_SKIP["skip"]:
     #     f = STEPS["JOB"]["prepare"]
-    #     f(update, new_user)
+    #     f(update, context, new_user)
     #     # keyboard = make_keyboard(CANCEL,"usual",2)
     #     # update.message.reply_text(ASK_SITE + f"\n Уже введено: '{utils.mystr(new_user.site)}'", reply_markup=keyboard)
     #     return STEPS["JOB"]["next"]
@@ -519,7 +519,7 @@ def processing_job(update: Update, context: CallbackContext):
     new_user.job = update.message.text
     new_user.save()
     f = STEPS["JOB"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     # keyboard = make_keyboard(CANCEL,"usual",2)
     # update.message.reply_text(ASK_SITE + f"\n Уже введено: '{utils.mystr(new_user.site)}'", reply_markup=keyboard)
     return STEPS["JOB"]["next"]
@@ -531,7 +531,7 @@ def processing_fio(update: Update, context: CallbackContext):
         return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
         f = STEPS["FIO"]["prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         # keyboard = make_keyboard(CANCEL,"usual",2)
         # update.message.reply_text(ASK_ABOUT + f"\n Уже введено: '{utils.mystr(utils.mystr(new_user.about))}'", reply_markup=keyboard)
         return STEPS["FIO"]["next"]
@@ -549,7 +549,7 @@ def processing_fio(update: Update, context: CallbackContext):
             new_user.sur_name = fio[2]   # Отчество
         new_user.save()
         f = STEPS["FIO"]["prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         # keyboard = make_keyboard(CANCEL,"usual",2)
         # update.message.reply_text(ASK_ABOUT + f"\n Уже введено: '{utils.mystr(new_user.about)}'", reply_markup=keyboard)
         return STEPS["FIO"]["next"]
@@ -562,7 +562,7 @@ def processing_birhday(update: Update, context: CallbackContext):
        return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
         f = STEPS["BIRTHDAY"]["prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         # keyboard = make_keyboard(CANCEL,"usual",2)
         # update.message.reply_text(ASK_EMAIL + f"\n Уже введено: '{utils.mystr(new_user.email)}'", reply_markup=keyboard)
         return STEPS["BIRTHDAY"]["next"]
@@ -573,7 +573,7 @@ def processing_birhday(update: Update, context: CallbackContext):
         new_user.date_of_birth = date
         new_user.save()
         f = STEPS["BIRTHDAY"]["prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         # keyboard = make_keyboard(CANCEL,"usual",2)
         # update.message.reply_text(ASK_EMAIL + f"\n Уже введено: '{utils.mystr(new_user.email)}'", reply_markup=keyboard)
         return STEPS["BIRTHDAY"]["next"]
@@ -585,7 +585,7 @@ def processing_about(update: Update, context: CallbackContext):
         return ConversationHandler.END
     elif update.message.text == CANCEL_SKIP["skip"]:
         f = STEPS["ABOUT"]["prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         # prepare_ask_birthday(update, new_user.date_of_birth)
         # keyboard = make_keyboard(CANCEL,"usual",2)
         # update.message.reply_text(ASK_BIRHDAY + f"\n Уже введено: '{utils.mystr(new_user.date_of_birth)}'", reply_markup=keyboard)
@@ -594,7 +594,7 @@ def processing_about(update: Update, context: CallbackContext):
         new_user.about = update.message.text 
         new_user.save()
         f = STEPS["ABOUT"]["prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         # prepare_ask_birthday(update, new_user.date_of_birth)
         # keyboard = make_keyboard(CANCEL,"usual",2)
         # birthday = utils.mystr(new_user.date_of_birth)
@@ -623,24 +623,38 @@ def processing_site(update: Update, context: CallbackContext):
     new_user.registered = True
     new_user.save()
     f = STEPS["SITE"]["prepare"]
-    f(update, new_user)
+    f(update, context, new_user)
     return STEPS["SITE"]["next"]
     # return end_registration(update, context, new_user)
 
 def processing_phone(update: Update, context: CallbackContext):
     if update.message.contact != None: # Был прислан контакт        
+        context.user_data["bad_phone_registration"] = False
         # Запоминаем телефон
         new_user = NewUser.objects.get(user_id = update.message.from_user.id)
         new_user.telefon = update.message.contact.phone_number
         new_user.save()
         if isinstance(STEPS["PHONE"]["next"], int):
             f = STEPS["PHONE"]["prepare"]
-            f(update, new_user)
+            f(update, context, context)
             return STEPS["PHONE"]["next"]
         else:
             return end_registration(update, context, new_user)
     else:
-        update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard({},"usual",2,REQUEST_PHONE))
+        context.user_data["bad_phone_registration"] = True
+        photo = context.bot_data.get("bad_phone_registration_file_id", None)
+        if photo is None:
+            photo = open(settings.BASE_DIR / "media/bad_phone.jpg", 'rb')
+        m = send_photo(
+            update.message.from_user.id,
+            photo=photo,
+            caption=ASK_REENTER,
+            reply_markup=make_keyboard({},"usual",2,REQUEST_PHONE)
+            )
+        if photo is None:
+            context.bot_data["bad_phone_registration_file_id"], _ = _get_file_id(m)
+
+        # update.message.reply_text(ASK_REENTER, reply_markup=make_keyboard({},"usual",2,REQUEST_PHONE))
 
 def processing_photo(update: Update, context: CallbackContext):
     new_user = NewUser.objects.get(user_id = update.message.from_user.id)
@@ -657,7 +671,7 @@ def processing_photo(update: Update, context: CallbackContext):
     new_user.save()
     if isinstance(STEPS["PHOTO"]["next"], int):
         f = STEPS["PHOTO"]["prepare"]
-        f(update, new_user)
+        f(update, context, new_user)
         return STEPS["PHOTO"]["next"]
     else:
         return end_registration(update, context, new_user)
