@@ -13,7 +13,7 @@ from telegram.ext import (
 )
 from django.conf import settings
 #from dtb.settings import TELEGRAM_TOKEN
-
+from sentry_sdk import capture_exception
 from tgbot.handlers import commands
 from tgbot.handlers.registration.handlers import setup_dispatcher_conv as setup_dispatcher_reg
 from tgbot.handlers.main.handlers import setup_dispatcher_conv as setup_dispatcher_main
@@ -29,16 +29,33 @@ from advert.handlers import setup_dispatcher_conv as setup_dispatcher_advert
 from tgbot.handlers.advertisement.handlers import setup_dispatcher_conv as setup_dispatcher_advertisement
 # from advert.handlers_reqw import setup_dispatcher_conv as setup_dispatcher_reqw
 from sheduler.tasks import restarts_tasks
-
+from tgbot.handlers.answers import ERROR_TEXT
 from telegram.update import Update
 from telegram import BotCommand
 from telegram.ext.callbackcontext import CallbackContext
+from tgbot.utils import send_message
 # Отладочный пререхватчик. Ловит все апдейты 
 # Когда основные хендлеры не ловят апдейт он ловится тут
 # и можно узнать причину
 def catch_all_updates(update: Update, context: CallbackContext):
     #print(update.update_id)
     pass
+
+def catch_errors(update: Update, context: CallbackContext):
+    if update.message is not None:
+        send_message(
+            user_id=update.message.from_user.id,
+            text=ERROR_TEXT,
+            reply_markup=telegram.ReplyKeyboardRemove()
+        )
+    elif update.callback_query is not None:
+        send_message(
+            user_id=update.callback_query.from_user.id,
+            text=ERROR_TEXT,
+            reply_markup=telegram.ReplyKeyboardRemove()
+        )
+    if not settings.DEBUG:
+        capture_exception(context.error)
 
 def setup_dispatcher(dp: Dispatcher):
     """
@@ -66,8 +83,8 @@ def setup_dispatcher(dp: Dispatcher):
     setup_dispatcher_tg_group(dp) #заполнение обработчиков сообщений в группах(каналах) телеграм
 
     dp.add_handler(MessageHandler(Filters.text & Filters.chat_type.private, commands.command_start))
-
-
+    dp.add_handler(CallbackQueryHandler(commands.command_start))
+    dp.add_error_handler(catch_errors)
     return dp
 
 
