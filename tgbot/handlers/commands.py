@@ -10,7 +10,7 @@ from telegram.ext import ConversationHandler
 from tgbot.my_telegram import ConversationHandler as ConversationHandler_my
 from django.utils import timezone
 from tgbot.models import User, NewUser
-from tgbot.utils import extract_user_data_from_update
+from tgbot.utils import extract_user_data_from_update, send_message
 from tgbot.handlers.utils import handler_logging
 from tgbot.handlers.keyboard import make_keyboard
 from tgbot.handlers.registration.messages import REGISTRATION_START_MESSS
@@ -24,7 +24,15 @@ logger.info("Command handlers check!")
 
 @handler_logging()
 def command_start(update: Update, context: CallbackContext):
-    update.message.reply_text("Начало работы", reply_markup=make_keyboard(EMPTY,"usual",2))
+    if update.message != None:
+        update.message.reply_text("Начало работы", reply_markup=make_keyboard(EMPTY,"usual",2))
+    elif update.callback_query != None:
+        update.callback_query.answer()
+        send_message(
+            user_id=update.callback_query.from_user.id,
+            text="Начало работы",
+            reply_markup=make_keyboard(EMPTY,"usual",2)
+        )
     context.user_data.clear()
     userdata = extract_user_data_from_update(update)
     context.user_data.update(userdata)
@@ -53,11 +61,25 @@ def command_start(update: Update, context: CallbackContext):
                 if str(payload).strip() != str(user_id).strip():  # нельзя быть рекомендателем самому себе
                     new_user.deep_link = payload    
         new_user.save()
-        update.message.reply_text(REGISTRATION_START_MESSS, reply_markup=make_keyboard(REGISTRATION_START_BTN,"usual",2))
+        if update.message != None:
+            update.message.reply_text(REGISTRATION_START_MESSS, reply_markup=make_keyboard(REGISTRATION_START_BTN,"usual",2))
+        elif update.callback_query != None:
+            send_message(
+                user_id=update.callback_query.from_user.id,
+                text=REGISTRATION_START_MESSS,
+                reply_markup=make_keyboard(REGISTRATION_START_BTN,"usual",2)
+            )
     else:
         reply_markup=get_start_menu(user)
-        update.message.reply_text(get_start_mess(user), reply_markup=reply_markup, 
+        if update.message != None:
+            update.message.reply_text(get_start_mess(user), reply_markup=reply_markup, 
                                   parse_mode=telegram.ParseMode.HTML)
+        elif update.callback_query != None:
+            send_message(
+                user_id=update.callback_query.from_user.id,
+                text=get_start_mess(user),
+                reply_markup=reply_markup
+            )
     
     clear_conversation(context.dispatcher.handlers[0], user_id)
     return ConversationHandler.END

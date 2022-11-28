@@ -66,8 +66,7 @@ def setup_dispatcher(dp: Dispatcher):
     setup_dispatcher_tg_group(dp) #заполнение обработчиков сообщений в группах(каналах) телеграм
 
     dp.add_handler(MessageHandler(Filters.text & Filters.chat_type.private, commands.command_start))
-
-
+    dp.add_handler(CallbackQueryHandler(commands.command_start))
     return dp
 
 
