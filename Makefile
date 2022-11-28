@@ -25,7 +25,7 @@ empty_migration:
 	docker-compose -f docker-compose.local.yml run --rm web python manage.py makemigrations --empty $(APP) && sudo chown ghost:ghost -R ./
 
 migrate_production:
-	sudo docker-compose -f production.yml run --rm web python manage.py migrate
+	sudo docker-compose -f production.yml run --rm django python manage.py migrate
 
 production:
 	sudo docker-compose -f production.yml up --build -d --remove-orphans
@@ -49,13 +49,13 @@ startapp_local:
 	docker-compose -f docker-compose.local.yml run --rm web ./manage.py startapp $(APP) && sudo chown ghost:ghost -R ./
 
 manage_production:
-	sudo docker-compose -f production.yml run --rm web ./manage.py $(COMMAND)
+	sudo docker-compose -f production.yml run --rm django ./manage.py $(COMMAND)
 
 production_shell:
-	sudo docker-compose -f production.yml run --rm web ./manage.py shell
+	sudo docker-compose -f production.yml run --rm django ./manage.py shell
 
 create_superuser_production:
-	sudo docker-compose -f production.yml run --rm web ./manage.py createsuperuser
+	sudo docker-compose -f production.yml run --rm django ./manage.py createsuperuser
 
 production_logs:
 	sudo docker-compose -f production.yml logs -f

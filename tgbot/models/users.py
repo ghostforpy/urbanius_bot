@@ -331,6 +331,15 @@ class User(AbstractTgUser):
         # res += "\n<b>Рекомендатели:</b>\n" + get_model_text(UserReferrers,["NN","referrer"], self)  
         return res
 
+    def new_user_notification(self)->str:
+        res = "В группе новый участник\n"
+        # res += f"@{mystr(self.username)}\n"
+        res += f"{mystr(self.last_name)} {mystr(self.first_name)} {mystr(self.sur_name)}\n"
+        res += "<b>Сегмент бизнеса:</b> " + "/".join(
+            [i.title for i in self.business_branches.all()]
+            )
+        return res
+
     def get_users_rating(self):
         avg_rating_set = self.usersratings_set.aggregate(avg_rating = Avg("rating"))
         if avg_rating_set["avg_rating"]:

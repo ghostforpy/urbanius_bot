@@ -14,12 +14,15 @@ CHANGE_SKIP = {"change":"Изменить", "skip":"Пропустить"}
 BACK = {"back":"Вернуться в основное меню"} 
 FIND = {"find_members":{"label":"Найти участника","type":"switch_inline"}}
 
-def make_manage_usr_btn(user_id):
-    manage_usr_btn = {"setuserrating_"+ str(user_id):"Поставить оценку",
-                      "dating_"+ str(user_id):"Познакомиться",
-                      "make_deal_"+ str(user_id):"Заключить сделку",
-                      "full_profile_"+ str(user_id):"Полный профиль",
-                      }
+def make_manage_usr_btn(user_id, show_full_profile=False):
+    manage_usr_btn = {
+        # "setuserrating_"+ str(user_id):"Поставить оценку",
+        #   "dating_"+ str(user_id):"Познакомиться",
+          "direct_communication_"+ str(user_id):"Прямая коммуникация",
+          "make_deal_"+ str(user_id):"Заключить сделку",
+    }
+    if show_full_profile:
+        manage_usr_btn["full_profile_"+ str(user_id)] = "Полный профиль"
     return manage_usr_btn
 
 def back_to_user_btn(user_id):
