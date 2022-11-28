@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'payments.apps.PaymentsConfig',
     'subscribe.apps.SubscribeConfig',
     'advert.apps.AdvertConfig',
+    'advertisement.apps.AdvertisementConfig'
 
 ]
 
