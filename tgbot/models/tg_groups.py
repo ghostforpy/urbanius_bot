@@ -11,6 +11,7 @@ class tgGroups(models.Model):
     file = models.FileField("Фото/Видео", blank=True, null=True, upload_to="events")
     file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
     show_for_users = models.BooleanField("Показывать пользователям", default=False)
+    send_new_users = models.BooleanField("Отправлять сообщения о новых пользователях", default=False)
 
     def __str__(self):
         return self.name

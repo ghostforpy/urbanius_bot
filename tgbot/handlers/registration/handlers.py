@@ -854,7 +854,7 @@ def confirm_registration(update: Update, context: CallbackContext):
     query.delete_message()
 
 
-    groups = tgGroups.objects.filter(for_all_users=True)
+    groups = tgGroups.objects.filter(send_new_users=True)
     if groups.count() == 0:
         update.message.reply_text(NO_FOR_ALL_USERS_GROUPS)
     else:
