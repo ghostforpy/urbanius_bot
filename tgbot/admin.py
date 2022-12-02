@@ -47,7 +47,7 @@ class UserAdmin(admin.ModelAdmin):
               ('avatar_tag', 'main_photo', 'telefon', 'email'),
               ('status', 'rating'),
               ('is_blocked_bot', 'is_banned', 'is_admin', 'is_moderator'),
-              ("verified_by_security", "random_coffe_on"),
+              ("verified_by_security", "random_coffe_on", "resident_urbanius_club",),
               ('company', 'job', 'branch', 'inn'),
               ('citi', 'job_region', 'site', 'number_of_employees'),
               ('segment', 'company_turnover'),
