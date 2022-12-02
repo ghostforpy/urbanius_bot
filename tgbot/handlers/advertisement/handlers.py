@@ -46,9 +46,10 @@ def stop_conversation(update: Update, context: CallbackContext):
         update.callback_query.edit_message_text(text=get_start_mess(user), reply_markup=get_start_menu(user))
     # send_message(user_id=user_id, text=GROUP_FINISH, reply_markup=make_keyboard(EMPTY,"usual",1))
     # send_message(user_id=user_id, text=get_start_mess(user), reply_markup=get_start_menu(user))
-    adv = context.user_data["new_advertisement"]
-    if not adv.create_done:
-        adv.delete()
+    adv = context.user_data.get("new_advertisement", None)
+    if adv is not None:
+        if not adv.create_done:
+            adv.delete()
     return ConversationHandler.END
 
 # Временная заглушка
