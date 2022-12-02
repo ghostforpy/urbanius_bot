@@ -5,6 +5,8 @@ import logging
 import uuid
 import re
 import os
+import random
+import string
 import telegram
 from telegram import MessageEntity
 
@@ -95,6 +97,10 @@ def mystr(val)->str:
         else:
             return str(val)
 
+def randomword(length):
+   letters = string.ascii_lowercase
+   return ''.join(random.choice(letters) for i in range(length))
+
 def get_uniq_file_name(path, name, ext):
     for num in range(999999):
         filename = f"{path}/{name}-{num}.{ext}"
@@ -113,6 +119,13 @@ def _get_file_id(m):
     if len(m["photo"]) > 0:
         best_photo = m["photo"][-1]
         return best_photo["file_id"], "userfoto.jpg"
+    return None, None
+
+def _get_all_file_id(m):
+    for doc_type in ALL_TG_FILE_TYPES:
+        if (m[doc_type] != None):
+            return m[doc_type]["file_id"], m[doc_type]["file_name"]
+
     return None, None
 
 def send_message(user_id, text, parse_mode=telegram.ParseMode.HTML, reply_markup=None, reply_to_message_id=None,
@@ -340,4 +353,27 @@ def send_contact(user_id, phone_number=None, first_name=None, last_name=None,
     else:
         success = m
         #User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
+    return success
+
+def send_media_group(user_id, media=None,
+                 disable_notification=None,
+                 reply_to_message_id=None, 
+                 api_kwargs = None, tg_token=settings.TELEGRAM_TOKEN):
+    bot = telegram.Bot(tg_token)
+    try:
+        m = bot.send_media_group(
+            chat_id=user_id,
+            media=media,
+            disable_notification=disable_notification,
+            reply_to_message_id=reply_to_message_id,
+            api_kwargs = api_kwargs
+        )
+    except telegram.error.Unauthorized:
+        print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
+        success = f"Can't send message to {user_id}. Reason: Bot was stopped."
+    except Exception as e:
+        print(f"Can't send message to {user_id}. Reason: {e}")
+        success = e
+    else:
+        success = m
     return success

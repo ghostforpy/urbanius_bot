@@ -154,6 +154,7 @@ media/qr_codes/*
 media/user_fotos/*
 media/downloads/*
 media/advert/*
+media/advertisement_files/*
 
 
 # DB backups

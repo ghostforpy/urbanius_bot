@@ -12,6 +12,7 @@ class tgGroups(models.Model):
     file_id = models.CharField("file_id", unique=False, max_length=255, blank=True, null = True)
     show_for_users = models.BooleanField("Показывать пользователям", default=False)
     send_new_users = models.BooleanField("Отправлять сообщения о новых пользователях", default=False)
+    send_advertisements = models.BooleanField("Отправлять сообщения о рекламных сообщениях", default=False)
 
     def __str__(self):
         return self.name

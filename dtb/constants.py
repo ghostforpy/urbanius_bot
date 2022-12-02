@@ -38,6 +38,8 @@ class MessageTemplatesCode:
     WELCOME_MESSAGE = "welcome_message"
     WELCOME_BLOCKERD_USR_MESSAGE = "welcome_blockerd_usr_message"
     WELCOME_BANNED_USR_MESSAGE = "welcome_banned_usr_message"
+    ADVERTISEMENT_APROOVED = "advertisement_aprooved"
+    ADVERTISEMENT_NOT_APROOVED = "advertisement_not_aprooved"
 
 class  EventTypeCode:
     OPEN = "open"

@@ -9,17 +9,12 @@ class Advertisement(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Автор"
     )
-    file = models.FileField(
-        "Прикрепленный файл", upload_to='advertisement_files', null=True, blank=True
-    )
-    file_id = models.CharField(
-        "id прикрепленного файла", max_length=150, null=True, blank=True
-    )
     admin_aprooved = models.BooleanField(
         "Одобрено администратором",
         default=False
     )
     created_at = models.DateTimeField("Создано", auto_now_add=True)
+    create_done = models.BooleanField("Создание закончено", default=False)
 
     class Meta:
         verbose_name_plural = 'Рекламные предложения' 
@@ -38,3 +33,41 @@ class Advertisement(models.Model):
         )
 
 
+class AdvertisementImage(models.Model):
+    adv = models.ForeignKey(
+        Advertisement, 
+        on_delete=models.CASCADE,
+        verbose_name="Изображение рекламного сообщения",
+        related_name="images"
+    )
+    image = models.ImageField(
+        "Прикрепленное изображение", upload_to='advertisement_files', null=True, blank=True
+    )
+    image_id = models.CharField(
+        "id прикрепленного изображения", max_length=150, null=True, blank=True
+    )
+
+    class Meta:
+        verbose_name_plural = 'Изображения рекламных сообщений'
+        verbose_name = 'Изображение рекламного сообщения'
+        ordering = ['id']
+
+
+class AdvertisementVideo(models.Model):
+    adv = models.ForeignKey(
+        Advertisement, 
+        on_delete=models.CASCADE,
+        verbose_name="Видео рекламного сообщения",
+        related_name="videos"
+    )
+    video = models.ImageField(
+        "Прикрепленное видео", upload_to='advertisement_files', null=True, blank=True
+    )
+    video_id = models.CharField(
+        "id прикрепленного видео", max_length=150, null=True, blank=True
+    )
+
+    class Meta:
+        verbose_name_plural = 'Видео рекламных сообщений'
+        verbose_name = 'Видео рекламного сообщения'
+        ordering = ['id']

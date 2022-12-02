@@ -84,7 +84,8 @@ def setup_dispatcher(dp: Dispatcher):
 
     dp.add_handler(MessageHandler(Filters.text & Filters.chat_type.private, commands.command_start))
     dp.add_handler(CallbackQueryHandler(commands.command_start))
-    dp.add_error_handler(catch_errors)
+    if not settings.DEBUG:
+        dp.add_error_handler(catch_errors)
     return dp
 
 

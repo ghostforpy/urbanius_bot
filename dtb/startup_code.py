@@ -292,6 +292,22 @@ try:
                         "Для выяснения причин свяжитесь с администраторами. Причина бана: \n"   
         template.save()
 
+    template = MessageTemplates.objects.filter(code = MessageTemplatesCode.ADVERTISEMENT_APROOVED).first()
+    if not template:
+        template = MessageTemplates()
+        template.code = MessageTemplatesCode.ADVERTISEMENT_APROOVED
+        template.name = "Шаблон сообщения при одобрении рекламного сообщения"
+        template.text = "Ваше рекламное сообщение одобрено." 
+        template.save()
+
+    template = MessageTemplates.objects.filter(code = MessageTemplatesCode.ADVERTISEMENT_NOT_APROOVED).first()
+    if not template:
+        template = MessageTemplates()
+        template.code = MessageTemplatesCode.ADVERTISEMENT_NOT_APROOVED
+        template.name = "Шаблон сообщения при отклонении рекламного сообщения"
+        template.text = "Ваше рекламное сообщение отклонено." 
+        template.save()
+
 
 
     # create EventTypes
