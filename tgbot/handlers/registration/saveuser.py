@@ -55,7 +55,8 @@ def end_registration(update:Update, context: CallbackContext, new_user: NewUser)
     user.is_blocked_bot = True
     user.comment = "Ожидает подтверждения регистрации"
     user.save()
-    new_user.update(registered=True)
+    new_user.registered = True
+    new_user.save()
 
     user.business_needs.set(new_user.business_needs.all())
     user.created_business_needs.set(new_user.created_business_needs.all())
