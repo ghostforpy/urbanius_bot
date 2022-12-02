@@ -13,4 +13,4 @@ BACK = {"back-from-advertisement":"Вернуться в основное мен
 MAX_VIDEOS_COUNT = 1
 MAX_IMAGES_COUNT = 3
 MAX_ADVERTISEMENTS_COUNT = 3
-MAX_VIDEO_DURATION = 180 # sec
+MAX_VIDEO_DURATION = 90 # sec
