@@ -856,7 +856,7 @@ def confirm_registration(update: Update, context: CallbackContext):
 
     groups = tgGroups.objects.filter(send_new_users=True)
     if groups.count() == 0:
-        update.message.reply_text(NO_FOR_ALL_USERS_GROUPS)
+        update.message.reply_text(NO_SEND_NEW_USERS_GROUPS)
     else:
         for group in groups:
             bn = {f"handle_full_profile_{new_user.user_id}":"Познакомиться"}
