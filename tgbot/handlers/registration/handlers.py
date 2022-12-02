@@ -620,7 +620,6 @@ def processing_site(update: Update, context: CallbackContext):
         update.message.reply_text(BAD_SITE, reply_markup=make_keyboard({},"usual",2))
         return
     new_user.site = site
-    new_user.registered = True
     new_user.save()
     f = STEPS["SITE"]["prepare"]
     f(update, context, new_user)
