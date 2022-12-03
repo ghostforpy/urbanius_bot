@@ -47,7 +47,7 @@ class UserAdmin(admin.ModelAdmin):
               ('avatar_tag', 'main_photo', 'telefon', 'email'),
               ('status', 'rating'),
               ('is_blocked_bot', 'is_banned', 'is_admin', 'is_moderator'),
-              ("verified_by_security", "random_coffe_on"),
+              ("verified_by_security", "random_coffe_on", "resident_urbanius_club",),
               ('company', 'job', 'branch', 'inn'),
               ('citi', 'job_region', 'site', 'number_of_employees'),
               ('segment', 'company_turnover'),
@@ -162,9 +162,9 @@ class BusinessBranchesAdmin(admin.ModelAdmin):
 
 @admin.register(tgGroups)
 class tgGroupsAdmin(admin.ModelAdmin) :
-    list_display = ("name", "chat_id", "link", "show_for_users") 
+    list_display = ("name", "chat_id", "link", "show_for_users", "send_new_users", "send_advertisements",) 
     list_display_links = ("name", )
-    list_editable =("show_for_users",)
+    list_editable =("show_for_users", "send_new_users", "send_advertisements",)
     search_fields = ("name",)
     readonly_fields = ["file_id"]
     

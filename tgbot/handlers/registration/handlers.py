@@ -620,7 +620,6 @@ def processing_site(update: Update, context: CallbackContext):
         update.message.reply_text(BAD_SITE, reply_markup=make_keyboard({},"usual",2))
         return
     new_user.site = site
-    new_user.registered = True
     new_user.save()
     f = STEPS["SITE"]["prepare"]
     f(update, context, new_user)
@@ -855,9 +854,9 @@ def confirm_registration(update: Update, context: CallbackContext):
     query.delete_message()
 
 
-    groups = tgGroups.objects.filter(for_all_users=True)
+    groups = tgGroups.objects.filter(send_new_users=True)
     if groups.count() == 0:
-        update.message.reply_text(NO_FOR_ALL_USERS_GROUPS)
+        update.message.reply_text(NO_SEND_NEW_USERS_GROUPS)
     else:
         for group in groups:
             bn = {f"handle_full_profile_{new_user.user_id}":"Познакомиться"}
