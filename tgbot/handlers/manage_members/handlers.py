@@ -379,6 +379,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
                       CallbackQueryHandler(show_full_profile, pattern="^full_profile_"),
                       CallbackQueryHandler(handle_show_full_profile, pattern="^handle_full_profile_"),
                       CallbackQueryHandler(set_rating, pattern="^setuserrating_"),
+                      CallbackQueryHandler(direct_communication, pattern="^direct_communication_"),
                       MessageHandler(Filters.forwarded & Filters.private, handle_forwarded)
                      ],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
