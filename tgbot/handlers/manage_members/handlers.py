@@ -115,12 +115,16 @@ def show_full_profile(update: Update, context: CallbackContext):
     query.edit_message_text(text=profile_text, reply_markup=reply_markup)
     return "working"
 
-def handle_show_full_profile(update: Update, context: CallbackContext):
-    query = update.callback_query
-    user_id = query.from_user.id
-    query.answer()
-    data = query.data.split("_")
-    found_user_id = int(data[-1])
+def handle_show_full_profile(update: Update, context: CallbackContext, found_user_id=None):
+    if update.callback_query != None:
+        query = update.callback_query
+        user_id = query.from_user.id
+        query.answer()
+        if found_user_id == None:
+            data = query.data.split("_")
+            found_user_id = int(data[-1])
+    else:
+        user_id = update.message.from_user.id
     found_user = User.get_user_by_username_or_user_id(found_user_id)
     profile_text = found_user.full_profile()
     manage_usr_btn = make_manage_usr_btn(found_user_id)
@@ -175,6 +179,106 @@ def direct_communication(update: Update, context: CallbackContext):
         phone_number=choosen_user.telefon,
         first_name=choosen_user.first_name,
         last_name=choosen_user.last_name
+    )
+    return
+
+# Предложение сделки
+def make_offer(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    data = query.data.split("_")
+    offer_user_id = int(data[-1])
+    offer_user = User.get_user_by_username_or_user_id(offer_user_id)
+    context.user_data["offer"] = mymodels.Offers.objects.create(
+        user=offer_user,
+        from_user=user
+    )
+
+    # query.edit_message_reply_markup(make_keyboard(EMPTY,"inline",1))
+    reply_markup=make_keyboard(back_to_user_btn(offer_user_id),"inline",5,None,None) 
+    send_message(user_id, text=OFFER_HELLO, reply_markup=reply_markup)
+    return "offer"
+
+def send_offer(update: Update, context: CallbackContext):
+    offer = context.user_data["offer"]
+    offer.offer = update.message.text
+    offer.create_done = True
+    offer.save()
+    user_id = update.message.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    send_message(
+        user_id=offer.user.user_id,
+        text= "Пользователь @{} {} {} предлагает Вам сделку.\n{}".format(
+            user.username,
+            user.first_name,
+            user.last_name,
+            offer.offer
+        ),
+        reply_markup=make_keyboard(
+            {
+            "accept_offer_"+ str(offer.id):"Принять",
+            "reject_offer_"+ str(offer.id):"Отклонить",
+            },
+            "inline",
+            1,
+            None,
+            None
+        )
+    )
+    # manage_usr_btn = make_manage_usr_btn(offer.user.user_id)
+    # reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
+    # profile_text = offer.user.full_profile()
+    # update.edit_message_text(text=profile_text, reply_markup=reply_markup)
+    # return "working"
+    send_message(user_id, FIN_OFFER)
+    return handle_show_full_profile(update, context, offer.user.user_id)
+
+def accept_offer(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    data = query.data.split("_")
+    offer_id = int(data[-1])
+    offer = mymodels.Offers.objects.get(id=offer_id)
+    offer.decision = "accepted"
+    offer.save()
+    from_user = offer.from_user
+    send_message(
+        user_id=from_user.user_id,
+        text=ACCEPTED_OFFER.format(
+            user.username,
+            user.first_name,
+            user.last_name,
+        ),
+        reply_markup=make_keyboard({f"handle_full_profile_{user_id}":"Перейти в профиль пользователя"},"inline",1)
+    )
+    # manage_usr_btn = make_manage_usr_btn(from_user.user_id, show_full_profile=True)
+    # reply_markup=make_keyboard(manage_usr_btn,"inline",1,None,BACK)
+    send_message(user_id=user_id, text="Предлагаем перейти к прямой коммуникации.")
+    return handle_show_full_profile(update, context, from_user.user_id)
+
+def reject_offer(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    user_id = query.from_user.id
+    user = User.get_user_by_username_or_user_id(user_id)
+    data = query.data.split("_")
+    offer_id = int(data[-1])
+    offer = mymodels.Offers.objects.get(id=offer_id)
+    offer.decision = "rejected"
+    offer.save()
+    from_user = offer.from_user
+    query.delete_message()
+    send_message(
+        user_id=from_user.user_id,
+        text=REJECTED_OFFER.format(
+            user.username,
+            user.first_name,
+            user.last_name,
+        )
     )
     return
 
@@ -286,8 +390,14 @@ def setup_dispatcher_conv(dp: Dispatcher):
                        CallbackQueryHandler(set_rating, pattern="^setuserrating_"),
                        CallbackQueryHandler(show_full_profile, pattern="^full_profile_"),
                        CallbackQueryHandler(direct_communication, pattern="^direct_communication_"),
+                       CallbackQueryHandler(make_offer, pattern="^make_offer_"),
+                       CallbackQueryHandler(handle_show_full_profile, pattern="^handle_full_profile_"),
                        MessageHandler(Filters.text & FilterPrivateNoCommand, blank)
                       ],
+            "offer":[
+                    CallbackQueryHandler(back_to_user, pattern="^back_to_user_"),
+                    MessageHandler(Filters.text & FilterPrivateNoCommand, send_offer)
+            ],
             "set_rating":[
                           CallbackQueryHandler(back_to_user, pattern="^back_to_user_"),
                           CallbackQueryHandler(set_rating_comment),
@@ -301,3 +411,5 @@ def setup_dispatcher_conv(dp: Dispatcher):
                    CommandHandler('start', stop_conversation, Filters.chat_type.private)]        
     )
     dp.add_handler(conv_handler)  
+    dp.add_handler(CallbackQueryHandler(accept_offer, pattern="^accept_offer_"))
+    dp.add_handler(CallbackQueryHandler(reject_offer, pattern="^reject_offer_"))

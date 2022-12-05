@@ -16,12 +16,27 @@ from tgbot.handlers import utils
 from sheduler.models import MessagesToSend
 
 
-class OffersInline(admin.TabularInline):
+@admin.register(Offers)
+class OffersAdmin(admin.ModelAdmin): 
+    readonly_fields = ['created_at',]
+    list_display = [
+        'offer', 'user', 'from_user',
+    ]
+
+class IncomeOffersInline(admin.TabularInline):
     model = Offers
+    fk_name = "user"
     formfield_overrides = {
-        models.TextField: {'widget': Textarea(attrs={'rows':2, 'cols':100})},
+        models.TextField: {'widget': Textarea(attrs={'rows':2, 'cols':50})},
     }
-    
+
+class OutputOffersInline(admin.TabularInline):
+    model = Offers
+    fk_name = "from_user"
+    formfield_overrides = {
+        models.TextField: {'widget': Textarea(attrs={'rows':2, 'cols':50})},
+    }
+
 class SocialNetsInline(admin.TabularInline):
     model = SocialNets
 
@@ -61,7 +76,13 @@ class UserAdmin(admin.ModelAdmin):
                'needs',
                'comment'
               ]
-    inlines = [OffersInline, UsertgGroupsInline, SocialNetsInline,  UserReferrersInline]
+    inlines = [
+        IncomeOffersInline, 
+        OutputOffersInline,
+        UsertgGroupsInline, 
+        SocialNetsInline, 
+        UserReferrersInline
+    ]
     formfield_overrides = {
         models.IntegerField: {'widget': NumberInput(attrs={'size':'20'})},
         models.TextField: {'widget': Textarea(attrs={'rows':2, 'cols':100})},
