@@ -6,10 +6,12 @@ import telegram
 
 from telegram.ext import (
     Updater, Dispatcher, Filters,
-    MessageHandler,JobQueue,
-    CommandHandler,
-    InlineQueryHandler, CallbackQueryHandler,
-    ChosenInlineResultHandler, PollAnswerHandler, Defaults
+    MessageHandler,
+    # JobQueue,
+    CommandHandler, CallbackQueryHandler,
+    # InlineQueryHandler, 
+    # ChosenInlineResultHandler, PollAnswerHandler, 
+    Defaults
 )
 from django.conf import settings
 #from dtb.settings import TELEGRAM_TOKEN
@@ -97,8 +99,8 @@ def run_pooling():
 
     dp = updater.dispatcher
     dp = setup_dispatcher(dp)
-    jq = updater.job_queue
-    restarts_tasks(jq)
+    # jq = updater.job_queue
+    # restarts_tasks(jq)
 
     bot_info = telegram.Bot(settings.TELEGRAM_TOKEN).get_me()
     bot_link = f"https://t.me/" + bot_info["username"]
