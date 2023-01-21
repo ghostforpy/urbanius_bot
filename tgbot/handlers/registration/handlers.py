@@ -640,6 +640,12 @@ def processing_phone(update: Update, context: CallbackContext):
         else:
             return end_registration(update, context, new_user)
     else:
+
+        f = STEPS["PHONE"]["self_prepare"]
+        f(update, context, context)
+        # update.message.reply_text(BAD_PHONE, reply_markup=make_keyboard({},"usual",2, REQUEST_PHONE))
+        return
+
         context.user_data["bad_phone_registration"] = True
         photo = context.bot_data.get("bad_phone_registration_file_id", None)
         if photo is None:
