@@ -941,7 +941,7 @@ def setup_dispatcher_conv(dp: Dispatcher):
             STEPS["PHONE"]["step"]: [MessageHandler((Filters.contact | Filters.text) & FilterPrivateNoCommand, processing_phone)],
             STEPS["PHOTO"]["step"]:[
                 MessageHandler(Filters.photo & FilterPrivateNoCommand, processing_photo),
-                MessageHandler(Filters.text & FilterPrivateNoCommand, processing_photo_txt)
+                MessageHandler((Filters.text | Filters.update) & FilterPrivateNoCommand, processing_photo_txt)
             ],
         },
         # точка выхода из разговора
