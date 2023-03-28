@@ -879,11 +879,12 @@ def confirm_registration(update: Update, context: CallbackContext):
                 )
 
 
+
+
 def setup_dispatcher_conv(dp: Dispatcher):
     conv_handler_reg = ConversationHandler( # здесь строится логика разговора
         # точка входа в разговор
-        entry_points=[MessageHandler(Filters.text(REGISTRATION_START_BTN["reg_start"]) & FilterPrivateNoCommand, start_conversation)],
-        conversation_timeout=60*60*12, # 12 hours
+        entry_points=[MessageHandler(Filters.text(REGISTRATION_START_BTN["reg_start"]) & FilterPrivateNoCommand, start_conversation)],      
         # этапы разговора, каждый со своим списком обработчиков сообщений
         states={
             STEPS["FIRSTNAME"]["step"]:[MessageHandler(Filters.text & FilterPrivateNoCommand, processing_firstname)],
