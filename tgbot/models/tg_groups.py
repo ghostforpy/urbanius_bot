@@ -18,18 +18,19 @@ class tgGroups(models.Model):
         return self.name
 
     def save(self, *args, **kwargs) -> None:
-        file_ext = self.file.name.split(".")[-1]
-        if file_ext in ["jpg","jpeg","png","gif","tif","tiff","bmp"]:
-            mess = send_photo(
-                settings.TRASH_GROUP,
-                self.file,
-                caption = ""
-            )
-            file_id, _ = _get_file_id(mess)
-            self.file_id = file_id
-        else:
-            self.file_id = ""
-            self.file = ""
+        if self.file:
+            file_ext = self.file.name.split(".")[-1]
+            if file_ext in ["jpg","jpeg","png","gif","tif","tiff","bmp"]:
+                mess = send_photo(
+                    settings.TRASH_GROUP,
+                    self.file,
+                    caption = ""
+                )
+                file_id, _ = _get_file_id(mess)
+                self.file_id = file_id
+            else:
+                self.file_id = ""
+                self.file = ""
         return super().save(*args, **kwargs)
 
     @classmethod
