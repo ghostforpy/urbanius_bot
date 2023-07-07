@@ -24,7 +24,7 @@ pytest-django==4.5.2
 psycopg2-binary
 
 # Telegram
-python-telegram-bot
+python-telegram-bot==13.14
 python-telegram-bot-pagination==0.0.2
 
 qrcode==7.3.1
