@@ -146,13 +146,16 @@ def run_webhook():
     # thread = Thread(target=dispatcher.start, name="dispatcher")
     # thread.start()
 
-    bot.set_webhook(
-        url="https://api.telegram.org/bot{}/setWebhook?url={}".format(
-            settings.TELEGRAM_TOKEN,
-            settings.TELEGRAM_WEBHOOK_FULL
+    # bot.set_webhook(
+    #     url="https://api.telegram.org/bot{}/setWebhook?url={}".format(
+    #         settings.TELEGRAM_TOKEN,
+    #         settings.TELEGRAM_WEBHOOK_FULL
+    #     )
+    # )
+    updater.start_webhook(
+        url_path="/webhook/{settings.TELEGRAM_WEBHOOK}",
+        webhook_url=settings.TELEGRAM_WEBHOOK_FULL
         )
-    )
-    updater.start_webhook()
     updater.idle()
 
 if not settings.DEBUG:
