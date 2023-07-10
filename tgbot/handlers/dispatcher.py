@@ -138,8 +138,10 @@ if not settings.DEBUG:
 
     dispatcher = Dispatcher(bot, update_queue, workers=4, use_context=True)
     dispatcher = setup_dispatcher(dispatcher)
-    jq = dispatcher.job_queue
+    from telegram.ext import JobQueue
+    jq = JobQueue()
     restarts_tasks(jq)
+    dispatcher.job_queue = jq
     thread = Thread(target=dispatcher.start, name="dispatcher")
     thread.start()
 
