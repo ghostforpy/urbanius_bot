@@ -104,7 +104,7 @@ http:
     bot:
       loadBalancer:
         servers:
-          - url: http://bot:8000
+          - url: http://bot:80
 
     nginx-media:
       loadBalancer:

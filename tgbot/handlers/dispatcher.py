@@ -152,7 +152,7 @@ def run_webhook():
             settings.TELEGRAM_WEBHOOK_FULL
         )
     )
-    updater.start_webhook(port=8000)
+    updater.start_webhook()
     updater.idle()
 
 if not settings.DEBUG:
