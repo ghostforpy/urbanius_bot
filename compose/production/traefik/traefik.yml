@@ -1,5 +1,5 @@
 log:
-  level: INFO
+  level: DEBUG
 
 tls:
   options:
@@ -51,7 +51,7 @@ http:
       middlewares:
         - csrf
       service: bot
-      priority: 1
+      priority: 2
       tls:
         # https://docs.traefik.io/master/routing/routers/#certresolver
         certResolver: letsencrypt

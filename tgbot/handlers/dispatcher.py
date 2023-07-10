@@ -152,8 +152,8 @@ def run_webhook():
     #         settings.TELEGRAM_WEBHOOK_FULL
     #     )
     # )
-    print(settings.TELEGRAM_WEBHOOK, settings.TELEGRAM_WEBHOOK_FULL)
     updater.start_webhook(
+        listen='0.0.0.0',
         url_path=settings.TELEGRAM_WEBHOOK,
         webhook_url=settings.TELEGRAM_WEBHOOK_FULL
         )
