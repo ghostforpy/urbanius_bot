@@ -138,6 +138,8 @@ if not settings.DEBUG:
 
     dispatcher = Dispatcher(bot, update_queue, workers=4, use_context=True)
     dispatcher = setup_dispatcher(dispatcher)
+    jq = dispatcher.job_queue
+    restarts_tasks(jq)
     thread = Thread(target=dispatcher.start, name="dispatcher")
     thread.start()
 
