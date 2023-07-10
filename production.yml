@@ -66,7 +66,7 @@ services:
       dockerfile: ./compose/production/django/Dockerfile.bot
     container_name: urban_bot
     # command: python manage.py run_local_bot
-    # command: python run_webhook.py
+    command: python run_webhook.py
     volumes:
       - .:/app:z
     env_file:
