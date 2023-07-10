@@ -1,7 +1,7 @@
 import os
 import django
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dtb.config.local')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dtb.settings')
 django.setup()
 
 from tgbot.handlers.dispatcher import run_webhook
