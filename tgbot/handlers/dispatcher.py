@@ -130,20 +130,21 @@ bot.set_my_commands(
 )
 update_queue = None
 
-if not settings.DEBUG:
-    from queue import Queue
-    from threading import Thread
 
-    update_queue = Queue()
+def run_webhook():
+    defaults = Defaults(parse_mode=telegram.ParseMode.HTML, tzinfo=pytz.timezone('Europe/Moscow'))
+    """ Run bot in webhook mode """
+    updater = Updater(bot=bot, workers=4, use_context=True, defaults=defaults)
 
-    dispatcher = Dispatcher(bot, update_queue, workers=4, use_context=True)
-    dispatcher = setup_dispatcher(dispatcher)
-    from telegram.ext import JobQueue
-    jq = JobQueue()
+    dp = updater.dispatcher
+    dp = setup_dispatcher(dp)
+    jq = updater.job_queue
     restarts_tasks(jq)
-    dispatcher.job_queue = jq
-    thread = Thread(target=dispatcher.start, name="dispatcher")
-    thread.start()
+
+    # bot_info = telegram.Bot(settings.TELEGRAM_TOKEN).get_me()
+    # bot_link = f"https://t.me/" + bot_info["username"]
+    # thread = Thread(target=dispatcher.start, name="dispatcher")
+    # thread.start()
 
     bot.set_webhook(
         url="https://api.telegram.org/bot{}/setWebhook?url={}".format(
@@ -151,5 +152,30 @@ if not settings.DEBUG:
             settings.TELEGRAM_WEBHOOK_FULL
         )
     )
+    updater.start_webhook(port=8000)
+    updater.idle()
+
+if not settings.DEBUG:
+    pass
+    # from queue import Queue
+    # from threading import Thread
+
+    # update_queue = Queue()
+
+    # dispatcher = Dispatcher(bot, update_queue, workers=4, use_context=True)
+    # dispatcher = setup_dispatcher(dispatcher)
+    # from telegram.ext import JobQueue
+    # jq = JobQueue()
+    # restarts_tasks(jq)
+    # dispatcher.job_queue = jq
+    # thread = Thread(target=dispatcher.start, name="dispatcher")
+    # thread.start()
+
+    # bot.set_webhook(
+    #     url="https://api.telegram.org/bot{}/setWebhook?url={}".format(
+    #         settings.TELEGRAM_TOKEN,
+    #         settings.TELEGRAM_WEBHOOK_FULL
+    #     )
+    # )
 else:
     dispatcher = setup_dispatcher(Dispatcher(bot, None, workers=4, use_context=True))

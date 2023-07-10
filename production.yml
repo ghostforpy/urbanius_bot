@@ -59,3 +59,18 @@ services:
       # - .env
       - ./.envs/.production/.env
     restart: unless-stopped
+
+  bot:
+    build:
+      context: .
+      dockerfile: ./compose/production/django/Dockerfile.bot
+    container_name: urban_bot
+    # command: python manage.py run_local_bot
+    # command: python run_webhook.py
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./.envs/.production/.env
+    depends_on:
+      - django
+      - postgres

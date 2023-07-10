@@ -43,6 +43,18 @@ http:
       tls:
         # https://docs.traefik.io/master/routing/routers/#certresolver
         certResolver: letsencrypt
+
+    web-secure-bot-router:
+      rule: "Host(`bot.urbanius.club`) && PathPrefix(`/webhook`)"
+      entryPoints:
+        - web-secure
+      middlewares:
+        - csrf
+      service: bot
+      priority: 1
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
     
     media-router:
       rule: "Host(`bot.urbanius.club`) && PathPrefix(`/media`)"
@@ -88,6 +100,11 @@ http:
       loadBalancer:
         servers:
           - url: http://django:8001
+
+    bot:
+      loadBalancer:
+        servers:
+          - url: http://bot:8000
 
     nginx-media:
       loadBalancer:
