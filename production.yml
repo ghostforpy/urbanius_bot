@@ -68,7 +68,7 @@ services:
     # command: python manage.py run_local_bot
     command: python run_webhook.py
     volumes:
-      - .:/app:z
+      - production_nginx_media:/app/media:z
     env_file:
       - ./.envs/.production/.env
     depends_on:
