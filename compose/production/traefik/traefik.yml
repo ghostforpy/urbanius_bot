@@ -114,12 +114,12 @@ http:
     django-stage:
       loadBalancer:
         servers:
-          - url: http://django-stage:8001
+          - url: http://django-company-assistant:8001
 
     nginx-media-stage:
       loadBalancer:
         servers:
-          - url: http://nginx-media-stage
+          - url: http://nginx-company-assistant
 
 providers:
   # https://docs.traefik.io/master/providers/file/
